@@ -26,7 +26,6 @@ import {
   School,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { DevBypass } from "@/components/dev/DevBypass";
 
 const signUpSchema = z
   .object({
@@ -305,11 +304,6 @@ const SignUp: React.FC = () => {
             </Link>
           </CardContent>
         </Card>
-
-        {/* Development Bypass */}
-        <div className="mt-8">
-          <DevBypass />
-        </div>
 
         {/* Footer Text */}
         <p className="text-center text-sm text-muted-foreground mt-8">

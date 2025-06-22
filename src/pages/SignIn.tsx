@@ -16,7 +16,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { GraduationCap, Loader2, Eye, EyeOff, Mail } from "lucide-react";
-import { DevBypass } from "@/components/dev/DevBypass";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -170,11 +169,6 @@ const SignIn: React.FC = () => {
             </Link>
           </CardContent>
         </Card>
-
-        {/* Development Bypass */}
-        <div className="mt-8">
-          <DevBypass />
-        </div>
 
         {/* Footer Text */}
         <p className="text-center text-sm text-muted-foreground mt-8">

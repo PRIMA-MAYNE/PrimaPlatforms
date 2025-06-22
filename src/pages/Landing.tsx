@@ -24,7 +24,6 @@ import {
   Shield,
   Zap,
 } from "lucide-react";
-import { DevBypass } from "@/components/dev/DevBypass";
 
 const Landing: React.FC = () => {
   return (
@@ -80,11 +79,6 @@ const Landing: React.FC = () => {
           <p className="text-sm text-muted-foreground mt-4">
             No setup fees • Secure authentication • Ready in minutes
           </p>
-
-          {/* Development/Demo Bypass */}
-          <div className="mt-8 max-w-md mx-auto">
-            <DevBypass />
-          </div>
         </div>
       </section>
 

@@ -62,7 +62,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Catalyst brand colors
+        // Catalyst brand colors - Pink theme
         catalyst: {
           50: "hsl(var(--catalyst-50))",
           100: "hsl(var(--catalyst-100))",
