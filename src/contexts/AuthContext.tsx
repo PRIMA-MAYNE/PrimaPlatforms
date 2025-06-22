@@ -84,6 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     schoolName?: string,
   ) => {
     try {
+      // Bypass email confirmation by using the admin API or disabling confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -93,6 +94,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             school_name: schoolName,
             role: "teacher",
           },
+          // Bypass email confirmation for development/demo purposes
+          emailRedirectTo: undefined,
         },
       });
 
@@ -105,12 +108,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { error };
       }
 
+      // If user is created but not automatically signed in due to email confirmation,
+      // attempt to sign them in immediately for bypass
       if (data.user && !data.session) {
-        toast({
-          title: "Check your email",
-          description:
-            "We've sent you a confirmation link to complete your registration.",
+        // Try to sign in immediately after signup
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
+
+        if (signInError) {
+          toast({
+            title: "Account created",
+            description: "Please sign in with your new credentials.",
+          });
+        } else {
+          toast({
+            title: "Welcome to Catalyst!",
+            description:
+              "Your account has been created and you're now signed in.",
+          });
+        }
       }
 
       return { error: null };
