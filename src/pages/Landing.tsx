@@ -66,16 +66,18 @@ const Landing: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
               <Button size="lg" className="catalyst-gradient text-lg px-8">
-                Start Free Trial
+                Get Started Now
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-lg px-8">
-              Watch Demo
-            </Button>
+            <Link to="/signin">
+              <Button size="lg" variant="outline" className="text-lg px-8">
+                Sign In
+              </Button>
+            </Link>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            No credit card required • 14-day free trial • Setup in minutes
+            No setup fees • Secure authentication • Ready in minutes
           </p>
         </div>
       </section>
@@ -466,16 +468,18 @@ const Landing: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/signup">
                 <Button size="lg" className="catalyst-gradient text-lg px-8">
-                  Start Your Free Trial
+                  Join Catalyst Today
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                Schedule Demo
-              </Button>
+              <Link to="/signin">
+                <Button size="lg" variant="outline" className="text-lg px-8">
+                  Sign In
+                </Button>
+              </Link>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              14-day free trial • No setup fees • Cancel anytime
+              Secure platform • No setup fees • Start immediately
             </p>
           </div>
         </div>
