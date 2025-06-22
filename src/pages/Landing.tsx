@@ -59,9 +59,9 @@ const Landing: React.FC = () => {
             Transform Your Teaching with Catalyst
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            The comprehensive educational management system that empowers
-            teachers with AI-driven lesson planning, smart attendance tracking,
-            and intelligent performance analytics.
+            A comprehensive educational management system designed to streamline
+            attendance tracking, lesson planning, and performance monitoring for
+            modern educators.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/signup">
@@ -310,8 +310,8 @@ const Landing: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Save Time</h3>
               <p className="text-muted-foreground">
-                Reduce administrative work by 70% and focus on what matters most
-                - teaching.
+                Streamline administrative tasks and focus on what matters most -
+                teaching and student engagement.
               </p>
             </div>
 
@@ -332,8 +332,8 @@ const Landing: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
               <p className="text-muted-foreground">
-                Enterprise-grade security with 99.9% uptime guarantee for peace
-                of mind.
+                Built with enterprise-grade security and reliable cloud
+                infrastructure for peace of mind.
               </p>
             </div>
 
@@ -353,101 +353,81 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Team Section */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Loved by Teachers Worldwide
+              Meet Our Team
             </h2>
             <p className="text-xl text-muted-foreground">
-              Join thousands of educators who have transformed their teaching
-              experience.
+              Built by educators and developers who understand the challenges of
+              modern teaching.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
+              <CardContent className="pt-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-catalyst-100 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-lg font-bold text-catalyst-700">
+                    LM
+                  </span>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  "Catalyst has revolutionized how I manage my classes. The AI
-                  lesson planning saves me hours every week!"
+                <h3 className="font-semibold text-lg mb-1">
+                  Likonge Mumbuwa Prince
+                </h3>
+                <p className="text-catalyst-600 font-medium mb-2">
+                  CEO & Founder
                 </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-catalyst-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-catalyst-700">
-                      SM
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Sarah Mitchell</p>
-                    <p className="text-sm text-muted-foreground">
-                      Mathematics Teacher
-                    </p>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Software Developer with expertise in educational technology
+                  and platform development.
+                </p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
+              <CardContent className="pt-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-lg font-bold text-success">KL</span>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  "The attendance tracking and analytics have helped me identify
-                  struggling students early. Game changer!"
+                <h3 className="font-semibold text-lg mb-1">Kapatiso Lyoba</h3>
+                <p className="text-success font-medium mb-2">COO</p>
+                <p className="text-sm text-muted-foreground">
+                  Chemistry and Physics Teacher with deep understanding of
+                  classroom operations and educational workflows.
                 </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-success">JK</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">James Kumar</p>
-                    <p className="text-sm text-muted-foreground">
-                      Science Teacher
-                    </p>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
+              <CardContent className="pt-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-info/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-lg font-bold text-info">NM</span>
                 </div>
-                <p className="text-muted-foreground mb-4">
-                  "Perfect for our school! Easy to use, comprehensive features,
-                  and excellent support team."
+                <h3 className="font-semibold text-lg mb-1">Nakweba Muhau</h3>
+                <p className="text-info font-medium mb-2">CTO</p>
+                <p className="text-sm text-muted-foreground">
+                  ICT Teacher and technology specialist focused on educational
+                  software architecture and AI integration.
                 </p>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-info/10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-info">AL</span>
-                  </div>
-                  <div>
-                    <p className="font-medium">Amanda Lopez</p>
-                    <p className="text-sm text-muted-foreground">Principal</p>
-                  </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <div className="w-20 h-20 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-lg font-bold text-warning">JH</span>
                 </div>
+                <h3 className="font-semibold text-lg mb-1">Jeff Hambulo</h3>
+                <p className="text-warning font-medium mb-2">
+                  Head of Natural Sciences
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Physics Teacher and HOD Natural Sciences, providing curriculum
+                  expertise and educational leadership.
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -462,8 +442,8 @@ const Landing: React.FC = () => {
               Ready to Transform Your Teaching?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of educators who have already revolutionized their
-              classrooms with Catalyst.
+              Start your journey with Catalyst and transform your teaching
+              experience with our educational management platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/signup">

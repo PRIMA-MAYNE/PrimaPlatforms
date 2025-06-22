@@ -112,7 +112,7 @@ const SignUp: React.FC = () => {
               Create Your Account
             </CardTitle>
             <CardDescription className="text-base">
-              Join thousands of educators transforming their teaching experience
+              Create your account to access the Catalyst educational platform
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
