@@ -76,7 +76,7 @@ const DashboardContent: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Module */}
         <Link to="/attendance">
-          <Card className="module-card">
+          <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
@@ -124,7 +124,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Lesson Planning Module */}
         <Link to="/lesson-planning">
-          <Card className="module-card">
+          <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/10">
@@ -164,7 +164,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Assessment Generator */}
         <Link to="/assessment-generator">
-          <Card className="module-card">
+          <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-warning/10">
@@ -206,7 +206,7 @@ const DashboardContent: React.FC = () => {
 
         {/* Performance Tracker */}
         <Link to="/performance-tracker">
-          <Card className="module-card">
+          <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
               <div className="flex items-center space-x-2">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-info/10">

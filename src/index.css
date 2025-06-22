@@ -184,7 +184,7 @@
   }
 
   .module-card {
-    @apply bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group;
+    @apply bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer;
   }
 
   .module-card:hover {
