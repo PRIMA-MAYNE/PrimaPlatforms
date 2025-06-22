@@ -17,7 +17,7 @@ import {
 const navigation = [
   {
     name: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
@@ -71,7 +71,7 @@ export const Sidebar: React.FC = () => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/dashboard" className="flex items-center space-x-2">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg catalyst-gradient">
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
