@@ -44,31 +44,27 @@ const DashboardContent: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
           title="Total Students"
-          value="247"
-          description="Across 8 classes"
+          value="0"
+          description="Add your first class"
           icon={Users}
-          trend={{ value: "12", isPositive: true }}
         />
         <StatsCard
           title="Attendance Rate"
-          value="94.2%"
-          description="This week"
+          value="0%"
+          description="Start taking attendance"
           icon={CheckCircle}
-          trend={{ value: "2.1%", isPositive: true }}
         />
         <StatsCard
           title="Lesson Plans"
-          value="23"
-          description="Generated this month"
+          value="0"
+          description="Coming soon"
           icon={FileText}
-          trend={{ value: "8", isPositive: true }}
         />
         <StatsCard
           title="Assessments"
-          value="15"
-          description="Completed this term"
+          value="0"
+          description="Coming soon"
           icon={ClipboardList}
-          trend={{ value: "3", isPositive: true }}
         />
       </div>
 
@@ -97,25 +93,13 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     Today's Classes
                   </span>
-                  <Badge variant="secondary">5 pending</Badge>
+                  <Badge variant="outline">Add classes to begin</Badge>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-success">
-                      89%
-                    </div>
-                    <div className="text-xs text-muted-foreground">Present</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-warning">8%</div>
-                    <div className="text-xs text-muted-foreground">Late</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-destructive">
-                      3%
-                    </div>
-                    <div className="text-xs text-muted-foreground">Absent</div>
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Set up your classes and start taking attendance to see
+                    real-time statistics here.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -143,19 +127,14 @@ const DashboardContent: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Recent Plans
+                    AI Lesson Planning
                   </span>
-                  <Badge variant="outline">23 this month</Badge>
+                  <Badge variant="outline">Coming Soon</Badge>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span>Mathematics - Algebra Basics</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span>Science - Chemical Reactions</span>
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    AI-powered lesson plan generation will be available soon.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -185,9 +164,9 @@ const DashboardContent: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Queue Status
+                    Assessment Generation
                   </span>
-                  <Badge variant="outline">3 generating</Badge>
+                  <Badge variant="outline">Coming Soon</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 text-sm">
@@ -225,21 +204,15 @@ const DashboardContent: React.FC = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    Class Average
+                    Performance Analytics
                   </span>
-                  <Badge variant="secondary">78.4%</Badge>
+                  <Badge variant="outline">Coming Soon</Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-success">15</div>
-                    <div className="text-xs text-muted-foreground">
-                      Improving
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-warning">3</div>
-                    <div className="text-xs text-muted-foreground">At Risk</div>
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Advanced performance tracking and analytics will be
+                    available soon.
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -261,40 +234,12 @@ const DashboardContent: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-success/10">
-                  <CheckCircle className="w-4 h-4 text-success" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Grade 10A attendance recorded
-                  </p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-catalyst-100">
-                  <FileText className="w-4 h-4 text-catalyst-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Chemistry lesson plan generated
-                  </p>
-                  <p className="text-xs text-muted-foreground">5 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-warning/10">
-                  <AlertCircle className="w-4 h-4 text-warning" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">
-                    Low attendance alert - Grade 9B
-                  </p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
+            <div className="text-center py-8">
+              <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">
+                Your recent activity will appear here once you start using the
+                platform.
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -29,11 +29,13 @@ export const Header: React.FC = () => {
   };
 
   const getUserDisplayName = () => {
-    return user?.user_metadata?.full_name || user?.email || "User";
+    return (
+      user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"
+    );
   };
 
   const getSchoolName = () => {
-    return user?.user_metadata?.school_name || "Educational Institution";
+    return user?.user_metadata?.school_name || "your school";
   };
 
   return (
@@ -45,7 +47,7 @@ export const Header: React.FC = () => {
             Welcome back, {getUserDisplayName()}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Ready to inspire young minds at {getSchoolName()}?
+            Ready to manage your classes at {getSchoolName()}?
           </p>
         </div>
 
@@ -54,7 +56,6 @@ export const Header: React.FC = () => {
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </Button>
 
           {/* Theme toggle */}
@@ -94,7 +95,7 @@ export const Header: React.FC = () => {
                   <p className="text-xs leading-none text-muted-foreground">
                     {user?.email}
                   </p>
-                  {getSchoolName() !== "Educational Institution" && (
+                  {user?.user_metadata?.school_name && (
                     <p className="text-xs leading-none text-muted-foreground">
                       {getSchoolName()}
                     </p>

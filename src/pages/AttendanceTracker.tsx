@@ -33,32 +33,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Mock data for students
-const mockStudents = [
-  { id: 1, name: "John Doe", gender: "Male", status: null },
-  { id: 2, name: "Jane Smith", gender: "Female", status: null },
-  { id: 3, name: "Michael Johnson", gender: "Male", status: null },
-  { id: 4, name: "Emily Brown", gender: "Female", status: null },
-  { id: 5, name: "David Wilson", gender: "Male", status: null },
-  { id: 6, name: "Sarah Davis", gender: "Female", status: null },
-  { id: 7, name: "Robert Miller", gender: "Male", status: null },
-  { id: 8, name: "Lisa Anderson", gender: "Female", status: null },
-  { id: 9, name: "James Taylor", gender: "Male", status: null },
-  { id: 10, name: "Amy Wilson", gender: "Female", status: null },
-];
+// Empty initial state - will be populated from database
+const initialStudents: any[] = [];
 
-const mockClasses = [
-  { id: 1, name: "Grade 10A - Mathematics", students: 28 },
-  { id: 2, name: "Grade 9B - Science", students: 24 },
-  { id: 3, name: "Grade 11C - Chemistry", students: 22 },
-  { id: 4, name: "Grade 8A - English", students: 30 },
+const initialClasses = [
+  { id: "sample", name: "Add your first class", students: 0 },
 ];
 
 type AttendanceStatus = "present" | "absent" | "late" | "sick" | null;
 
 const AttendanceTracker: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<string>("");
-  const [students, setStudents] = useState(mockStudents);
+  const [students, setStudents] = useState(initialStudents);
   const [searchTerm, setSearchTerm] = useState("");
   const [rollCallActive, setRollCallActive] = useState(false);
 
@@ -164,7 +150,7 @@ const AttendanceTracker: React.FC = () => {
                     <SelectValue placeholder="Select a class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockClasses.map((cls) => (
+                    {initialClasses.map((cls) => (
                       <SelectItem key={cls.id} value={cls.id.toString()}>
                         {cls.name} ({cls.students} students)
                       </SelectItem>
@@ -252,96 +238,109 @@ const AttendanceTracker: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {filteredStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className={cn(
-                        "flex items-center justify-between p-4 rounded-lg border transition-colors",
-                        getStatusColor(student.status),
-                      )}
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-catalyst-100">
-                          <span className="text-sm font-medium text-catalyst-700">
-                            {student.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </span>
+                {filteredStudents.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      No Students Added Yet
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Add students to your class to start taking attendance.
+                    </p>
+                    <Button variant="outline">Add Students</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredStudents.map((student) => (
+                      <div
+                        key={student.id}
+                        className={cn(
+                          "flex items-center justify-between p-4 rounded-lg border transition-colors",
+                          getStatusColor(student.status),
+                        )}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-catalyst-100">
+                            <span className="text-sm font-medium text-catalyst-700">
+                              {student.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{student.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {student.gender}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{student.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {student.gender}
-                          </p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center space-x-2">
-                        {getStatusIcon(student.status)}
-                        <div className="flex space-x-1">
-                          <Button
-                            variant={
-                              student.status === "present"
-                                ? "default"
-                                : "outline"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              updateAttendanceStatus(student.id, "present")
-                            }
-                            className="text-xs"
-                          >
-                            Present
-                          </Button>
-                          <Button
-                            variant={
-                              student.status === "absent"
-                                ? "destructive"
-                                : "outline"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              updateAttendanceStatus(student.id, "absent")
-                            }
-                            className="text-xs"
-                          >
-                            Absent
-                          </Button>
-                          <Button
-                            variant={
-                              student.status === "late"
-                                ? "secondary"
-                                : "outline"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              updateAttendanceStatus(student.id, "late")
-                            }
-                            className="text-xs"
-                          >
-                            Late
-                          </Button>
-                          <Button
-                            variant={
-                              student.status === "sick"
-                                ? "secondary"
-                                : "outline"
-                            }
-                            size="sm"
-                            onClick={() =>
-                              updateAttendanceStatus(student.id, "sick")
-                            }
-                            className="text-xs"
-                          >
-                            Sick
-                          </Button>
+                        <div className="flex items-center space-x-2">
+                          {getStatusIcon(student.status)}
+                          <div className="flex space-x-1">
+                            <Button
+                              variant={
+                                student.status === "present"
+                                  ? "default"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() =>
+                                updateAttendanceStatus(student.id, "present")
+                              }
+                              className="text-xs"
+                            >
+                              Present
+                            </Button>
+                            <Button
+                              variant={
+                                student.status === "absent"
+                                  ? "destructive"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() =>
+                                updateAttendanceStatus(student.id, "absent")
+                              }
+                              className="text-xs"
+                            >
+                              Absent
+                            </Button>
+                            <Button
+                              variant={
+                                student.status === "late"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() =>
+                                updateAttendanceStatus(student.id, "late")
+                              }
+                              className="text-xs"
+                            >
+                              Late
+                            </Button>
+                            <Button
+                              variant={
+                                student.status === "sick"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              size="sm"
+                              onClick={() =>
+                                updateAttendanceStatus(student.id, "sick")
+                              }
+                              className="text-xs"
+                            >
+                              Sick
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -145,13 +145,13 @@ const Landing: React.FC = () => {
                       AI Lesson Planning
                     </CardTitle>
                     <Badge className="text-xs bg-success/10 text-success">
-                      AI-Powered
+                      Coming Soon
                     </Badge>
                   </div>
                 </div>
                 <CardDescription className="text-base">
-                  Generate comprehensive lesson plans with AI assistance in
-                  seconds, not hours.
+                  AI-powered lesson plan generation feature is in development to
+                  help create comprehensive lesson plans quickly.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -189,8 +189,8 @@ const Landing: React.FC = () => {
                   </div>
                 </div>
                 <CardDescription className="text-base">
-                  Create tests and assignments with automated marking schemes in
-                  ECZ format.
+                  Assessment generation with automated marking schemes in ECZ
+                  format is currently in development.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -228,8 +228,8 @@ const Landing: React.FC = () => {
                   </div>
                 </div>
                 <CardDescription className="text-base">
-                  Visual progress tracking with predictive analytics and
-                  improvement insights.
+                  Visual progress tracking and analytics features are in
+                  development to provide detailed performance insights.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -265,8 +265,8 @@ const Landing: React.FC = () => {
                   </div>
                 </div>
                 <CardDescription className="text-base">
-                  Comprehensive data analysis with actionable insights for
-                  better teaching outcomes.
+                  Advanced analytics and insights features are being developed
+                  to provide comprehensive data analysis for educators.
                 </CardDescription>
               </CardHeader>
               <CardContent>
