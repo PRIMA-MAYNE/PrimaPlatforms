@@ -129,11 +129,11 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     AI Lesson Planning
                   </span>
-                  <Badge variant="outline">Coming Soon</Badge>
+                  <Badge className="bg-success/10 text-success">Active</Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
-                    AI-powered lesson plan generation will be available soon.
+                    Generate comprehensive lesson plans with AI assistance.
                   </p>
                 </div>
               </div>
@@ -166,7 +166,7 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     Assessment Generation
                   </span>
-                  <Badge variant="outline">Coming Soon</Badge>
+                  <Badge className="bg-warning/10 text-warning">Active</Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2 text-sm">
@@ -206,12 +206,11 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     Performance Analytics
                   </span>
-                  <Badge variant="outline">Coming Soon</Badge>
+                  <Badge className="bg-info/10 text-info">Active</Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
-                    Advanced performance tracking and analytics will be
-                    available soon.
+                    Visual progress tracking with AI-powered insights.
                   </p>
                 </div>
               </div>
