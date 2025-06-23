@@ -118,18 +118,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           // Step 3: Attempt immediate sign-in
-          const { error: signInError } = await supabase.auth.signInWithPassword(
-            {
-              email,
-              password,
-            },
-          );
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
           if (!signInError) {
             toast({
               title: "Welcome to Catalyst!",
-              description:
-                "Your account has been created and you're now signed in.",
+              description: "Your account has been created and you're now signed in.",
             });
           } else {
             toast({
@@ -139,18 +136,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         } catch (confirmError) {
           // If auto-confirmation fails, still try to sign in
-          const { error: signInError } = await supabase.auth.signInWithPassword(
-            {
-              email,
-              password,
-            },
-          );
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
           if (!signInError) {
             toast({
               title: "Welcome to Catalyst!",
-              description:
-                "Your account has been created and you're now signed in.",
+              description: "Your account has been created and you're now signed in.",
             });
           } else {
             toast({
@@ -201,58 +195,67 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signOut = async () => {
+  const signUp = async (
+    email: string,
+    password: string,
+    schoolName: string,
+    autoConfirm: boolean = true,
+  ) => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "An error occurred",
-        description: "Failed to sign out",
-        variant: "destructive",
+      setLoading(true);
+      setError(null);
+
+      // First, create the user account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            school_name: schoolName,
+          },
+        },
       });
+
+      if (error) throw error;
+
+      // If auto-confirm is enabled and user was created successfully
+      if (autoConfirm && data.user && !data.user.email_confirmed_at) {
+        try {
+          // Wait a moment for the user to be fully created
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Attempt to sign the user in immediately
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+
+          if (!signInError && signInData.user) {
+            console.log("User auto-confirmed and signed in successfully");
+            return { data: signInData, error: null, autoConfirmed: true };
+          } else {
+            console.log(
+              "Auto-confirm attempt failed, proceeding with normal flow:",
+              signInError?.message,
+            );
+          }
+        } catch (autoConfirmError) {
+          console.log(
+            "Auto-confirm failed, user will need to verify email:",
+            autoConfirmError,
+          );
+        }
+      }
+
+      return { data, error: null, autoConfirmed: false };
+    } catch (error: any) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
-
-  const resetPassword = async (email: string) => {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) {
-        toast({
-          title: "Password reset failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
-
-      toast({
-        title: "Password reset sent",
-        description: "Check your email for password reset instructions.",
-      });
-
-      return { error: null };
-    } catch (error) {
-      const authError = error as AuthError;
-      toast({
-        title: "An error occurred",
-        description: authError.message,
-        variant: "destructive",
-      });
-      return { error: authError };
-    }
-  };
-
-  const value = {
     user,
     session,
     loading,
