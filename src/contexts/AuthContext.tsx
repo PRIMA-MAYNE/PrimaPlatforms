@@ -118,15 +118,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
 
           // Step 3: Attempt immediate sign-in
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          const { error: signInError } = await supabase.auth.signInWithPassword(
+            {
+              email,
+              password,
+            },
+          );
 
           if (!signInError) {
             toast({
               title: "Welcome to Catalyst!",
-              description: "Your account has been created and you're now signed in.",
+              description:
+                "Your account has been created and you're now signed in.",
             });
           } else {
             toast({
@@ -136,15 +139,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         } catch (confirmError) {
           // If auto-confirmation fails, still try to sign in
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
+          const { error: signInError } = await supabase.auth.signInWithPassword(
+            {
+              email,
+              password,
+            },
+          );
 
           if (!signInError) {
             toast({
               title: "Welcome to Catalyst!",
-              description: "Your account has been created and you're now signed in.",
+              description:
+                "Your account has been created and you're now signed in.",
             });
           } else {
             toast({
@@ -256,6 +262,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(false);
     }
   };
+
+  const value = {
     user,
     session,
     loading,
