@@ -181,6 +181,19 @@ export function StudentManagement({
     });
   };
 
+  const handleDeleteClass = (classId: string) => {
+    const classToDelete = classes.find((c) => c.id === classId);
+    if (!classToDelete) return;
+
+    const updatedClasses = classes.filter((c) => c.id !== classId);
+    onClassUpdate(updatedClasses);
+
+    toast({
+      title: "Class Deleted",
+      description: `${classToDelete.name} has been deleted`,
+    });
+  };
+
   const handleBulkImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -339,7 +352,7 @@ export function StudentManagement({
                   <SelectContent>
                     {classes.map((cls) => (
                       <SelectItem key={cls.id} value={cls.id}>
-                        {cls.name} - {cls.grade}
+                        {cls.name} ({cls.students.length} students)
                       </SelectItem>
                     ))}
                   </SelectContent>
