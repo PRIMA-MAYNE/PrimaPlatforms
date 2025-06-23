@@ -35,7 +35,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { generateAssessment } from "@/lib/enhanced-local-ai";
+import { generateSyllabiBasedAssessment } from "@/lib/syllabi-enhanced-ai";
 import {
   exportAssessmentToPDF,
   exportAssessmentToDocx,
@@ -54,6 +54,7 @@ interface Assessment {
   questions: Question[];
   markingScheme: MarkingCriteria[];
   eczCompliance?: string;
+  syllabiSource?: string;
   generatedAt: string;
 }
 
@@ -67,6 +68,7 @@ interface Question {
   options?: string[];
   explanation: string;
   eczCriteria?: string;
+  syllabiAlignment?: string;
 }
 
 interface MarkingCriteria {
@@ -75,6 +77,7 @@ interface MarkingCriteria {
   criteria: string;
   partialCredit: string;
   eczStandards?: string;
+  syllabiAlignment?: string;
 }
 
 const AssessmentGenerator: React.FC = () => {
@@ -118,7 +121,8 @@ const AssessmentGenerator: React.FC = () => {
     { id: "short-answer", label: "Short Answer Questions" },
     { id: "essay", label: "Essay Questions" },
     { id: "true-false", label: "True/False Questions" },
-    { id: "fill-blanks", label: "Fill in the Blanks" },
+    { id: "structured", label: "Structured Questions" },
+    { id: "practical", label: "Practical Questions" },
   ];
 
   const handleQuestionTypeChange = (typeId: string, checked: boolean) => {
@@ -151,7 +155,7 @@ const AssessmentGenerator: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const assessment = generateAssessment({
+      const assessment = generateSyllabiBasedAssessment({
         subject: formData.subject,
         topic: formData.topic,
         gradeLevel: formData.gradeLevel,
@@ -163,7 +167,8 @@ const AssessmentGenerator: React.FC = () => {
       setCurrentAssessment(assessment);
       toast({
         title: "Assessment Generated!",
-        description: "Your ECZ-aligned assessment and marking scheme are ready",
+        description:
+          "Your syllabi-aligned assessment with meaningful questions is ready",
       });
     } catch (error) {
       toast({
@@ -269,7 +274,8 @@ const AssessmentGenerator: React.FC = () => {
               Assessment Generator
             </h1>
             <p className="text-muted-foreground">
-              Create ECZ-compliant assessments with automated marking schemes
+              Create ECZ-compliant assessments with syllabi-aligned meaningful
+              questions
             </p>
           </div>
           <div className="flex space-x-2">
@@ -297,11 +303,11 @@ const AssessmentGenerator: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Target className="w-5 h-5 text-warning" />
-                  <span>ECZ Assessment Configuration</span>
+                  <span>Syllabi-Based Assessment Configuration</span>
                 </CardTitle>
                 <CardDescription>
-                  Configure your assessment parameters for AI generation in ECZ
-                  examination format
+                  Configure your assessment parameters for AI generation using
+                  actual ECZ syllabi content
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -319,22 +325,15 @@ const AssessmentGenerator: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Additional Mathematics">
-                          Additional Mathematics
-                        </SelectItem>
-                        <SelectItem value="Science">Science</SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
                         <SelectItem value="Biology">Biology</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="History">History</SelectItem>
-                        <SelectItem value="Geography">Geography</SelectItem>
+                        <SelectItem value="Chemistry">Chemistry</SelectItem>
                         <SelectItem value="Civic Education">
                           Civic Education
                         </SelectItem>
-                        <SelectItem value="Religious Education">
-                          Religious Education
-                        </SelectItem>
+                        <SelectItem value="Physics">Physics</SelectItem>
+                        <SelectItem value="English">English</SelectItem>
+                        <SelectItem value="History">History</SelectItem>
+                        <SelectItem value="Geography">Geography</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -351,11 +350,9 @@ const AssessmentGenerator: React.FC = () => {
                         <SelectValue placeholder="Select grade" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <SelectItem key={i + 1} value={`Grade ${i + 1}`}>
-                            Grade {i + 1}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="Grade 10">Grade 10</SelectItem>
+                        <SelectItem value="Grade 11">Grade 11</SelectItem>
+                        <SelectItem value="Grade 12">Grade 12</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -385,7 +382,7 @@ const AssessmentGenerator: React.FC = () => {
                     <Label htmlFor="topic">Assessment Topic *</Label>
                     <Input
                       id="topic"
-                      placeholder="Enter the specific topic or chapter (e.g., Quadratic Functions, Cell Division)"
+                      placeholder="Enter the specific topic (e.g., Quadratic Functions, Cell Division, Constitutional Law)"
                       value={formData.topic}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -394,6 +391,9 @@ const AssessmentGenerator: React.FC = () => {
                         }))
                       }
                     />
+                    <p className="text-xs text-muted-foreground">
+                      AI will match your topic with relevant syllabi content
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -447,8 +447,8 @@ const AssessmentGenerator: React.FC = () => {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    AI will distribute questions across selected types according
-                    to ECZ examination patterns
+                    AI will generate meaningful, non-repeating questions
+                    directly from ECZ syllabi
                   </p>
                 </div>
 
@@ -460,12 +460,12 @@ const AssessmentGenerator: React.FC = () => {
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating ECZ Assessment...
+                      Generating Syllabi-Based Assessment...
                     </>
                   ) : (
                     <>
                       <Target className="w-5 h-5 mr-2" />
-                      Generate Assessment
+                      Generate Assessment from Syllabi
                     </>
                   )}
                 </Button>
@@ -528,6 +528,11 @@ const AssessmentGenerator: React.FC = () => {
                           ECZ Compliant
                         </Badge>
                       )}
+                      {currentAssessment.syllabiSource && (
+                        <Badge className="bg-blue-100 text-blue-800">
+                          Syllabi-Based
+                        </Badge>
+                      )}
                       <Badge variant="outline">
                         {currentAssessment.difficulty.charAt(0).toUpperCase() +
                           currentAssessment.difficulty.slice(1)}{" "}
@@ -539,6 +544,19 @@ const AssessmentGenerator: React.FC = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Syllabi Alignment */}
+                    {currentAssessment.syllabiSource && (
+                      <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                        <h4 className="font-medium text-blue-900 mb-1">
+                          Syllabi Alignment
+                        </h4>
+                        <p className="text-sm text-blue-700">
+                          Questions generated from actual ECZ syllabi content
+                          for {currentAssessment.subject}
+                        </p>
+                      </div>
+                    )}
+
                     {/* ECZ Compliance */}
                     {currentAssessment.eczCompliance && (
                       <div className="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-500">
@@ -581,6 +599,11 @@ const AssessmentGenerator: React.FC = () => {
                                 <Badge variant="secondary" className="text-xs">
                                   {question.marks} marks
                                 </Badge>
+                                {question.syllabiAlignment && (
+                                  <Badge className="text-xs bg-blue-100 text-blue-800">
+                                    Syllabi-aligned
+                                  </Badge>
+                                )}
                               </div>
                             </div>
 
@@ -607,9 +630,15 @@ const AssessmentGenerator: React.FC = () => {
                                 {question.explanation}
                               </div>
                               {question.eczCriteria && (
-                                <div>
+                                <div className="mb-2">
                                   <strong>ECZ Criteria:</strong>{" "}
                                   {question.eczCriteria}
+                                </div>
+                              )}
+                              {question.syllabiAlignment && (
+                                <div>
+                                  <strong>Syllabi Alignment:</strong>{" "}
+                                  {question.syllabiAlignment}
                                 </div>
                               )}
                             </div>
@@ -671,6 +700,11 @@ const AssessmentGenerator: React.FC = () => {
                           {assessment.eczCompliance && (
                             <Badge className="text-xs bg-warning/10 text-warning">
                               ECZ Compliant
+                            </Badge>
+                          )}
+                          {assessment.syllabiSource && (
+                            <Badge className="text-xs bg-blue-100 text-blue-800">
+                              Syllabi-Based
                             </Badge>
                           )}
                         </div>
