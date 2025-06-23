@@ -485,6 +485,77 @@ export function StudentManagement({
         </Dialog>
       </div>
 
+      {/* Class Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Users className="w-5 h-5 mr-2" />
+            Manage Classes
+          </CardTitle>
+          <CardDescription>
+            View and manage all classes in the system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {classes.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">
+                No classes created yet. Add your first class to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {classes.map((cls) => (
+                <div
+                  key={cls.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-catalyst-100">
+                      <span className="text-sm font-medium text-catalyst-700">
+                        {cls.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{cls.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {cls.grade} • {cls.students.length} students
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        // Set as current class if not already selected
+                        if (selectedClass !== cls.id) {
+                          onStudentAdd(cls.students);
+                        }
+                      }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteClass(cls.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Current Class Students */}
       {currentClass && (
         <Card>
