@@ -70,23 +70,34 @@ const SignUp: React.FC = () => {
   const onSubmit = async (data: SignUpFormData) => {
     try {
       setIsLoading(true);
-      const { error } = await signUp(
+      const result = await signUp(
         data.email,
         data.password,
-        data.fullName,
         data.schoolName,
+        true, // Enable auto-confirm
       );
 
-      if (!error) {
+      if (result.autoConfirmed) {
         toast({
-          title: "Account created successfully!",
-          description: "Welcome to Catalyst! You're now ready to get started.",
+          title: "Account Created Successfully!",
+          description: "Welcome to Catalyst! You're now signed in.",
         });
-        // Bypass email confirmation - redirect directly to dashboard
-        navigate("/dashboard");
+        // User is automatically signed in, redirect to dashboard
+        navigate("/");
+      } else if (!result.error) {
+        toast({
+          title: "Account Created!",
+          description:
+            "Please check your email to verify your account, then sign in.",
+        });
+        navigate("/email-verification", { state: { email: data.email } });
       }
-    } catch (error) {
-      console.error("Sign up error:", error);
+    } catch (error: any) {
+      toast({
+        title: "Sign Up Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
