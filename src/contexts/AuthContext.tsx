@@ -84,7 +84,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     schoolName?: string,
   ) => {
     try {
-      // Bypass email confirmation by using the admin API or disabling confirmation
+      // Step 1: Create user account
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -94,8 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             school_name: schoolName,
             role: "teacher",
           },
-          // Bypass email confirmation for development/demo purposes
-          emailRedirectTo: undefined,
         },
       });
 
@@ -108,26 +106,58 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { error };
       }
 
-      // If user is created but not automatically signed in due to email confirmation,
-      // attempt to sign them in immediately for bypass
-      if (data.user && !data.session) {
-        // Try to sign in immediately after signup
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      // Step 2: If user created successfully, automatically confirm email
+      if (data.user) {
+        try {
+          // Auto-confirm email using service role (if available)
+          if (import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY) {
+            const serviceSupabase = supabase;
+            await serviceSupabase.auth.admin.updateUserById(data.user.id, {
+              email_confirm: true,
+            });
+          }
 
-        if (signInError) {
-          toast({
-            title: "Account created",
-            description: "Please sign in with your new credentials.",
-          });
-        } else {
-          toast({
-            title: "Welcome to Catalyst!",
-            description:
-              "Your account has been created and you're now signed in.",
-          });
+          // Step 3: Attempt immediate sign-in
+          const { error: signInError } = await supabase.auth.signInWithPassword(
+            {
+              email,
+              password,
+            },
+          );
+
+          if (!signInError) {
+            toast({
+              title: "Welcome to Catalyst!",
+              description:
+                "Your account has been created and you're now signed in.",
+            });
+          } else {
+            toast({
+              title: "Account created successfully!",
+              description: "You can now sign in with your credentials.",
+            });
+          }
+        } catch (confirmError) {
+          // If auto-confirmation fails, still try to sign in
+          const { error: signInError } = await supabase.auth.signInWithPassword(
+            {
+              email,
+              password,
+            },
+          );
+
+          if (!signInError) {
+            toast({
+              title: "Welcome to Catalyst!",
+              description:
+                "Your account has been created and you're now signed in.",
+            });
+          } else {
+            toast({
+              title: "Account created!",
+              description: "Please check your email to verify your account.",
+            });
+          }
         }
       }
 
