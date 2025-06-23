@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   Card,
@@ -32,8 +32,14 @@ import {
   BookOpen,
   Loader2,
   CheckCircle,
+  FileDown,
+  Save,
 } from "lucide-react";
-import { generateLessonPlan } from "@/lib/ai-service";
+import { generateLessonPlan } from "@/lib/enhanced-local-ai";
+import {
+  exportLessonPlanToPDF,
+  exportLessonPlanToDocx,
+} from "@/lib/export-utils";
 import { toast } from "@/hooks/use-toast";
 
 interface LessonPlan {
@@ -49,6 +55,7 @@ interface LessonPlan {
   activities: string[];
   assessment: string;
   conclusion: string;
+  eczAlignment?: string;
   isAiGenerated: boolean;
   generatedAt: string;
 }
@@ -65,6 +72,23 @@ const LessonPlanning: React.FC = () => {
   });
 
   const [savedPlans, setSavedPlans] = useState<LessonPlan[]>([]);
+
+  // Load saved plans from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("catalyst-lesson-plans");
+    if (saved) {
+      try {
+        setSavedPlans(JSON.parse(saved));
+      } catch (error) {
+        console.error("Error loading saved plans:", error);
+      }
+    }
+  }, []);
+
+  // Save plans to localStorage
+  useEffect(() => {
+    localStorage.setItem("catalyst-lesson-plans", JSON.stringify(savedPlans));
+  }, [savedPlans]);
 
   const handleGenerate = async () => {
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
@@ -83,18 +107,18 @@ const LessonPlanning: React.FC = () => {
         .filter((obj) => obj.trim())
         .map((obj) => obj.trim());
 
-      const plan = await generateLessonPlan({
+      const plan = generateLessonPlan({
         subject: formData.subject,
         topic: formData.topic,
         gradeLevel: formData.gradeLevel,
         duration: formData.duration,
-        objectives,
+        objectives: objectives.length > 0 ? objectives : undefined,
       });
 
       setCurrentPlan(plan);
       toast({
         title: "Lesson Plan Generated!",
-        description: "Your AI-powered lesson plan is ready for review",
+        description: "Your ECZ-aligned lesson plan is ready for review",
       });
     } catch (error) {
       toast({
@@ -102,6 +126,7 @@ const LessonPlanning: React.FC = () => {
         description: "Failed to generate lesson plan. Please try again.",
         variant: "destructive",
       });
+      console.error("Generation error:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -109,63 +134,79 @@ const LessonPlanning: React.FC = () => {
 
   const handleSave = () => {
     if (currentPlan) {
-      setSavedPlans((prev) => [currentPlan, ...prev]);
+      const existingIndex = savedPlans.findIndex(
+        (p) =>
+          p.title === currentPlan.title && p.subject === currentPlan.subject,
+      );
+
+      if (existingIndex >= 0) {
+        setSavedPlans((prev) =>
+          prev.map((p, i) => (i === existingIndex ? currentPlan : p)),
+        );
+        toast({
+          title: "Lesson Plan Updated",
+          description: "Existing plan has been updated",
+        });
+      } else {
+        setSavedPlans((prev) => [currentPlan, ...prev]);
+        toast({
+          title: "Lesson Plan Saved",
+          description: "Plan has been saved to your collection",
+        });
+      }
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!currentPlan) return;
+    try {
+      exportLessonPlanToPDF(currentPlan);
       toast({
-        title: "Lesson Plan Saved",
-        description: "Plan has been saved to your collection",
+        title: "Download Started",
+        description: "Lesson plan PDF download initiated",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export PDF. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleDownload = (format: "pdf" | "docx") => {
+  const handleDownloadDocx = async () => {
     if (!currentPlan) return;
+    try {
+      await exportLessonPlanToDocx(currentPlan);
+      toast({
+        title: "Download Started",
+        description: "Lesson plan DOCX download initiated",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export DOCX. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-    // Create downloadable content
-    const content = `
-LESSON PLAN
+  const handleLoadPlan = (plan: LessonPlan) => {
+    setCurrentPlan(plan);
+    setFormData({
+      subject: plan.subject,
+      topic: plan.topic,
+      gradeLevel: plan.gradeLevel,
+      duration: plan.duration,
+      objectives: plan.objectives.join("\n"),
+    });
+  };
 
-Title: ${currentPlan.title}
-Subject: ${currentPlan.subject}
-Grade Level: ${currentPlan.gradeLevel}
-Duration: ${currentPlan.duration} minutes
-
-LEARNING OBJECTIVES:
-${currentPlan.objectives.map((obj, i) => `${i + 1}. ${obj}`).join("\n")}
-
-MATERIALS REQUIRED:
-${currentPlan.materials.map((mat, i) => `• ${mat}`).join("\n")}
-
-INTRODUCTION:
-${currentPlan.introduction}
-
-LESSON DEVELOPMENT:
-${currentPlan.lessonDevelopment}
-
-ACTIVITIES:
-${currentPlan.activities.map((act, i) => `${i + 1}. ${act}`).join("\n")}
-
-ASSESSMENT:
-${currentPlan.assessment}
-
-CONCLUSION:
-${currentPlan.conclusion}
-
-Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
-    `;
-
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${currentPlan.title.replace(/[^a-zA-Z0-9]/g, "_")}.${format === "pdf" ? "txt" : "txt"}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+  const handleDeletePlan = (index: number) => {
+    setSavedPlans((prev) => prev.filter((_, i) => i !== index));
     toast({
-      title: "Download Started",
-      description: `Lesson plan downloaded as ${format.toUpperCase()}`,
+      title: "Plan Deleted",
+      description: "Lesson plan has been removed",
     });
   };
 
@@ -179,13 +220,13 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
               AI Lesson Planning
             </h1>
             <p className="text-muted-foreground">
-              Generate comprehensive lesson plans with AI assistance
+              Generate ECZ-aligned lesson plans with AI assistance
             </p>
           </div>
           <div className="flex space-x-2">
             <Button variant="outline" size="sm">
               <FileText className="w-4 h-4 mr-2" />
-              My Plans ({savedPlans.length})
+              Saved Plans ({savedPlans.length})
             </Button>
             <Button className="catalyst-gradient">
               <Plus className="w-4 h-4 mr-2" />
@@ -197,7 +238,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
         <Tabs defaultValue="generate" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="generate">Generate Plan</TabsTrigger>
-            <TabsTrigger value="review">Review & Edit</TabsTrigger>
+            <TabsTrigger value="review">Review & Export</TabsTrigger>
             <TabsTrigger value="saved">Saved Plans</TabsTrigger>
           </TabsList>
 
@@ -207,11 +248,12 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Sparkles className="w-5 h-5 text-catalyst-600" />
-                  <span>Generate New Lesson Plan</span>
+                  <span>Generate ECZ-Aligned Lesson Plan</span>
                 </CardTitle>
                 <CardDescription>
                   Provide the details below and our AI will create a
-                  comprehensive lesson plan for you
+                  comprehensive lesson plan aligned with ECZ curriculum
+                  standards
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -229,6 +271,9 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Mathematics">Mathematics</SelectItem>
+                        <SelectItem value="Additional Mathematics">
+                          Additional Mathematics
+                        </SelectItem>
                         <SelectItem value="Science">Science</SelectItem>
                         <SelectItem value="Physics">Physics</SelectItem>
                         <SelectItem value="Chemistry">Chemistry</SelectItem>
@@ -242,6 +287,8 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                         <SelectItem value="Religious Education">
                           Religious Education
                         </SelectItem>
+                        <SelectItem value="Art">Art</SelectItem>
+                        <SelectItem value="Music">Music</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -287,6 +334,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                         <SelectItem value="45">45 minutes</SelectItem>
                         <SelectItem value="60">60 minutes</SelectItem>
                         <SelectItem value="80">80 minutes</SelectItem>
+                        <SelectItem value="90">90 minutes</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -296,7 +344,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                   <Label htmlFor="topic">Lesson Topic *</Label>
                   <Input
                     id="topic"
-                    placeholder="Enter the specific topic for this lesson"
+                    placeholder="Enter the specific topic for this lesson (e.g., Quadratic Equations, Photosynthesis)"
                     value={formData.topic}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -313,7 +361,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                   </Label>
                   <Textarea
                     id="objectives"
-                    placeholder="Enter specific learning objectives, one per line. Leave blank for AI to generate."
+                    placeholder="Enter specific learning objectives, one per line. Leave blank for AI to generate ECZ-aligned objectives."
                     value={formData.objectives}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -323,6 +371,10 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                     }
                     rows={3}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    AI will generate objectives aligned with ECZ curriculum
+                    standards if left blank
+                  </p>
                 </div>
 
                 <Button
@@ -333,7 +385,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating Lesson Plan...
+                      Generating ECZ-Aligned Lesson Plan...
                     </>
                   ) : (
                     <>
@@ -374,33 +426,46 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                       </div>
                       <div className="flex space-x-2">
                         <Button variant="outline" onClick={handleSave}>
-                          <CheckCircle className="w-4 h-4 mr-2" />
+                          <Save className="w-4 h-4 mr-2" />
                           Save Plan
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownload("pdf")}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Export PDF
+                        <Button variant="outline" onClick={handleDownloadPDF}>
+                          <FileDown className="w-4 h-4 mr-2" />
+                          PDF
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownload("docx")}
-                        >
+                        <Button variant="outline" onClick={handleDownloadDocx}>
                           <Download className="w-4 h-4 mr-2" />
-                          Export Word
+                          DOCX
                         </Button>
                       </div>
                     </div>
-                    {currentPlan.isAiGenerated && (
-                      <Badge className="w-fit bg-catalyst-100 text-catalyst-700">
-                        <Sparkles className="w-3 h-3 mr-1" />
-                        AI Generated
-                      </Badge>
-                    )}
+                    <div className="flex space-x-2 mt-2">
+                      {currentPlan.isAiGenerated && (
+                        <Badge className="w-fit bg-catalyst-100 text-catalyst-700">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          AI Generated
+                        </Badge>
+                      )}
+                      {currentPlan.eczAlignment && (
+                        <Badge variant="outline" className="w-fit">
+                          ECZ Aligned
+                        </Badge>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* ECZ Alignment */}
+                    {currentPlan.eczAlignment && (
+                      <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                        <h4 className="font-medium text-blue-900 mb-1">
+                          ECZ Curriculum Alignment
+                        </h4>
+                        <p className="text-sm text-blue-700">
+                          {currentPlan.eczAlignment}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Learning Objectives */}
                     <div>
                       <h3 className="font-semibold mb-3 flex items-center">
@@ -451,7 +516,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                           <h4 className="font-medium mb-2 text-catalyst-700">
                             Introduction
                           </h4>
-                          <p className="text-muted-foreground">
+                          <p className="text-muted-foreground leading-relaxed">
                             {currentPlan.introduction}
                           </p>
                         </div>
@@ -460,14 +525,14 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                           <h4 className="font-medium mb-2 text-catalyst-700">
                             Lesson Development
                           </h4>
-                          <p className="text-muted-foreground">
+                          <p className="text-muted-foreground leading-relaxed">
                             {currentPlan.lessonDevelopment}
                           </p>
                         </div>
 
                         <div>
                           <h4 className="font-medium mb-2 text-catalyst-700">
-                            Activities
+                            Learning Activities
                           </h4>
                           <ul className="space-y-1">
                             {currentPlan.activities.map((activity, index) => (
@@ -490,7 +555,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                           <h4 className="font-medium mb-2 text-catalyst-700">
                             Assessment
                           </h4>
-                          <p className="text-muted-foreground">
+                          <p className="text-muted-foreground leading-relaxed">
                             {currentPlan.assessment}
                           </p>
                         </div>
@@ -499,11 +564,18 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                           <h4 className="font-medium mb-2 text-catalyst-700">
                             Conclusion
                           </h4>
-                          <p className="text-muted-foreground">
+                          <p className="text-muted-foreground leading-relaxed">
                             {currentPlan.conclusion}
                           </p>
                         </div>
                       </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="text-xs text-muted-foreground">
+                      Generated on:{" "}
+                      {new Date(currentPlan.generatedAt).toLocaleString()}
                     </div>
                   </CardContent>
                 </Card>
@@ -517,7 +589,7 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     Generate a lesson plan in the "Generate Plan" tab to review
-                    and edit it here.
+                    and export it here.
                   </p>
                   <Button variant="outline">Generate Your First Plan</Button>
                 </CardContent>
@@ -541,6 +613,16 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
+                        <div className="flex space-x-2">
+                          <Badge variant="outline" className="text-xs">
+                            {plan.subject}
+                          </Badge>
+                          {plan.eczAlignment && (
+                            <Badge variant="secondary" className="text-xs">
+                              ECZ Aligned
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {plan.objectives.length} objectives
                         </p>
@@ -552,16 +634,26 @@ Generated on: ${new Date(currentPlan.generatedAt).toLocaleDateString()}
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setCurrentPlan(plan)}
+                            onClick={() => handleLoadPlan(plan)}
                           >
                             View
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownload("pdf")}
+                            onClick={() => {
+                              setCurrentPlan(plan);
+                              handleDownloadPDF();
+                            }}
                           >
                             <Download className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeletePlan(index)}
+                          >
+                            ×
                           </Button>
                         </div>
                       </div>

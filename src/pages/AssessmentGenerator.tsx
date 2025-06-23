@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   Card,
@@ -31,8 +31,15 @@ import {
   Loader2,
   CheckCircle,
   AlertCircle,
+  FileDown,
+  Save,
+  Trash2,
 } from "lucide-react";
-import { generateAssessment } from "@/lib/ai-service";
+import { generateAssessment } from "@/lib/enhanced-local-ai";
+import {
+  exportAssessmentToPDF,
+  exportAssessmentToDocx,
+} from "@/lib/export-utils";
 import { toast } from "@/hooks/use-toast";
 
 interface Assessment {
@@ -46,6 +53,7 @@ interface Assessment {
   instructions: string;
   questions: Question[];
   markingScheme: MarkingCriteria[];
+  eczCompliance?: string;
   generatedAt: string;
 }
 
@@ -58,6 +66,7 @@ interface Question {
   answer: string;
   options?: string[];
   explanation: string;
+  eczCriteria?: string;
 }
 
 interface MarkingCriteria {
@@ -65,6 +74,7 @@ interface MarkingCriteria {
   marks: number;
   criteria: string;
   partialCredit: string;
+  eczStandards?: string;
 }
 
 const AssessmentGenerator: React.FC = () => {
@@ -82,6 +92,26 @@ const AssessmentGenerator: React.FC = () => {
   });
 
   const [savedAssessments, setSavedAssessments] = useState<Assessment[]>([]);
+
+  // Load saved assessments from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("catalyst-assessments");
+    if (saved) {
+      try {
+        setSavedAssessments(JSON.parse(saved));
+      } catch (error) {
+        console.error("Error loading saved assessments:", error);
+      }
+    }
+  }, []);
+
+  // Save assessments to localStorage
+  useEffect(() => {
+    localStorage.setItem(
+      "catalyst-assessments",
+      JSON.stringify(savedAssessments),
+    );
+  }, [savedAssessments]);
 
   const questionTypeOptions = [
     { id: "multiple-choice", label: "Multiple Choice Questions" },
@@ -121,7 +151,7 @@ const AssessmentGenerator: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const assessment = await generateAssessment({
+      const assessment = generateAssessment({
         subject: formData.subject,
         topic: formData.topic,
         gradeLevel: formData.gradeLevel,
@@ -133,7 +163,7 @@ const AssessmentGenerator: React.FC = () => {
       setCurrentAssessment(assessment);
       toast({
         title: "Assessment Generated!",
-        description: "Your assessment and marking scheme are ready",
+        description: "Your ECZ-aligned assessment and marking scheme are ready",
       });
     } catch (error) {
       toast({
@@ -141,6 +171,7 @@ const AssessmentGenerator: React.FC = () => {
         description: "Failed to generate assessment. Please try again.",
         variant: "destructive",
       });
+      console.error("Generation error:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -148,78 +179,83 @@ const AssessmentGenerator: React.FC = () => {
 
   const handleSave = () => {
     if (currentAssessment) {
-      setSavedAssessments((prev) => [currentAssessment, ...prev]);
+      const existingIndex = savedAssessments.findIndex(
+        (a) =>
+          a.title === currentAssessment.title &&
+          a.subject === currentAssessment.subject,
+      );
+
+      if (existingIndex >= 0) {
+        setSavedAssessments((prev) =>
+          prev.map((a, i) => (i === existingIndex ? currentAssessment : a)),
+        );
+        toast({
+          title: "Assessment Updated",
+          description: "Existing assessment has been updated",
+        });
+      } else {
+        setSavedAssessments((prev) => [currentAssessment, ...prev]);
+        toast({
+          title: "Assessment Saved",
+          description: "Assessment has been saved to your collection",
+        });
+      }
+    }
+  };
+
+  const handleDownloadPDF = (includeAnswers = false) => {
+    if (!currentAssessment) return;
+    try {
+      exportAssessmentToPDF(currentAssessment, includeAnswers);
       toast({
-        title: "Assessment Saved",
-        description: "Assessment has been saved to your collection",
+        title: "Download Started",
+        description: `Assessment PDF ${includeAnswers ? "with answers" : ""} download initiated`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export PDF. Please try again.",
+        variant: "destructive",
       });
     }
   };
 
-  const handleDownload = (type: "assessment" | "marking-scheme") => {
+  const handleDownloadDocx = async (includeAnswers = false) => {
     if (!currentAssessment) return;
-
-    let content = "";
-
-    if (type === "assessment") {
-      content = `
-${currentAssessment.title}
-${currentAssessment.subject} - ${currentAssessment.gradeLevel}
-
-Instructions: ${currentAssessment.instructions}
-Time Allowed: ${currentAssessment.duration} minutes
-Total Marks: ${currentAssessment.totalMarks}
-
-QUESTIONS:
-
-${currentAssessment.questions
-  .map((q) => {
-    let questionText = `${q.number}. ${q.question} [${q.marks} marks]`;
-    if (q.options) {
-      questionText += `\n${q.options.map((opt, i) => `   ${String.fromCharCode(65 + i)}. ${opt}`).join("\n")}`;
+    try {
+      await exportAssessmentToDocx(currentAssessment, includeAnswers);
+      toast({
+        title: "Download Started",
+        description: `Assessment DOCX ${includeAnswers ? "with answers" : ""} download initiated`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export DOCX. Please try again.",
+        variant: "destructive",
+      });
     }
-    return questionText;
-  })
-  .join("\n\n")}
+  };
 
-Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
-      `;
-    } else {
-      content = `
-MARKING SCHEME
-${currentAssessment.title}
+  const handleLoadAssessment = (assessment: Assessment) => {
+    setCurrentAssessment(assessment);
+    setFormData({
+      subject: assessment.subject,
+      topic: assessment.topic,
+      gradeLevel: assessment.gradeLevel,
+      questionCount: assessment.questions.length,
+      difficulty: assessment.difficulty,
+      questionTypes: [
+        ...new Set(assessment.questions.map((q) => q.type)),
+      ] as string[],
+    });
+  };
 
-${currentAssessment.questions
-  .map((q) => {
-    const marking = currentAssessment.markingScheme.find(
-      (m) => m.questionId === q.id,
-    );
-    return `Question ${q.number}: ${q.question}
-Answer: ${q.answer}
-Marks: ${q.marks}
-Explanation: ${q.explanation}
-Criteria: ${marking?.criteria || "Standard marking"}
-Partial Credit: ${marking?.partialCredit || "As per teacher discretion"}`;
-  })
-  .join("\n\n")}
-
-Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
-      `;
-    }
-
-    const blob = new Blob([content], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${currentAssessment.title.replace(/[^a-zA-Z0-9]/g, "_")}_${type}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
+  const handleDeleteAssessment = (index: number) => {
+    setSavedAssessments((prev) => prev.filter((_, i) => i !== index));
     toast({
-      title: "Download Started",
-      description: `${type === "assessment" ? "Assessment" : "Marking scheme"} downloaded`,
+      title: "Assessment Deleted",
+      description: "Assessment has been removed",
     });
   };
 
@@ -233,7 +269,7 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
               Assessment Generator
             </h1>
             <p className="text-muted-foreground">
-              Create comprehensive assessments with automated marking schemes
+              Create ECZ-compliant assessments with automated marking schemes
             </p>
           </div>
           <div className="flex space-x-2">
@@ -261,11 +297,11 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Target className="w-5 h-5 text-warning" />
-                  <span>Assessment Configuration</span>
+                  <span>ECZ Assessment Configuration</span>
                 </CardTitle>
                 <CardDescription>
                   Configure your assessment parameters for AI generation in ECZ
-                  format
+                  examination format
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -295,6 +331,9 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                         <SelectItem value="Geography">Geography</SelectItem>
                         <SelectItem value="Civic Education">
                           Civic Education
+                        </SelectItem>
+                        <SelectItem value="Religious Education">
+                          Religious Education
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -346,7 +385,7 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                     <Label htmlFor="topic">Assessment Topic *</Label>
                     <Input
                       id="topic"
-                      placeholder="Enter the specific topic or chapter"
+                      placeholder="Enter the specific topic or chapter (e.g., Quadratic Functions, Cell Division)"
                       value={formData.topic}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -377,6 +416,7 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                         <SelectItem value="15">15 Questions</SelectItem>
                         <SelectItem value="20">20 Questions</SelectItem>
                         <SelectItem value="25">25 Questions</SelectItem>
+                        <SelectItem value="30">30 Questions</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -406,6 +446,10 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                       </div>
                     ))}
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    AI will distribute questions across selected types according
+                    to ECZ examination patterns
+                  </p>
                 </div>
 
                 <Button
@@ -416,7 +460,7 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                   {isGenerating ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating Assessment...
+                      Generating ECZ Assessment...
                     </>
                   ) : (
                     <>
@@ -452,37 +496,61 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                       </div>
                       <div className="flex space-x-2">
                         <Button variant="outline" onClick={handleSave}>
-                          <CheckCircle className="w-4 h-4 mr-2" />
+                          <Save className="w-4 h-4 mr-2" />
                           Save
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={() => handleDownload("assessment")}
+                          onClick={() => handleDownloadPDF(false)}
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          Assessment
+                          <FileDown className="w-4 h-4 mr-2" />
+                          PDF
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={() => handleDownload("marking-scheme")}
+                          onClick={() => handleDownloadDocx(false)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          DOCX
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleDownloadPDF(true)}
                         >
                           <FileCheck className="w-4 h-4 mr-2" />
-                          Marking Scheme
+                          With Answers
                         </Button>
                       </div>
                     </div>
                     <div className="flex space-x-2 mt-2">
-                      <Badge className="bg-warning/10 text-warning">
-                        ECZ Format
-                      </Badge>
+                      {currentAssessment.eczCompliance && (
+                        <Badge className="bg-warning/10 text-warning">
+                          ECZ Compliant
+                        </Badge>
+                      )}
                       <Badge variant="outline">
                         {currentAssessment.difficulty.charAt(0).toUpperCase() +
                           currentAssessment.difficulty.slice(1)}{" "}
                         Level
                       </Badge>
+                      <Badge variant="secondary">
+                        {currentAssessment.questions.length} Questions
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* ECZ Compliance */}
+                    {currentAssessment.eczCompliance && (
+                      <div className="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-500">
+                        <h4 className="font-medium text-amber-900 mb-1">
+                          ECZ Compliance
+                        </h4>
+                        <p className="text-sm text-amber-700">
+                          {currentAssessment.eczCompliance}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Instructions */}
                     <div>
                       <h3 className="font-semibold mb-2">Instructions</h3>
@@ -516,7 +584,9 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                               </div>
                             </div>
 
-                            <p className="mb-3">{question.question}</p>
+                            <p className="mb-3 leading-relaxed">
+                              {question.question}
+                            </p>
 
                             {question.options && (
                               <div className="ml-4 space-y-1 mb-3">
@@ -529,14 +599,30 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                             )}
 
                             <div className="bg-muted/50 p-3 rounded text-sm">
-                              <strong>Answer:</strong> {question.answer}
-                              <br />
-                              <strong>Explanation:</strong>{" "}
-                              {question.explanation}
+                              <div className="mb-2">
+                                <strong>Answer:</strong> {question.answer}
+                              </div>
+                              <div className="mb-2">
+                                <strong>Explanation:</strong>{" "}
+                                {question.explanation}
+                              </div>
+                              {question.eczCriteria && (
+                                <div>
+                                  <strong>ECZ Criteria:</strong>{" "}
+                                  {question.eczCriteria}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
                       </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="text-xs text-muted-foreground">
+                      Generated on:{" "}
+                      {new Date(currentAssessment.generatedAt).toLocaleString()}
                     </div>
                   </CardContent>
                 </Card>
@@ -582,10 +668,15 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                           <Badge variant="outline" className="text-xs">
                             {assessment.difficulty}
                           </Badge>
-                          <Badge className="text-xs bg-warning/10 text-warning">
-                            ECZ Format
-                          </Badge>
+                          {assessment.eczCompliance && (
+                            <Badge className="text-xs bg-warning/10 text-warning">
+                              ECZ Compliant
+                            </Badge>
+                          )}
                         </div>
+                        <p className="text-sm text-muted-foreground">
+                          {assessment.subject} • {assessment.duration} minutes
+                        </p>
                         <p className="text-xs text-muted-foreground">
                           Generated on{" "}
                           {new Date(
@@ -596,16 +687,26 @@ Generated on: ${new Date(currentAssessment.generatedAt).toLocaleDateString()}
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setCurrentAssessment(assessment)}
+                            onClick={() => handleLoadAssessment(assessment)}
                           >
                             View
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDownload("assessment")}
+                            onClick={() => {
+                              setCurrentAssessment(assessment);
+                              handleDownloadPDF(false);
+                            }}
                           >
                             <Download className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteAssessment(index)}
+                          >
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
