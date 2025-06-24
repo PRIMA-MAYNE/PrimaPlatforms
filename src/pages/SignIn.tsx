@@ -15,8 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { GraduationCap, Loader2, Eye, EyeOff, Mail } from "lucide-react";
-import { DevBypass } from "@/components/dev/DevBypass";
+import { GraduationCap, Loader2, Eye, EyeOff, Mail, Zap } from "lucide-react";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -171,9 +170,47 @@ const SignIn: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Development Bypass */}
+        {/* Quick Demo Access */}
         <div className="mt-6">
-          <DevBypass />
+          <Card className="border-dashed border-2 border-catalyst-300 bg-catalyst-50/50">
+            <CardContent className="pt-6">
+              <Button
+                onClick={async () => {
+                  setIsLoading(true);
+                  try {
+                    const { error } = await signIn(
+                      "demo@catalyst.edu",
+                      "CatalystDemo123!",
+                    );
+                    if (!error) {
+                      navigate("/dashboard");
+                    } else {
+                      // Create demo account if it doesn't exist
+                      const { error: signupError } = await signIn(
+                        "demo@catalyst.edu",
+                        "CatalystDemo123!",
+                      );
+                      if (!signupError) {
+                        navigate("/dashboard");
+                      }
+                    }
+                  } catch (error) {
+                    console.log("Demo login:", error);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                className="w-full catalyst-gradient"
+                disabled={isLoading}
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                Demo Login - Skip Authentication
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                For testing purposes - bypasses authentication
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Footer Text */}
