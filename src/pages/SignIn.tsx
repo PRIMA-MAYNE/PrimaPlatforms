@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { GraduationCap, Loader2, Eye, EyeOff, Mail } from "lucide-react";
-import { DevBypass } from "../components/dev/DevBypass";
+import { DevBypass } from "@/components/dev/DevBypass";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
