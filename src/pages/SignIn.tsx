@@ -171,6 +171,11 @@ const SignIn: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Development Bypass */}
+        <div className="mt-6">
+          <DevBypass />
+        </div>
+
         {/* Footer Text */}
         <p className="text-center text-sm text-muted-foreground mt-8">
           Protected by enterprise-grade security.
