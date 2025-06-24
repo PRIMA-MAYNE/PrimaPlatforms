@@ -180,11 +180,11 @@
   }
 
   .stat-card {
-    @apply bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow;
   }
 
   .module-card {
-    @apply bg-card border border-border rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer;
+    @apply bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer;
   }
 
   .module-card:hover {
