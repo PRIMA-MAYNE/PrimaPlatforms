@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Users,
@@ -9,10 +7,16 @@ import {
   ClipboardList,
   TrendingUp,
   BarChart3,
-  Menu,
-  X,
   GraduationCap,
+  X,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 const navigation = [
   {
@@ -26,115 +30,142 @@ const navigation = [
     icon: Users,
   },
   {
-    name: "Lesson Planning",
+    name: "AI Lesson Planning",
     href: "/lesson-planning",
     icon: FileText,
   },
   {
     name: "Assessment Generator",
-    href: "/assessment-generator",
+    href: "/assessment",
     icon: ClipboardList,
   },
   {
     name: "Performance Tracker",
-    href: "/performance-tracker",
+    href: "/performance",
     icon: TrendingUp,
   },
   {
-    name: "Analytics & Insights",
+    name: "Analytics",
     href: "/analytics",
     icon: BarChart3,
   },
 ];
 
-export const Sidebar: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const location = useLocation();
 
   return (
     <>
-      {/* Mobile backdrop */}
-      {!isCollapsed && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsCollapsed(true)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-border transition-transform duration-300 lg:translate-x-0 lg:static lg:inset-0",
-          isCollapsed ? "-translate-x-full" : "translate-x-0",
-        )}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-border">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg catalyst-gradient">
-                <GraduationCap className="w-5 h-5 text-white" />
+      {/* Desktop sidebar */}
+      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-border px-6 py-4">
+          <div className="flex h-16 shrink-0 items-center">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg catalyst-gradient">
+                <GraduationCap className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold text-foreground">
                 Catalyst
               </span>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(true)}
-              className="lg:hidden"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const isActive = location.pathname === item.href;
-              const Icon = item.icon;
-
-              return (
-                <Link key={item.name} to={item.href}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className={cn(
-                      "w-full justify-start text-sm font-medium",
-                      isActive
-                        ? "bg-catalyst-500 hover:bg-catalyst-600 text-white"
-                        : "text-muted-foreground hover:text-foreground hover:bg-accent",
-                    )}
-                  >
-                    <Icon className="w-4 h-4 mr-3" />
-                    {item.name}
-                  </Button>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Footer */}
-          <div className="p-4 border-t border-border">
-            <div className="text-xs text-muted-foreground text-center">
-              Catalyst v1.0
             </div>
           </div>
+          <nav className="flex flex-1 flex-col">
+            <ul role="list" className="flex flex-1 flex-col gap-y-7">
+              <li>
+                <ul role="list" className="-mx-2 space-y-1">
+                  {navigation.map((item) => {
+                    const isActive = location.pathname === item.href;
+                    return (
+                      <li key={item.name}>
+                        <Link
+                          to={item.href}
+                          className={cn(
+                            "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold transition-colors",
+                            isActive
+                              ? "catalyst-gradient text-white"
+                              : "text-gray-700 hover:text-pink-600 hover:bg-pink-50",
+                          )}
+                        >
+                          <item.icon
+                            className={cn(
+                              "h-6 w-6 shrink-0",
+                              isActive
+                                ? "text-white"
+                                : "text-gray-400 group-hover:text-pink-600",
+                            )}
+                            aria-hidden="true"
+                          />
+                          {item.name}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
 
-      {/* Mobile toggle button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setIsCollapsed(false)}
-        className={cn(
-          "fixed top-4 left-4 z-40 lg:hidden",
-          !isCollapsed && "hidden",
-        )}
+      {/* Mobile sidebar */}
+      <div
+        className={cn("relative z-50 lg:hidden", isOpen ? "block" : "hidden")}
       >
-        <Menu className="w-4 h-4" />
-      </Button>
+        <div className="fixed inset-y-0 left-0 z-50 w-full max-w-xs bg-white shadow-xl">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4">
+            <div className="flex h-16 shrink-0 items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg catalyst-gradient">
+                  <GraduationCap className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-foreground">
+                  Catalyst
+                </span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                <X className="h-6 w-6" />
+                <span className="sr-only">Close sidebar</span>
+              </Button>
+            </div>
+            <nav className="flex flex-1 flex-col">
+              <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <ul role="list" className="-mx-2 space-y-1">
+                    {navigation.map((item) => {
+                      const isActive = location.pathname === item.href;
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            to={item.href}
+                            onClick={onClose}
+                            className={cn(
+                              "group flex gap-x-3 rounded-md p-4 text-base leading-6 font-semibold transition-colors touch-manipulation",
+                              isActive
+                                ? "catalyst-gradient text-white"
+                                : "text-gray-700 hover:text-pink-600 hover:bg-pink-50",
+                            )}
+                          >
+                            <item.icon
+                              className={cn(
+                                "h-6 w-6 shrink-0",
+                                isActive
+                                  ? "text-white"
+                                  : "text-gray-400 group-hover:text-pink-600",
+                              )}
+                              aria-hidden="true"
+                            />
+                            {item.name}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
     </>
   );
 };
