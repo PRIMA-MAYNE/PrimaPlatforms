@@ -113,11 +113,11 @@ const DashboardContent: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Main Modules - Mobile responsive grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      {/* Main Modules */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Attendance Module */}
         <Link to="/attendance" className="block">
-          <Card className="touch-card group hover:border-catalyst-300 transition-all duration-200">
+          <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-3 sm:pb-4">
               <div className="flex items-center space-x-3 flex-1">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl catalyst-gradient flex items-center justify-center group-hover:scale-105 transition-transform">
