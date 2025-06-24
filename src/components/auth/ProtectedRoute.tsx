@@ -1,6 +1,7 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { config } from "@/lib/config";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -10,6 +11,11 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
+
+  // In development mode, allow access without authentication
+  if (config.isDevelopment && location.pathname !== "/signin") {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
