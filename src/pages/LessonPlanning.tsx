@@ -102,31 +102,35 @@ const LessonPlanning: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const objectives = formData.objectives
-        .split("\n")
-        .filter((obj) => obj.trim())
-        .map((obj) => obj.trim());
+      // Add a small delay to show loading state
+      setTimeout(() => {
+        const plan = generateLessonPlan({
+          subject: formData.subject,
+          topic: formData.topic,
+          gradeLevel: formData.gradeLevel,
+          duration: formData.duration,
+          objectives: formData.objectives
+            ? formData.objectives.split("\n").filter(Boolean)
+            : [],
+        });
 
-      const plan = generateLessonPlan({
-        subject: formData.subject,
-        topic: formData.topic,
-        gradeLevel: formData.gradeLevel,
-        duration: formData.duration,
-        objectives: objectives.length > 0 ? objectives : undefined,
-      });
+        setCurrentPlan(plan);
+        setIsGenerating(false);
 
-      setCurrentPlan(plan);
-      toast({
-        title: "Lesson Plan Generated!",
-        description: "Your ECZ-aligned lesson plan is ready for review",
-      });
+        toast({
+          title: "Lesson Plan Generated!",
+          description: "Your ECZ-aligned lesson plan is ready for use",
+        });
+      }, 1500);
     } catch (error) {
+      setIsGenerating(false);
       toast({
         title: "Generation Failed",
         description: "Failed to generate lesson plan. Please try again.",
         variant: "destructive",
       });
       console.error("Generation error:", error);
+    }
     } finally {
       setIsGenerating(false);
     }
