@@ -35,7 +35,7 @@ import {
   FileDown,
   Save,
 } from "lucide-react";
-import { generateLessonPlan } from "@/lib/deepseek-ai-service";
+import { generateLessonPlan } from "@/lib/working-ai-service";
 import {
   exportLessonPlanToPDF,
   exportLessonPlanToDocx,
