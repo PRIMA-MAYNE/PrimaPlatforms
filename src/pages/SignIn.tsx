@@ -170,28 +170,6 @@ const SignIn: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Quick Demo Access */}
-        <div className="mt-6">
-          <Card className="border-dashed border-2 border-catalyst-300 bg-catalyst-50/50">
-            <CardContent className="pt-6">
-              <Button
-                onClick={() => {
-                  // Direct navigation for testing
-                  navigate("/dashboard");
-                }}
-                className="w-full catalyst-gradient"
-                variant="outline"
-              >
-                <Zap className="w-4 h-4 mr-2" />
-                Skip to Dashboard (Demo)
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                Bypass authentication for immediate testing
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Footer Text */}
         <p className="text-center text-sm text-muted-foreground mt-8">
           Protected by enterprise-grade security.

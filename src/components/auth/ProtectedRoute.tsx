@@ -12,11 +12,6 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // In development mode, allow access without authentication
-  if (config.isDevelopment && location.pathname !== "/signin") {
-    return <>{children}</>;
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
