@@ -155,30 +155,33 @@ const AssessmentGenerator: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const assessment = await generateAssessment({
-        subject: formData.subject,
-        topic: formData.topic,
-        gradeLevel: formData.gradeLevel,
-        questionCount: formData.questionCount,
-        questionType: formData.questionTypes[0] || "multiple_choice",
-        difficulty: formData.difficulty,
-      });
+      // Add a small delay to show loading state
+      setTimeout(() => {
+        const assessment = generateAssessment({
+          subject: formData.subject,
+          topic: formData.topic,
+          gradeLevel: formData.gradeLevel,
+          questionCount: formData.questionCount,
+          questionType: formData.questionTypes[0] || "multiple_choice",
+          difficulty: formData.difficulty,
+        });
 
-      setCurrentAssessment(assessment);
-      toast({
-        title: "Assessment Generated!",
-        description:
-          "Your syllabi-aligned assessment with meaningful questions is ready",
-      });
+        setCurrentAssessment(assessment);
+        setIsGenerating(false);
+
+        toast({
+          title: "Assessment Generated!",
+          description: "Your assessment with intelligent questions is ready",
+        });
+      }, 1000);
     } catch (error) {
+      setIsGenerating(false);
       toast({
         title: "Generation Failed",
         description: "Failed to generate assessment. Please try again.",
         variant: "destructive",
       });
       console.error("Generation error:", error);
-    } finally {
-      setIsGenerating(false);
     }
   };
 
