@@ -131,9 +131,6 @@ const LessonPlanning: React.FC = () => {
       });
       console.error("Generation error:", error);
     }
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const handleSave = () => {
