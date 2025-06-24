@@ -71,23 +71,24 @@ DeepSeekAIService
 
 ### ⚙️ **AI Configuration**
 
-#### **Environment Setup**
+#### **Free AI Model - No Setup Required**
 
 ```bash
-# Add to your .env file
-VITE_DEEPSEEK_API_KEY=your_deepseek_api_key_here
+# No API key needed! Using deepseek-chat-v3-4:free
+# Works immediately out of the box
 ```
 
-#### **API Features**
+#### **Free AI Features**
 
-- **Intelligent Fallback**: Graceful degradation to local AI when API is unavailable
-- **Rate Limiting**: Built-in request throttling and error handling
+- **No API Key Required**: Uses deepseek-chat-v3-4:free model
+- **Intelligent Fallback**: Graceful degradation to local AI when service is unavailable
+- **Zero Configuration**: Works immediately without setup
 - **Context Awareness**: Maintains educational context across all interactions
 - **Zambian Context**: Culturally relevant content generation
 
 ### 🛡️ **Security & Privacy**
 
-- **API Key Protection**: Secure handling of DeepSeek credentials
+- **No Credentials Required**: Free model eliminates API key security concerns
 - **Data Privacy**: No sensitive student data sent to external APIs
 - **Local Fallback**: Complete functionality without internet connection
 - **Audit Logging**: Track AI usage and content generation
@@ -138,11 +139,12 @@ VITE_DEEPSEEK_API_KEY=your_deepseek_api_key_here
 
 ## 🚀 **Getting Started**
 
-### 1. **Configure DeepSeek AI**
+### 1. **DeepSeek AI Ready to Use**
 
 ```bash
-# Add your DeepSeek API key to .env
-echo "VITE_DEEPSEEK_API_KEY=your_key_here" >> .env
+# No configuration needed!
+# The free deepseek-chat-v3-4:free model works immediately
+npm run dev
 ```
 
 ### 2. **Test Mobile Responsiveness**
@@ -195,7 +197,7 @@ npm run dev -- --host 0.0.0.0
 ### 🤖 **AI Development**
 
 ```typescript
-// Test AI integration
+// Test AI integration (works immediately)
 import { generateLessonPlan } from "@/lib/deepseek-ai-service";
 
 const testLesson = await generateLessonPlan({
@@ -204,6 +206,8 @@ const testLesson = await generateLessonPlan({
   gradeLevel: "Grade 10",
   duration: 40,
 });
+
+// No API key setup required!
 ```
 
 ### 🎨 **Responsive Design Classes**
