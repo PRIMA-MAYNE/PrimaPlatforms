@@ -155,12 +155,12 @@ const AssessmentGenerator: React.FC = () => {
 
     setIsGenerating(true);
     try {
-      const assessment = generateSyllabiBasedAssessment({
+      const assessment = await generateAssessment({
         subject: formData.subject,
         topic: formData.topic,
         gradeLevel: formData.gradeLevel,
         questionCount: formData.questionCount,
-        questionTypes: formData.questionTypes,
+        questionType: formData.questionTypes[0] || "multiple_choice",
         difficulty: formData.difficulty,
       });
 
