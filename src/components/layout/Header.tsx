@@ -1,4 +1,5 @@
 import React from "react";
+import { Bell, Menu, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -9,66 +10,60 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Settings, User, LogOut, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-export const Header: React.FC = () => {
-  const { theme, setTheme } = useTheme();
-  const { user, signOut } = useAuth();
+interface HeaderProps {
+  onMenuClick: () => void;
+}
 
-  const getUserInitials = () => {
-    if (user?.user_metadata?.full_name) {
-      return user.user_metadata.full_name
-        .split(" ")
-        .map((name: string) => name[0])
-        .join("")
-        .toUpperCase();
-    }
-    return user?.email?.substring(0, 2).toUpperCase() || "U";
-  };
+export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
+  const { signOut, user } = useAuth();
+  const navigate = useNavigate();
 
-  const getUserDisplayName = () => {
-    return (
-      user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User"
-    );
-  };
-
-  const getSchoolName = () => {
-    return user?.user_metadata?.school_name || "your school";
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
-    <header className="h-16 border-b border-border bg-background">
-      <div className="flex items-center justify-between h-full px-6">
-        {/* Page title - will be dynamic later */}
-        <div>
-          <h1 className="text-lg font-semibold text-foreground">
-            Welcome back, {getUserDisplayName()}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Ready to manage your classes at {getSchoolName()}?
-          </p>
+    <header className="sticky top-0 z-30 bg-background border-b border-border backdrop-blur supports-[backdrop-filter]:bg-background/95">
+      <div className="flex h-14 sm:h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
+        {/* Mobile menu button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="lg:hidden"
+          onClick={onMenuClick}
+        >
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Open sidebar</span>
+        </Button>
+
+        {/* Search bar - hidden on mobile, visible on larger screens */}
+        <div className="flex-1 hidden sm:block max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input placeholder="Search..." className="pl-10 h-9" />
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center space-x-4">
+        {/* Mobile search button */}
+        <Button variant="ghost" size="sm" className="sm:hidden">
+          <Search className="h-5 w-5" />
+          <span className="sr-only">Search</span>
+        </Button>
+
+        {/* Right side actions */}
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-4 h-4" />
-          </Button>
-
-          {/* Theme toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
+            <Bell className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              3
+            </span>
+            <span className="sr-only">Notifications</span>
           </Button>
 
           {/* User menu */}
@@ -76,12 +71,9 @@ export const Header: React.FC = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage
-                    src={user?.user_metadata?.avatar_url}
-                    alt={getUserDisplayName()}
-                  />
-                  <AvatarFallback className="bg-catalyst-500 text-white">
-                    {getUserInitials()}
+                  <AvatarImage src="/avatars/01.png" alt="@user" />
+                  <AvatarFallback className="bg-pink-100 text-pink-700">
+                    {user?.email?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -90,16 +82,11 @@ export const Header: React.FC = () => {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {getUserDisplayName()}
+                    {user?.email?.split("@")[0] || "User"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
+                    {user?.email || "user@example.com"}
                   </p>
-                  {user?.user_metadata?.school_name && (
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {getSchoolName()}
-                    </p>
-                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -108,11 +95,11 @@ export const Header: React.FC = () => {
                 <span>Profile</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <Bell className="mr-2 h-4 w-4" />
+                <span>Notifications</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut()}>
+              <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
