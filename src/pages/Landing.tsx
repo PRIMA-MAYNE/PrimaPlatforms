@@ -23,478 +23,384 @@ import {
   Globe,
   Shield,
   Zap,
+  Menu,
+  X,
 } from "lucide-react";
 
 const Landing: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg catalyst-gradient">
-              <GraduationCap className="w-5 h-5 text-white" />
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex h-14 sm:h-16 items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg catalyst-gradient">
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-foreground">
+                Catalyst
+              </span>
             </div>
-            <span className="text-xl font-bold text-foreground">Catalyst</span>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/signin">
+                <Button variant="ghost" className="text-sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="catalyst-gradient text-sm">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </Button>
           </div>
-          <div className="flex items-center space-x-4">
-            <Link to="/signin">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="catalyst-gradient">Get Started</Button>
-            </Link>
-          </div>
+
+          {/* Mobile Navigation Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-border bg-background">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                <Link
+                  to="/signin"
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="block px-3 py-2 text-base font-medium text-white bg-gradient-to-r from-pink-500 to-violet-500 rounded-md hover:from-pink-600 hover:to-violet-600"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center max-w-4xl">
-          <Badge variant="secondary" className="mb-4">
-            <Sparkles className="w-4 h-4 mr-1" />
-            AI-Powered Education Platform
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-catalyst-600 to-catalyst-800 bg-clip-text text-transparent">
-            Transform Your Teaching with Catalyst
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            A comprehensive educational management system designed to streamline
-            attendance tracking, lesson planning, and performance monitoring for
-            modern educators.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button size="lg" className="catalyst-gradient text-lg px-8">
-                Get Started Now
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link to="/signin">
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                Sign In
-              </Button>
-            </Link>
-          </div>
-          <p className="text-sm text-muted-foreground mt-4">
-            No setup fees • Secure authentication • Ready in minutes
-          </p>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything You Need to Excel in Education
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Five powerful modules designed to streamline your teaching
-              workflow and improve student outcomes.
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 catalyst-gradient opacity-5"></div>
+        <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+          <div className="text-center">
+            <div className="flex justify-center mb-6 sm:mb-8">
+              <Badge
+                variant="secondary"
+                className="px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm"
+              >
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                Now with DeepSeek AI Integration
+              </Badge>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6">
+              Revolutionize Education with{" "}
+              <span className="bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
+                AI-Powered
+              </span>{" "}
+              Management
+            </h1>
+            <p className="mx-auto max-w-2xl text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 px-4">
+              Streamline your educational workflow with Catalyst - the
+              comprehensive platform that combines attendance tracking, AI
+              lesson planning, assessment generation, and analytics in one
+              powerful solution.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Attendance Tracker */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-catalyst-300">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-catalyst-100">
-                    <Users className="w-6 h-6 text-catalyst-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Smart Attendance</CardTitle>
-                    <Badge variant="secondary" className="text-xs">
-                      Core Module
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-base">
-                  Streamlined roll call with real-time statistics, gender
-                  breakdowns, and automated reporting.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span>Live roll call interface</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span>Automated attendance summaries</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span>PDF & Excel exports</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* AI Lesson Planning */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-success/50">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-success/10">
-                    <FileText className="w-6 h-6 text-success" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">
-                      AI Lesson Planning
-                    </CardTitle>
-                    <Badge className="text-xs bg-success/10 text-success">
-                      AI-Powered
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-base">
-                  Generate comprehensive lesson plans with AI assistance in
-                  seconds using advanced language models.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <Sparkles className="w-4 h-4 text-success" />
-                    <span>AI-generated lesson structure</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span>Editable & customizable</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-success" />
-                    <span>Word & PDF downloads</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Assessment Generator */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-warning/50">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-warning/10">
-                    <ClipboardList className="w-6 h-6 text-warning" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">
-                      Assessment Generator
-                    </CardTitle>
-                    <Badge className="text-xs bg-warning/10 text-warning">
-                      ECZ Format
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-base">
-                  Create tests and assignments with automated marking schemes in
-                  ECZ format using AI question generation.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-warning" />
-                    <span>Multiple question types</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-warning" />
-                    <span>Auto-generated marking keys</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-warning" />
-                    <span>ECZ standards compliant</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Performance Tracker */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-info/50">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-info/10">
-                    <TrendingUp className="w-6 h-6 text-info" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">
-                      Performance Tracker
-                    </CardTitle>
-                    <Badge className="text-xs bg-info/10 text-info">
-                      Analytics
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-base">
-                  Visual progress tracking with predictive analytics and
-                  intelligent performance insights powered by machine learning.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-info" />
-                    <span>Grade visualization charts</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-info" />
-                    <span>Trend analysis & alerts</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-info" />
-                    <span>Class vs individual comparison</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Analytics & Insights */}
-            <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-purple-300 md:col-span-2 lg:col-span-1">
-              <CardHeader>
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100">
-                    <BarChart3 className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Smart Analytics</CardTitle>
-                    <Badge className="text-xs bg-purple-100 text-purple-700">
-                      Insights
-                    </Badge>
-                  </div>
-                </div>
-                <CardDescription className="text-base">
-                  Comprehensive data analysis with AI-powered insights for
-                  better teaching outcomes and student success.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-purple-600" />
-                    <span>Attendance correlation analysis</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-purple-600" />
-                    <span>Teaching effectiveness metrics</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-purple-600" />
-                    <span>Printable summary reports</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Teachers Choose Catalyst
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built by educators, for educators. Experience the difference that
-              thoughtful design makes.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-catalyst-100 mx-auto mb-4">
-                <Zap className="w-8 h-8 text-catalyst-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Save Time</h3>
-              <p className="text-muted-foreground">
-                Streamline administrative tasks and focus on what matters most -
-                teaching and student engagement.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-success/10 mx-auto mb-4">
-                <TrendingUp className="w-8 h-8 text-success" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Improve Outcomes</h3>
-              <p className="text-muted-foreground">
-                Data-driven insights help identify students who need support
-                before it's too late.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-info/10 mx-auto mb-4">
-                <Shield className="w-8 h-8 text-info" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Secure & Reliable</h3>
-              <p className="text-muted-foreground">
-                Built with enterprise-grade security and reliable cloud
-                infrastructure for peace of mind.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center w-16 h-16 rounded-lg bg-warning/10 mx-auto mb-4">
-                <Globe className="w-8 h-8 text-warning" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Accessible Anywhere
-              </h3>
-              <p className="text-muted-foreground">
-                Cloud-based platform works on any device, anywhere you have
-                internet.
-              </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+              <Link to="/signup">
+                <Button
+                  size="lg"
+                  className="catalyst-gradient w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4"
+                >
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </Button>
+              </Link>
+              <Link to="/signin">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4"
+                >
+                  View Demo
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Meet Our Team
+      {/* Features Grid */}
+      <section className="py-12 sm:py-16 lg:py-24 bg-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-3 sm:mb-4">
+              Everything You Need to Manage Education
             </h2>
-            <p className="text-xl text-muted-foreground">
-              Built by educators and developers who understand the challenges of
-              modern teaching.
+            <p className="mx-auto max-w-2xl text-base sm:text-lg text-muted-foreground">
+              Comprehensive tools designed for modern educational environments
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-catalyst-100 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-lg font-bold text-catalyst-700">
-                    LM
-                  </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">
-                  Likonge Mumbuwa Prince
-                </h3>
-                <p className="text-catalyst-600 font-medium mb-2">
-                  CEO & Founder
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Software Developer with expertise in educational technology
-                  and platform development.
-                </p>
-              </CardContent>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  Smart Attendance Tracking
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Real-time attendance monitoring with automated reporting and
+                  40-day tracking system
+                </CardDescription>
+              </CardHeader>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-lg font-bold text-success">KL</span>
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">Kapatiso Lyoba</h3>
-                <p className="text-success font-medium mb-2">COO</p>
-                <p className="text-sm text-muted-foreground">
-                  Chemistry and Physics Teacher with deep understanding of
-                  classroom operations and educational workflows.
-                </p>
-              </CardContent>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  AI Lesson Planning
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Generate ECZ-aligned lesson plans instantly with DeepSeek AI
+                  integration
+                </CardDescription>
+              </CardHeader>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-info/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-lg font-bold text-info">NM</span>
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <ClipboardList className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">Nakweba Muhau</h3>
-                <p className="text-info font-medium mb-2">CTO</p>
-                <p className="text-sm text-muted-foreground">
-                  ICT Teacher and technology specialist focused on educational
-                  software architecture and AI integration.
-                </p>
-              </CardContent>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  Assessment Generation
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Create comprehensive assessments with intelligent question
+                  generation and marking schemes
+                </CardDescription>
+              </CardHeader>
             </Card>
 
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="w-20 h-20 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-lg font-bold text-warning">JH</span>
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
-                <h3 className="font-semibold text-lg mb-1">Jeff Hambulo</h3>
-                <p className="text-warning font-medium mb-2">
-                  Head of Natural Sciences
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Physics Teacher and HOD Natural Sciences, providing curriculum
-                  expertise and educational leadership.
-                </p>
-              </CardContent>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  Performance Analytics
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Track student progress with detailed analytics and
+                  personalized insights
+                </CardDescription>
+              </CardHeader>
             </Card>
+
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                </div>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  Advanced Analytics
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Comprehensive dashboard with real-time insights and data
+                  visualization
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+              <CardHeader className="text-center pb-4">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                </div>
+                <CardTitle className="text-lg sm:text-xl mb-2">
+                  Secure & Reliable
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  Enterprise-grade security with cloud backup and data
+                  protection
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Key Benefits */}
+      <section className="py-12 sm:py-16 lg:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4 sm:mb-6">
+                Why Choose Catalyst?
+              </h2>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                      ECZ Curriculum Aligned
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Specifically designed for Zambian educational standards
+                      with ECZ-compliant content generation
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                      AI-Powered Efficiency
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Save hours with intelligent content generation and
+                      automated administrative tasks
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">
+                      Mobile-First Design
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Access all features seamlessly on any device, from
+                      smartphones to desktop computers
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:order-first">
+              <div className="aspect-square bg-gradient-to-br from-pink-100 to-violet-100 rounded-2xl p-8 sm:p-12 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <GraduationCap className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
+                    Catalyst Education
+                  </h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    The future of educational management
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Transform Your Teaching?
+      <section className="py-12 sm:py-16 lg:py-24 bg-gradient-to-r from-pink-500 to-violet-500">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
+              Ready to Transform Your Education Management?
             </h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Start your journey with Catalyst and transform your teaching
-              experience with our educational management platform.
+            <p className="mx-auto max-w-2xl text-base sm:text-lg text-pink-100 mb-6 sm:mb-8">
+              Join thousands of educators already using Catalyst to streamline
+              their workflow and improve student outcomes.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link to="/signup">
-                <Button size="lg" className="catalyst-gradient text-lg px-8">
-                  Join Catalyst Today
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link to="/signin">
-                <Button size="lg" variant="outline" className="text-lg px-8">
-                  Sign In
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="w-full sm:w-auto bg-white text-pink-600 hover:bg-gray-50 text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4"
+                >
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
             </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              Secure platform • No setup fees • Start immediately
-            </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-border bg-muted/30">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+      <footer className="bg-gray-900 text-white py-8 sm:py-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-4">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg catalyst-gradient">
-                <GraduationCap className="w-5 h-5 text-white" />
+                <GraduationCap className="w-4 h-4 text-white" />
               </div>
-              <span className="text-xl font-bold">Catalyst</span>
+              <span className="text-lg sm:text-xl font-bold">Catalyst</span>
             </div>
-            <div className="flex space-x-6 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">
+            <p className="text-sm sm:text-base text-gray-400 mb-4">
+              Empowering education through intelligent technology
+            </p>
+            <div className="flex justify-center space-x-4 sm:space-x-6">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
                 Privacy Policy
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
                 Terms of Service
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
                 Support
               </a>
-              <a href="#" className="hover:text-foreground transition-colors">
-                Contact
-              </a>
             </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>
-              &copy; 2024 Catalyst. All rights reserved. Built with ❤️ for
-              educators worldwide.
-            </p>
+            <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-800">
+              <p className="text-xs sm:text-sm text-gray-500">
+                © 2024 Catalyst Education. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
