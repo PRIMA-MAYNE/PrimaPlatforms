@@ -356,7 +356,11 @@ const DashboardContent: React.FC = () => {
 };
 
 const Index: React.FC = () => {
-  return <DashboardContent />;
+  return (
+    <div className="space-y-6 sm:space-y-8">
+      <DashboardContent />
+    </div>
+  );
 };
 
 export default Index;
