@@ -24,7 +24,10 @@ import {
   ArrowRight,
   BookOpen,
   Target,
+  Zap,
 } from "lucide-react";
+import { generateAssessment, generateLessonPlan } from "@/lib/immediate-ai";
+import { toast } from "@/hooks/use-toast";
 
 const DashboardContent: React.FC = () => {
   return (
@@ -35,8 +38,7 @@ const DashboardContent: React.FC = () => {
           Dashboard Overview
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          All features working! AI lesson planning, assessments, analytics, and
-          attendance tracking ready to use.
+          All features working! AI lesson planning, assessments, analytics, and attendance tracking ready to use.
         </p>
       </div>
 
@@ -128,7 +130,9 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     AI Engine
                   </span>
-                  <Badge className="bg-green-500 text-white">✓ Working</Badge>
+                  <Badge className="bg-green-500 text-white">
+                    ✓ Working
+                  </Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
@@ -242,10 +246,72 @@ const DashboardContent: React.FC = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        </Link>
+        </Card>
       </div>
 
+      {/* AI Test Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="w-5 h-5" />
+            Test AI Generation
+          </CardTitle>
+          <CardDescription>
+            Verify that AI content generation is working
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button
+              onClick={() => {
+                console.log("🧪 Testing lesson plan generation...");
+                const plan = generateLessonPlan({
+                  subject: "Mathematics",
+                  topic: "Linear Equations",
+                  gradeLevel: "Grade 10",
+                  duration: 40,
+                });
+                console.log("✅ Lesson plan generated:", plan);
+                toast({
+                  title: "Lesson Plan Generated!",
+                  description: `Generated: ${plan.title}`,
+                });
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Test Lesson Plan AI
+            </Button>
+
+            <Button
+              onClick={() => {
+                console.log("🧪 Testing assessment generation...");
+                const assessment = generateAssessment({
+                  subject: "Mathematics",
+                  topic: "Linear Equations",
+                  gradeLevel: "Grade 10",
+                  questionCount: 3,
+                  questionType: "multiple_choice",
+                  difficulty: "medium",
+                });
+                console.log("✅ Assessment generated:", assessment);
+                toast({
+                  title: "Assessment Generated!",
+                  description: `Generated: ${assessment.title}`,
+                });
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              <ClipboardList className="w-4 h-4 mr-2" />
+              Test Assessment AI
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity */}
       {/* Recent Activity */}
       <Card>
         <CardHeader>
