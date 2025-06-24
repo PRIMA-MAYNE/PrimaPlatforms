@@ -157,34 +157,33 @@ const AssessmentGenerator: React.FC = () => {
 
     console.log("✅ Starting assessment generation...");
     setIsGenerating(true);
+
     try {
-      // Add a small delay to show loading state
-      setTimeout(() => {
-        const assessment = generateAssessment({
-          subject: formData.subject,
-          topic: formData.topic,
-          gradeLevel: formData.gradeLevel,
-          questionCount: formData.questionCount,
-          questionType: formData.questionTypes[0] || "multiple_choice",
-          difficulty: formData.difficulty,
-        });
+      const assessment = generateAssessment({
+        subject: formData.subject,
+        topic: formData.topic,
+        gradeLevel: formData.gradeLevel,
+        questionCount: formData.questionCount,
+        questionType: formData.questionTypes[0] || "multiple_choice",
+        difficulty: formData.difficulty,
+      });
 
-        setCurrentAssessment(assessment);
-        setIsGenerating(false);
+      console.log("✅ Assessment generated:", assessment);
+      setCurrentAssessment(assessment);
 
-        toast({
-          title: "Assessment Generated!",
-          description: "Your assessment with intelligent questions is ready",
-        });
-      }, 1000);
+      toast({
+        title: "Assessment Generated!",
+        description: "Your assessment with intelligent questions is ready",
+      });
     } catch (error) {
-      setIsGenerating(false);
+      console.error("Generation error:", error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate assessment. Please try again.",
         variant: "destructive",
       });
-      console.error("Generation error:", error);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
