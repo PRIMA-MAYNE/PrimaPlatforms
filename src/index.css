@@ -191,38 +191,13 @@
     @apply border-catalyst-300 shadow-catalyst-500/10;
   }
 
-  /* Mobile-responsive utilities */
-  .mobile-container {
+  /* Basic responsive utilities */
+  .responsive-container {
     @apply container mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  .mobile-grid {
+  .responsive-grid {
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
-  }
-
-  .mobile-text {
-    @apply text-sm sm:text-base;
-  }
-
-  .mobile-heading {
-    @apply text-lg sm:text-xl lg:text-2xl;
-  }
-
-  .mobile-button {
-    @apply px-4 py-3 sm:px-6 sm:py-3 text-sm sm:text-base;
-  }
-
-  /* Touch-friendly elements */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
-  }
-
-  .touch-button {
-    @apply px-6 py-4 text-base font-medium rounded-lg transition-all duration-200 touch-manipulation;
-  }
-
-  .touch-card {
-    @apply p-4 sm:p-6 rounded-xl border border-border bg-card hover:shadow-md transition-all duration-200 touch-manipulation;
   }
 
   /* Mobile form styles */
