@@ -118,21 +118,19 @@ const DashboardContent: React.FC = () => {
         {/* Attendance Module */}
         <Link to="/attendance" className="block">
           <Card className="module-card group">
-            <CardHeader className="flex flex-row items-center space-y-0 pb-3 sm:pb-4">
-              <div className="flex items-center space-x-3 flex-1">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl catalyst-gradient flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-xl catalyst-gradient flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="mobile-heading text-foreground group-hover:text-catalyst-600 transition-colors">
-                    Attendance Tracker
-                  </CardTitle>
-                  <CardDescription className="mobile-text">
+                <div>
+                  <CardTitle className="text-lg">Attendance Tracker</CardTitle>
+                  <CardDescription>
                     Smart attendance with 40-day tracking
                   </CardDescription>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-3">
