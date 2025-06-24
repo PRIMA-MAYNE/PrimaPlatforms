@@ -175,39 +175,18 @@ const SignIn: React.FC = () => {
           <Card className="border-dashed border-2 border-catalyst-300 bg-catalyst-50/50">
             <CardContent className="pt-6">
               <Button
-                onClick={async () => {
-                  setIsLoading(true);
-                  try {
-                    const { error } = await signIn(
-                      "demo@catalyst.edu",
-                      "CatalystDemo123!",
-                    );
-                    if (!error) {
-                      navigate("/dashboard");
-                    } else {
-                      // Create demo account if it doesn't exist
-                      const { error: signupError } = await signIn(
-                        "demo@catalyst.edu",
-                        "CatalystDemo123!",
-                      );
-                      if (!signupError) {
-                        navigate("/dashboard");
-                      }
-                    }
-                  } catch (error) {
-                    console.log("Demo login:", error);
-                  } finally {
-                    setIsLoading(false);
-                  }
+                onClick={() => {
+                  // Direct navigation for testing
+                  navigate("/dashboard");
                 }}
                 className="w-full catalyst-gradient"
-                disabled={isLoading}
+                variant="outline"
               >
                 <Zap className="w-4 h-4 mr-2" />
-                Demo Login - Skip Authentication
+                Skip to Dashboard (Demo)
               </Button>
               <p className="text-xs text-muted-foreground mt-2 text-center">
-                For testing purposes - bypasses authentication
+                Bypass authentication for immediate testing
               </p>
             </CardContent>
           </Card>
