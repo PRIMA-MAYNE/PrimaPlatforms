@@ -35,7 +35,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { generateSyllabiBasedAssessment } from "@/lib/syllabi-enhanced-ai";
+import { generateAssessment } from "@/lib/deepseek-ai-service";
 import {
   exportAssessmentToPDF,
   exportAssessmentToDocx,

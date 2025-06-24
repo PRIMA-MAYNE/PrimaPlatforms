@@ -51,7 +51,7 @@ import {
   Plus,
   BarChart3,
 } from "lucide-react";
-import { analyzePerformance } from "@/lib/enhanced-local-ai";
+import { analyzePerformance } from "@/lib/deepseek-ai-service";
 import { toast } from "@/hooks/use-toast";
 
 interface Grade {
