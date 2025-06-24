@@ -76,24 +76,19 @@ const DashboardContent: React.FC = () => {
         />
       </div>
 
-      {/* Quick Actions - Mobile optimized */}
-      <Card className="touch-card">
-        <CardHeader className="pb-3 sm:pb-4">
-          <CardTitle className="mobile-heading flex items-center gap-2">
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="w-5 h-5" />
             Quick Actions
           </CardTitle>
-          <CardDescription className="mobile-text">
-            Get started with these common tasks
-          </CardDescription>
+          <CardDescription>Get started with these common tasks</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Link to="/attendance" className="block">
-              <Button
-                className="touch-button w-full justify-start"
-                variant="outline"
-              >
+              <Button className="w-full justify-start" variant="outline">
                 <Users className="w-4 h-4 mr-3" />
                 <span className="text-left">
                   <div className="text-sm font-medium">Add Students</div>
@@ -104,10 +99,7 @@ const DashboardContent: React.FC = () => {
               </Button>
             </Link>
             <Link to="/lesson-planning" className="block">
-              <Button
-                className="touch-button w-full justify-start"
-                variant="outline"
-              >
+              <Button className="w-full justify-start" variant="outline">
                 <FileText className="w-4 h-4 mr-3" />
                 <span className="text-left">
                   <div className="text-sm font-medium">Create Lesson</div>
