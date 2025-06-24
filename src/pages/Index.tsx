@@ -24,143 +24,81 @@ import {
   ArrowRight,
   BookOpen,
   Target,
-  Sparkles,
-  Plus,
 } from "lucide-react";
 
 const DashboardContent: React.FC = () => {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Welcome Section */}
-      <div className="space-y-2 sm:space-y-3">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg catalyst-gradient flex items-center justify-center">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
-              Dashboard
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Your AI-powered education command center
-            </p>
-          </div>
-        </div>
+      <div className="space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+          Dashboard Overview
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Your educational command center for managing classes, tracking
+          progress, and generating insights.
+        </p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
         <StatsCard
-          title="Students"
+          title="Total Students"
           value="0"
-          description="Add classes"
+          description="Add your first class"
           icon={Users}
         />
         <StatsCard
-          title="Attendance"
+          title="Attendance Rate"
           value="0%"
-          description="Start tracking"
+          description="Start taking attendance"
           icon={CheckCircle}
         />
         <StatsCard
-          title="Lessons"
+          title="Lesson Plans"
           value="0"
-          description="AI-generated"
+          description="AI-powered"
           icon={FileText}
         />
         <StatsCard
           title="Assessments"
           value="0"
-          description="Auto-created"
+          description="Auto-generated"
           icon={ClipboardList}
         />
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Quick Actions
-          </CardTitle>
-          <CardDescription>Get started with these common tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Link to="/attendance" className="block">
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="w-4 h-4 mr-3" />
-                <span className="text-left">
-                  <div className="text-sm font-medium">Add Students</div>
-                  <div className="text-xs text-muted-foreground">
-                    Start taking attendance
-                  </div>
-                </span>
-              </Button>
-            </Link>
-            <Link to="/lesson-planning" className="block">
-              <Button className="w-full justify-start" variant="outline">
-                <FileText className="w-4 h-4 mr-3" />
-                <span className="text-left">
-                  <div className="text-sm font-medium">Create Lesson</div>
-                  <div className="text-xs text-muted-foreground">
-                    AI-powered planning
-                  </div>
-                </span>
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Main Modules */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Attendance Module */}
-        <Link to="/attendance" className="block">
+        <Link to="/attendance">
           <Card className="module-card group">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-xl catalyst-gradient flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
+                  <Users className="w-5 h-5 text-catalyst-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Attendance Tracker</CardTitle>
+                  <CardTitle className="text-lg">Class Attendance</CardTitle>
                   <CardDescription>
-                    Smart attendance with 40-day tracking
+                    Track student presence and generate reports
                   </CardDescription>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">
-                    Status
+                  <span className="text-sm text-muted-foreground">
+                    Today's Classes
                   </span>
-                  <Badge variant="outline" className="text-xs">
-                    Ready to use
-                  </Badge>
+                  <Badge variant="outline">Add classes to begin</Badge>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="py-2">
-                    <div className="text-lg sm:text-xl font-bold text-green-600">
-                      0
-                    </div>
-                    <div className="text-xs text-muted-foreground">Present</div>
-                  </div>
-                  <div className="py-2">
-                    <div className="text-lg sm:text-xl font-bold text-red-600">
-                      0
-                    </div>
-                    <div className="text-xs text-muted-foreground">Absent</div>
-                  </div>
-                  <div className="py-2">
-                    <div className="text-lg sm:text-xl font-bold text-yellow-600">
-                      0
-                    </div>
-                    <div className="text-xs text-muted-foreground">Late</div>
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Set up your first class to start taking attendance
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -168,41 +106,36 @@ const DashboardContent: React.FC = () => {
         </Link>
 
         {/* AI Lesson Planning Module */}
-        <Link to="/lesson-planning" className="block">
-          <Card className="touch-card group hover:border-catalyst-300 transition-all duration-200">
-            <CardHeader className="flex flex-row items-center space-y-0 pb-3 sm:pb-4">
-              <div className="flex items-center space-x-3 flex-1">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl catalyst-gradient flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <Link to="/lesson-planning">
+          <Card className="module-card group">
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
+                  <FileText className="w-5 h-5 text-catalyst-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="mobile-heading text-foreground group-hover:text-catalyst-600 transition-colors">
-                    AI Lesson Planning
-                  </CardTitle>
-                  <CardDescription className="mobile-text">
-                    DeepSeek AI-powered ECZ-aligned lessons
+                <div>
+                  <CardTitle className="text-lg">AI Lesson Planning</CardTitle>
+                  <CardDescription>
+                    Generate ECZ-aligned lesson plans with DeepSeek AI
                   </CardDescription>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     AI Engine
                   </span>
-                  <Badge className="catalyst-gradient text-white text-xs">
+                  <Badge className="catalyst-gradient text-white">
                     DeepSeek AI
                   </Badge>
                 </div>
-                <div className="text-center py-2">
-                  <div className="text-lg sm:text-xl font-bold text-catalyst-600">
-                    Ready
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Generate ECZ-aligned lesson plans instantly
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Create professional lesson plans instantly
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -210,49 +143,36 @@ const DashboardContent: React.FC = () => {
         </Link>
 
         {/* Assessment Generator Module */}
-        <Link to="/assessment" className="block">
-          <Card className="touch-card group hover:border-catalyst-300 transition-all duration-200">
-            <CardHeader className="flex flex-row items-center space-y-0 pb-3 sm:pb-4">
-              <div className="flex items-center space-x-3 flex-1">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl catalyst-gradient flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <Link to="/assessment">
+          <Card className="module-card group">
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
+                  <ClipboardList className="w-5 h-5 text-catalyst-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="mobile-heading text-foreground group-hover:text-catalyst-600 transition-colors">
+                <div>
+                  <CardTitle className="text-lg">
                     Assessment Generator
                   </CardTitle>
-                  <CardDescription className="mobile-text">
-                    Intelligent question generation
+                  <CardDescription>
+                    Create intelligent assessments and marking schemes
                   </CardDescription>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Question Types
                   </span>
-                  <Badge variant="outline" className="text-xs">
-                    Multiple formats
-                  </Badge>
+                  <Badge variant="outline">Multiple formats</Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="py-2">
-                    <div className="text-sm font-bold text-blue-600">MCQ</div>
-                    <div className="text-xs text-muted-foreground">
-                      Multiple Choice
-                    </div>
-                  </div>
-                  <div className="py-2">
-                    <div className="text-sm font-bold text-purple-600">
-                      Essay
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Long Answer
-                    </div>
-                  </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Generate questions with AI assistance
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -260,41 +180,67 @@ const DashboardContent: React.FC = () => {
         </Link>
 
         {/* Performance Tracker Module */}
-        <Link to="/performance" className="block">
-          <Card className="touch-card group hover:border-catalyst-300 transition-all duration-200">
-            <CardHeader className="flex flex-row items-center space-y-0 pb-3 sm:pb-4">
-              <div className="flex items-center space-x-3 flex-1">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl catalyst-gradient flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <Link to="/performance">
+          <Card className="module-card group">
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
+                  <TrendingUp className="w-5 h-5 text-catalyst-600" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="mobile-heading text-foreground group-hover:text-catalyst-600 transition-colors">
-                    Performance Tracker
-                  </CardTitle>
-                  <CardDescription className="mobile-text">
-                    Student progress analytics
+                <div>
+                  <CardTitle className="text-lg">Performance Tracker</CardTitle>
+                  <CardDescription>
+                    Monitor student progress and analytics
                   </CardDescription>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs sm:text-sm text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Analytics
                   </span>
-                  <Badge variant="outline" className="text-xs">
-                    Real-time
-                  </Badge>
+                  <Badge variant="outline">Real-time</Badge>
                 </div>
-                <div className="text-center py-2">
-                  <div className="text-lg sm:text-xl font-bold text-green-600">
-                    Ready
-                  </div>
-                  <div className="text-xs text-muted-foreground">
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
                     Track progress and identify improvements
-                  </div>
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Analytics Module */}
+        <Link to="/analytics">
+          <Card className="module-card group">
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-catalyst-100">
+                  <BarChart3 className="w-5 h-5 text-catalyst-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Advanced Analytics</CardTitle>
+                  <CardDescription>
+                    Comprehensive insights and reporting
+                  </CardDescription>
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-catalyst-600 transition-colors ml-auto" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Reports</span>
+                  <Badge variant="outline">Interactive</Badge>
+                </div>
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Visualize data and generate reports
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -303,14 +249,12 @@ const DashboardContent: React.FC = () => {
       </div>
 
       {/* Recent Activity */}
-      <Card className="touch-card">
-        <CardHeader className="pb-3 sm:pb-4">
+      <Card>
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="mobile-heading">Recent Activity</CardTitle>
-              <CardDescription className="mobile-text">
-                Latest actions and updates
-              </CardDescription>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Latest actions and updates</CardDescription>
             </div>
             <Calendar className="w-5 h-5 text-muted-foreground" />
           </div>
@@ -318,26 +262,17 @@ const DashboardContent: React.FC = () => {
         <CardContent>
           <div className="space-y-4">
             <div className="text-center py-8">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <Clock className="w-6 h-6 text-gray-400" />
               </div>
-              <p className="mobile-text text-muted-foreground">
-                No recent activity
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground">No recent activity</p>
+              <p className="text-sm text-muted-foreground mt-1">
                 Start using the modules to see activity here
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* Footer */}
-      <div className="text-center py-4 sm:py-6">
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Catalyst Educational Management System - Powered by DeepSeek AI
-        </p>
-      </div>
     </div>
   );
 };
