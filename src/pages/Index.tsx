@@ -129,12 +129,12 @@ const DashboardContent: React.FC = () => {
                     AI Engine
                   </span>
                   <Badge className="catalyst-gradient text-white">
-                    DeepSeek AI
+                    DeepSeek Free
                   </Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
-                    Create professional lesson plans instantly
+                    Ready to use! No setup required
                   </p>
                 </div>
               </div>
