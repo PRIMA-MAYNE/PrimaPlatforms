@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/ui/stats-card";
 import {
   Card,
@@ -357,9 +358,9 @@ const DashboardContent: React.FC = () => {
 
 const Index: React.FC = () => {
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <DashboardLayout>
       <DashboardContent />
-    </div>
+    </DashboardLayout>
   );
 };
 
