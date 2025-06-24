@@ -65,7 +65,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/assessment-generator"
+                path="/assessment"
                 element={
                   <ProtectedRoute>
                     <AssessmentGenerator />
@@ -73,7 +73,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/performance-tracker"
+                path="/performance"
                 element={
                   <ProtectedRoute>
                     <PerformanceTracker />
