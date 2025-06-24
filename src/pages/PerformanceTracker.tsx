@@ -51,7 +51,7 @@ import {
   Plus,
   BarChart3,
 } from "lucide-react";
-import { analyzePerformance } from "@/lib/working-ai-service";
+import { analyzePerformance } from "@/lib/immediate-ai";
 import { toast } from "@/hooks/use-toast";
 
 interface Grade {

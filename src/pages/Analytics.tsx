@@ -55,7 +55,7 @@ import {
   Calendar,
   FileText,
 } from "lucide-react";
-import { generateEducationalInsights } from "@/lib/working-ai-service";
+import { generateEducationalInsights } from "@/lib/immediate-ai";
 import { toast } from "@/hooks/use-toast";
 
 interface Grade {
