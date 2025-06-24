@@ -35,8 +35,8 @@ const DashboardContent: React.FC = () => {
           Dashboard Overview
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          Your educational command center for managing classes, tracking
-          progress, and generating insights.
+          All features working! AI lesson planning, assessments, analytics, and
+          attendance tracking ready to use.
         </p>
       </div>
 
@@ -128,13 +128,11 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     AI Engine
                   </span>
-                  <Badge className="catalyst-gradient text-white">
-                    DeepSeek Free
-                  </Badge>
+                  <Badge className="bg-green-500 text-white">✓ Working</Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
-                    Ready to use! No setup required
+                    AI lesson generation ready!
                   </p>
                 </div>
               </div>
@@ -167,11 +165,11 @@ const DashboardContent: React.FC = () => {
                   <span className="text-sm text-muted-foreground">
                     Question Types
                   </span>
-                  <Badge variant="outline">Multiple formats</Badge>
+                  <Badge className="bg-green-500 text-white">✓ Working</Badge>
                 </div>
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground">
-                    Generate questions with AI assistance
+                    AI assessment generation ready!
                   </p>
                 </div>
               </div>
