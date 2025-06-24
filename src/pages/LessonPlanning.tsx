@@ -91,6 +91,8 @@ const LessonPlanning: React.FC = () => {
   }, [savedPlans]);
 
   const handleGenerate = () => {
+    console.log("🔥 Generate lesson plan button clicked!", formData);
+
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
       toast({
         title: "Missing Information",
@@ -100,6 +102,7 @@ const LessonPlanning: React.FC = () => {
       return;
     }
 
+    console.log("✅ Starting lesson plan generation...");
     setIsGenerating(true);
     try {
       // Add a small delay to show loading state

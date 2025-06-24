@@ -135,6 +135,8 @@ const AssessmentGenerator: React.FC = () => {
   };
 
   const handleGenerate = () => {
+    console.log("🔥 Generate button clicked!", formData);
+
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
       toast({
         title: "Missing Information",
@@ -153,6 +155,7 @@ const AssessmentGenerator: React.FC = () => {
       return;
     }
 
+    console.log("✅ Starting assessment generation...");
     setIsGenerating(true);
     try {
       // Add a small delay to show loading state
