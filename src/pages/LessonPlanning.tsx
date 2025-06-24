@@ -90,7 +90,7 @@ const LessonPlanning: React.FC = () => {
     localStorage.setItem("catalyst-lesson-plans", JSON.stringify(savedPlans));
   }, [savedPlans]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
       toast({
         title: "Missing Information",

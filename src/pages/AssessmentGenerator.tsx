@@ -134,7 +134,7 @@ const AssessmentGenerator: React.FC = () => {
     }));
   };
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
       toast({
         title: "Missing Information",
