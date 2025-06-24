@@ -19,23 +19,17 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           vendor: ["react", "react-dom"],
-          ui: [
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-select",
-          ],
+          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
           charts: ["recharts"],
-          forms: ["react-hook-form", "@hookform/resolvers", "zod"],
-          export: ["jspdf", "docx", "exceljs", "file-saver"],
+          export: ["jspdf", "docx", "exceljs"],
           router: ["react-router-dom"],
-          utils: ["date-fns", "clsx", "tailwind-merge", "lucide-react"],
         },
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
     target: "esnext",
-    minify: "terser",
+    minify: "esbuild",
+    sourcemap: false,
   },
   optimizeDeps: {
     include: [
