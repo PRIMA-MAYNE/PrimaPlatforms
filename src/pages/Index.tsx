@@ -48,35 +48,31 @@ const DashboardContent: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Stats - Mobile responsive grid */}
-      <div className="mobile-stats-grid">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatsCard
           title="Students"
           value="0"
           description="Add classes"
           icon={Users}
-          className="mobile-stat-card"
         />
         <StatsCard
           title="Attendance"
           value="0%"
           description="Start tracking"
           icon={CheckCircle}
-          className="mobile-stat-card"
         />
         <StatsCard
           title="Lessons"
           value="0"
           description="AI-generated"
           icon={FileText}
-          className="mobile-stat-card"
         />
         <StatsCard
           title="Assessments"
           value="0"
           description="Auto-created"
           icon={ClipboardList}
-          className="mobile-stat-card"
         />
       </div>
 
