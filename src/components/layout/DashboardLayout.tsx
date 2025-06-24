@@ -1,10 +1,14 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
-import { cn } from "@/lib/utils";
 
-export const DashboardLayout: React.FC = () => {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -27,9 +31,7 @@ export const DashboardLayout: React.FC = () => {
 
         {/* Page content */}
         <main className="py-4 px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">
-            <Outlet />
-          </div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>
