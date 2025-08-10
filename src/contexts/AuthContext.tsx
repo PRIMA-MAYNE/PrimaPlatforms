@@ -11,8 +11,9 @@ interface AuthContextType {
     email: string,
     password: string,
     schoolName: string,
-    autoConfirm?: boolean,
-  ) => Promise<{ data: any; error: AuthError | null; autoConfirmed?: boolean }>;
+    fullName: string,
+    role?: string
+  ) => Promise<{ data: any; error: AuthError | null }>;
   signIn: (
     email: string,
     password: string,
@@ -39,29 +40,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for demo user first
-    const checkDemoUser = () => {
-      const demoUser = localStorage.getItem("catalyst-demo-user");
-      const demoToken = localStorage.getItem("catalyst-auth-token");
-
-      if (demoUser && demoToken) {
-        setUser(JSON.parse(demoUser));
-        setSession(null); // Demo doesn't need session
-        setLoading(false);
-        return true;
-      }
-      return false;
-    };
-
-    // If demo user exists, use that
-    if (checkDemoUser()) {
-      return;
-    }
-
-    // Otherwise, get initial session from Supabase
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -101,59 +82,49 @@ export function AuthProvider({ children }: AuthProviderProps) {
     email: string,
     password: string,
     schoolName: string,
-    autoConfirm: boolean = true,
+    fullName: string,
+    role: string = 'teacher'
   ) => {
     try {
       setLoading(true);
-      setError(null);
 
-      // First, create the user account
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
+            full_name: fullName,
             school_name: schoolName,
+            role: role,
           },
         },
       });
 
-      if (error) throw error;
-
-      // If auto-confirm is enabled and user was created successfully
-      if (autoConfirm && data.user && !data.user.email_confirmed_at) {
-        try {
-          // Wait a moment for the user to be fully created
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Attempt to sign the user in immediately
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
-
-          if (!signInError && signInData.user) {
-            console.log("User auto-confirmed and signed in successfully");
-            return { data: signInData, error: null, autoConfirmed: true };
-          } else {
-            console.log(
-              "Auto-confirm attempt failed, proceeding with normal flow:",
-              signInError?.message,
-            );
-          }
-        } catch (autoConfirmError) {
-          console.log(
-            "Auto-confirm failed, user will need to verify email:",
-            autoConfirmError,
-          );
-        }
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return { data: null, error };
       }
 
-      return { data, error: null, autoConfirmed: false };
+      if (data.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Check your email",
+          description: "Please check your email for a confirmation link.",
+        });
+      }
+
+      return { data, error: null };
     } catch (error: any) {
-      setError(error.message);
-      throw error;
+      const authError = error as AuthError;
+      toast({
+        title: "An error occurred",
+        description: authError.message,
+        variant: "destructive",
+      });
+      return { data: null, error: authError };
     } finally {
       setLoading(false);
     }
@@ -161,6 +132,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      setLoading(true);
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -184,29 +157,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         variant: "destructive",
       });
       return { error: authError };
+    } finally {
+      setLoading(false);
     }
   };
 
   const signOut = async () => {
     try {
-      // Check if demo user
-      const demoUser = localStorage.getItem("catalyst-demo-user");
-      if (demoUser) {
-        localStorage.removeItem("catalyst-demo-user");
-        localStorage.removeItem("catalyst-auth-token");
-        // Clean up demo data
-        localStorage.removeItem("catalyst-classes");
-        localStorage.removeItem("catalyst-grades");
-        localStorage.removeItem("catalyst-attendance");
-        setUser(null);
-        setSession(null);
-        toast({
-          title: "Demo session ended",
-          description: "You have been logged out of the demo account.",
-        });
-        return;
-      }
-
+      setLoading(true);
+      
       const { error } = await supabase.auth.signOut();
       if (error) {
         toast({
@@ -217,6 +176,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error("Sign out error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -236,12 +197,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       toast({
-        title: "Password reset email sent",
-        description: "Check your email for reset instructions.",
+        title: "Password reset sent",
+        description: "Check your email for password reset instructions.",
       });
 
       return { error: null };
-    } catch (error) {
+    } catch (error: any) {
       const authError = error as AuthError;
       toast({
         title: "An error occurred",
