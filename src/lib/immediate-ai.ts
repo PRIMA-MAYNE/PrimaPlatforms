@@ -1,52 +1,15 @@
-// Immediate AI Service - Guaranteed to work instantly
-// No external dependencies, no async complexities
+// Re-export the lightweight AI service functions
+import { AIService } from './ai-service';
 
 export function generateLessonPlan(params: any): any {
-  console.log("🎓 Generating lesson plan for:", params);
-
-  const plan = {
-    title: `${params.subject} Lesson: ${params.topic}`,
-    subject: params.subject,
-    topic: params.topic,
-    gradeLevel: params.gradeLevel,
-    duration: `${params.duration} minutes`,
-    objectives: [
-      `Students will understand the fundamental concepts of ${params.topic}`,
-      `Students will apply ${params.topic} principles to solve practical problems`,
-      `Students will demonstrate mastery through hands-on activities`,
-      `Students will analyze real-world applications of ${params.topic}`,
-    ],
-    materials: [
-      "Whiteboard and markers",
-      "Textbooks and notebooks",
-      "Calculator (if applicable)",
-      "Practical materials for demonstrations",
-      "Worksheets and handouts",
-    ],
-    introduction: `Begin the lesson by connecting ${params.topic} to students' daily experiences. Ask what they already know about ${params.topic} and provide engaging examples that demonstrate its relevance. This 5-10 minute introduction should capture attention and establish learning context.`,
-    lessonDevelopment: `Systematically introduce key concepts of ${params.topic} using clear explanations and visual aids. Build from simple to complex ideas, ensuring understanding at each step. Use interactive demonstrations and encourage student participation through questioning and discussion. Provide multiple examples and check for comprehension before proceeding.`,
-    activities: [
-      `Pair work: Students collaborate to solve ${params.topic} problems`,
-      `Group discussion: Teams analyze different aspects of ${params.topic}`,
-      `Hands-on activity: Practical demonstration of concepts`,
-      `Individual practice: Students work independently on exercises`,
-      `Presentation: Groups share findings and understanding`,
-    ],
-    assessment: `Use formative assessment throughout the lesson via observation, questioning, and student responses. Conduct summative assessment with a brief quiz or practical exercise. Provide immediate feedback and address misconceptions. Use exit tickets to gauge understanding.`,
-    conclusion: `Summarize key concepts learned about ${params.topic}. Have students reflect on applications and connections to previous learning. Assign relevant homework to reinforce concepts. Preview the next lesson and its relationship to today's content.`,
-    generatedAt: new Date().toISOString(),
-  };
-
-  console.log("✅ Lesson plan generated successfully:", plan.title);
-  return plan;
+  console.log("🎓 Generating ECZ-aligned lesson plan for:", params);
+  return AIService.generateLessonPlan(params);
 }
 
 export function generateAssessment(params: any): any {
-  console.log("📝 Generating assessment for:", params);
-
-  const questions = [];
-
-  for (let i = 1; i <= params.questionCount; i++) {
+  console.log("📝 Generating ECZ-aligned assessment for:", params);
+  return AIService.generateAssessment(params);
+}
     if (params.questionTypes.includes("multiple-choice")) {
       questions.push({
         id: `q${i}`,
@@ -124,59 +87,14 @@ export function generateAssessment(params: any): any {
 }
 
 export function generateEducationalInsights(data: any): any {
-  console.log("🧠 Generating educational insights for:", data);
-
-  const insights = {
-    attendanceInsights: {
-      overallRate: 85,
-      patterns: "Most students maintain good attendance with occasional absences during assessment periods.",
-      concerns: data.attendance?.length < 10 ? ["Limited attendance data available for comprehensive analysis"] : [],
-    },
-    performanceInsights: {
-      strongestSubject: "Mathematics",
-      weakestSubject: "English",
-      trends: "Performance shows steady improvement over the term",
-    },
-    correlationInsights: {
-      correlation: "Strong positive correlation",
-      insight: "Students with higher attendance rates tend to perform better academically",
-      recommendation: "Focus on improving attendance through engagement strategies",
-    },
-    recommendations: [
-      "Implement regular formative assessments to track progress",
-      "Use differentiated instruction to cater to diverse learning needs",
-      "Encourage peer learning and collaborative activities",
-      "Provide timely feedback to enhance learning outcomes",
-      "Monitor attendance patterns and intervene early when needed",
-    ],
-  };
-
-  console.log("✅ Educational insights generated successfully");
-  return insights;
+  console.log("🧠 Generating data-driven educational insights for:", data);
+  return AIService.generateEducationalInsights({ data });
 }
 
 export function analyzePerformance(data: any): any {
-  console.log("📊 Analyzing performance data:", data);
-
-  const analysis = {
-    overallAverage: 75,
-    subjectPerformance: [
-      { subject: "Mathematics", average: 78, students: 25 },
-      { subject: "English", average: 72, students: 25 },
-      { subject: "Science", average: 80, students: 25 },
-    ],
-    trends: {
-      improving: 15,
-      stable: 8,
-      declining: 2,
-    },
-    recommendations: [
-      "Focus additional support on students showing declining performance",
-      "Continue current strategies for stable performers",
-      "Challenge high-performing students with advanced materials",
-    ],
+  console.log("📊 Analyzing real performance data:", data);
+  return AIService.generateEducationalInsights({ data }).performance || {
+    message: "Performance analysis requires student assessment data",
+    recommendations: ["Conduct assessments to enable performance analysis"]
   };
-
-  console.log("✅ Performance analysis completed");
-  return analysis;
 }
