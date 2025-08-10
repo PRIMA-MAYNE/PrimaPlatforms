@@ -31,9 +31,10 @@ const App = () => (
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <TooltipProvider>
           <AuthProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+            <AuthErrorBoundary>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
               <Routes>
                 {/* Public routes */}
                 <Route path="/" element={<Landing />} />
@@ -95,6 +96,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
+            </AuthErrorBoundary>
           </AuthProvider>
         </TooltipProvider>
       </ThemeProvider>
