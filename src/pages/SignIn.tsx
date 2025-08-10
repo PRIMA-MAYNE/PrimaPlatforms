@@ -56,6 +56,85 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const handleDemoSignIn = () => {
+    setIsLoading(true);
+
+    // Create demo user data
+    const demoUser = {
+      id: "demo-user-001",
+      email: "demo@catalyst-education.com",
+      user_metadata: {
+        full_name: "Demo Teacher",
+        role: "teacher",
+        school_name: "Catalyst Demo School"
+      }
+    };
+
+    // Store demo user in localStorage for demo purposes
+    localStorage.setItem("catalyst-demo-user", JSON.stringify(demoUser));
+    localStorage.setItem("catalyst-auth-token", "demo-token-" + Date.now());
+
+    // Add demo data for inspection
+    const demoData = {
+      classes: [
+        {
+          id: "class-001",
+          name: "Grade 10A Mathematics",
+          grade: "10",
+          students: [
+            { id: "student-001", name: "John Mwansa", class: "class-001", gender: "Male" },
+            { id: "student-002", name: "Mary Banda", class: "class-001", gender: "Female" },
+            { id: "student-003", name: "Peter Phiri", class: "class-001", gender: "Male" },
+            { id: "student-004", name: "Grace Tembo", class: "class-001", gender: "Female" },
+            { id: "student-005", name: "Joseph Mulenga", class: "class-001", gender: "Male" }
+          ]
+        },
+        {
+          id: "class-002",
+          name: "Grade 9B English",
+          grade: "9",
+          students: [
+            { id: "student-006", name: "Sarah Musonda", class: "class-002", gender: "Female" },
+            { id: "student-007", name: "David Chanda", class: "class-002", gender: "Male" },
+            { id: "student-008", name: "Ruth Nyirenda", class: "class-002", gender: "Female" }
+          ]
+        }
+      ],
+      grades: [
+        { id: "grade-001", studentId: "student-001", studentName: "John Mwansa", subject: "Mathematics", assessmentName: "Mid-term Test", score: 85, maxScore: 100, date: "2024-01-10", class: "class-001" },
+        { id: "grade-002", studentId: "student-002", studentName: "Mary Banda", subject: "Mathematics", assessmentName: "Mid-term Test", score: 92, maxScore: 100, date: "2024-01-10", class: "class-001" },
+        { id: "grade-003", studentId: "student-003", studentName: "Peter Phiri", subject: "Mathematics", assessmentName: "Mid-term Test", score: 78, maxScore: 100, date: "2024-01-10", class: "class-001" },
+        { id: "grade-004", studentId: "student-001", studentName: "John Mwansa", subject: "Mathematics", assessmentName: "Final Exam", score: 88, maxScore: 100, date: "2024-01-15", class: "class-001" }
+      ],
+      attendance: [
+        { id: "att-001", studentId: "student-001", date: "2024-01-15", status: "present", class: "class-001" },
+        { id: "att-002", studentId: "student-002", date: "2024-01-15", status: "present", class: "class-001" },
+        { id: "att-003", studentId: "student-003", date: "2024-01-15", status: "absent", class: "class-001" },
+        { id: "att-004", studentId: "student-004", date: "2024-01-15", status: "present", class: "class-001" }
+      ]
+    };
+
+    // Store demo data
+    localStorage.setItem("catalyst-classes", JSON.stringify(demoData.classes));
+    localStorage.setItem("catalyst-grades", JSON.stringify(demoData.grades));
+    localStorage.setItem("catalyst-attendance", JSON.stringify(demoData.attendance));
+
+    // Simulate loading delay
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate("/dashboard", { replace: true });
+
+      // Show welcome toast
+      setTimeout(() => {
+        toast({
+          title: "🎓 Demo Access Granted!",
+          description: "Welcome to Catalyst Education Demo. All features are fully functional with sample data.",
+          duration: 5000,
+        });
+      }, 1000);
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-catalyst-50 to-catalyst-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -150,6 +229,29 @@ const SignIn: React.FC = () => {
                 )}
               </Button>
             </form>
+
+            {/* Demo Access */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <Separator className="w-full" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Demo Access
+                </span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full border-catalyst-200 text-catalyst-700 hover:bg-catalyst-50"
+              onClick={handleDemoSignIn}
+              disabled={isLoading}
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Demo Sign In (Inspector Access)
+            </Button>
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
