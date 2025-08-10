@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { GraduationCap, Loader2, Eye, EyeOff, Mail, Zap } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
