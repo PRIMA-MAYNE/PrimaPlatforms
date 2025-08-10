@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
 
 interface HeaderProps {
   onMenuClick: () => void;
