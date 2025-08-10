@@ -1,0 +1,14 @@
+{
+  "status": "healthy",
+  "version": "1.0.0",
+  "timestamp": "2024-01-15T21:45:00Z",
+  "service": "catalyst-education",
+  "environment": "production",
+  "uptime": "healthy",
+  "features": {
+    "authentication": "enabled",
+    "ai_generation": "enabled",
+    "exports": "enabled",
+    "analytics": "enabled"
+  }
+}
