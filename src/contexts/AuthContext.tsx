@@ -42,7 +42,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get initial session
+    // Check for demo user first
+    const checkDemoUser = () => {
+      const demoUser = localStorage.getItem("catalyst-demo-user");
+      const demoToken = localStorage.getItem("catalyst-auth-token");
+
+      if (demoUser && demoToken) {
+        setUser(JSON.parse(demoUser));
+        setSession(null); // Demo doesn't need session
+        setLoading(false);
+        return true;
+      }
+      return false;
+    };
+
+    // If demo user exists, use that
+    if (checkDemoUser()) {
+      return;
+    }
+
+    // Otherwise, get initial session from Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -170,6 +189,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signOut = async () => {
     try {
+      // Check if demo user
+      const demoUser = localStorage.getItem("catalyst-demo-user");
+      if (demoUser) {
+        localStorage.removeItem("catalyst-demo-user");
+        localStorage.removeItem("catalyst-auth-token");
+        // Clean up demo data
+        localStorage.removeItem("catalyst-classes");
+        localStorage.removeItem("catalyst-grades");
+        localStorage.removeItem("catalyst-attendance");
+        setUser(null);
+        setSession(null);
+        toast({
+          title: "Demo session ended",
+          description: "You have been logged out of the demo account.",
+        });
+        return;
+      }
+
       const { error } = await supabase.auth.signOut();
       if (error) {
         toast({
