@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
           vendor: ["react", "react-dom"],
           ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
           charts: ["recharts"],
-          export: ["jspdf", "docx", "exceljs"],
+          export: ["jspdf", "docx", "exceljs", "file-saver"],
           router: ["react-router-dom"],
         },
       },
@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => ({
       "jspdf",
       "docx",
       "exceljs",
+      "file-saver",
     ],
   },
 }));
