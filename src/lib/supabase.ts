@@ -17,6 +17,30 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    flowType: 'pkce',
+    storage: {
+      getItem: (key: string) => {
+        try {
+          return localStorage.getItem(key);
+        } catch {
+          return null;
+        }
+      },
+      setItem: (key: string, value: string) => {
+        try {
+          localStorage.setItem(key, value);
+        } catch (error) {
+          console.error('Storage setItem error:', error);
+        }
+      },
+      removeItem: (key: string) => {
+        try {
+          localStorage.removeItem(key);
+        } catch (error) {
+          console.error('Storage removeItem error:', error);
+        }
+      },
+    },
   },
   realtime: {
     params: {
@@ -70,19 +94,19 @@ export const db = {
   // Helper function to handle database errors
   handleError: (error: any) => {
     console.error('Database error:', error);
-    
+
     if (error.code === 'PGRST116') {
       throw new Error('No data found');
     }
-    
+
     if (error.code === '23505') {
       throw new Error('Data already exists');
     }
-    
+
     if (error.code === '23503') {
       throw new Error('Referenced data not found');
     }
-    
+
     throw new Error(error.message || 'Database operation failed');
   },
 
@@ -90,27 +114,27 @@ export const db = {
   query: async (table: string, options: any = {}) => {
     try {
       let query = supabase.from(table).select(options.select || '*');
-      
+
       if (options.eq) {
         Object.entries(options.eq).forEach(([key, value]) => {
           query = query.eq(key, value);
         });
       }
-      
+
       if (options.order) {
         query = query.order(options.order.column, options.order.options || {});
       }
-      
+
       if (options.limit) {
         query = query.limit(options.limit);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) {
         db.handleError(error);
       }
-      
+
       return data;
     } catch (error) {
       throw error;
@@ -125,11 +149,11 @@ export const db = {
         .insert(data)
         .select()
         .single();
-      
+
       if (error) {
         db.handleError(error);
       }
-      
+
       return result;
     } catch (error) {
       throw error;
@@ -145,11 +169,11 @@ export const db = {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) {
         db.handleError(error);
       }
-      
+
       return result;
     } catch (error) {
       throw error;
@@ -163,11 +187,11 @@ export const db = {
         .from(table)
         .delete()
         .eq('id', id);
-      
+
       if (error) {
         db.handleError(error);
       }
-      
+
       return true;
     } catch (error) {
       throw error;
@@ -204,11 +228,11 @@ export const storage = {
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(path, file);
-    
+
     if (error) {
       throw new Error(error.message);
     }
-    
+
     return data;
   },
 
@@ -216,7 +240,7 @@ export const storage = {
     const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(path);
-    
+
     return data.publicUrl;
   },
 };
