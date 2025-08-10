@@ -42,17 +42,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Clear any invalid sessions on startup
+    const clearInvalidSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error && error.message.includes('Invalid Refresh Token')) {
+          // Clear invalid session data
+          await supabase.auth.signOut();
+          localStorage.clear(); // Clear any stale data
+          console.log('Cleared invalid session');
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Session check error:', error);
+        // If there's any error, clear everything
+        await supabase.auth.signOut();
+        localStorage.clear();
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    clearInvalidSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session);
+
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -63,6 +86,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
           description: "You have successfully signed in.",
         });
       } else if (event === "SIGNED_OUT") {
+        // Clear all local data on sign out
+        localStorage.removeItem('catalyst-classes');
+        localStorage.removeItem('catalyst-grades');
+        localStorage.removeItem('catalyst-attendance');
+        localStorage.removeItem('catalyst-lesson-plans');
+        localStorage.removeItem('catalyst-assessments');
+
         toast({
           title: "Signed out",
           description: "You have been signed out successfully.",
@@ -72,6 +102,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           title: "Password reset",
           description: "Check your email for password reset instructions.",
         });
+      } else if (event === "TOKEN_REFRESHED") {
+        console.log('Token refreshed successfully');
       }
     });
 
@@ -133,29 +165,58 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      
+
+      // Clear any existing invalid session before signing in
+      try {
+        await supabase.auth.signOut();
+      } catch (signOutError) {
+        // Ignore sign out errors, we just want to clear any bad state
+        console.log('Pre-signin cleanup:', signOutError);
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Handle specific refresh token errors
+        if (error.message.includes('Invalid Refresh Token')) {
+          localStorage.clear();
+          toast({
+            title: "Session expired",
+            description: "Please try signing in again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign in failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return { error };
       }
 
       return { error: null };
     } catch (error) {
       const authError = error as AuthError;
-      toast({
-        title: "An error occurred",
-        description: authError.message,
-        variant: "destructive",
-      });
+
+      // Handle refresh token errors
+      if (authError.message.includes('Invalid Refresh Token')) {
+        localStorage.clear();
+        toast({
+          title: "Session expired",
+          description: "Please try signing in again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "An error occurred",
+          description: authError.message,
+          variant: "destructive",
+        });
+      }
       return { error: authError };
     } finally {
       setLoading(false);
@@ -165,17 +226,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signOut = async () => {
     try {
       setLoading(true);
-      
+
       const { error } = await supabase.auth.signOut();
-      if (error) {
+
+      // Always clear local state and storage, even if signOut fails
+      setSession(null);
+      setUser(null);
+
+      // Clear all application data
+      localStorage.removeItem('catalyst-classes');
+      localStorage.removeItem('catalyst-grades');
+      localStorage.removeItem('catalyst-attendance');
+      localStorage.removeItem('catalyst-lesson-plans');
+      localStorage.removeItem('catalyst-assessments');
+
+      // Clear any Supabase auth data
+      localStorage.removeItem('sb-mkheppdwmzylmiiaxelq-auth-token');
+
+      if (error && !error.message.includes('Invalid Refresh Token')) {
+        console.error('Sign out error:', error);
         toast({
-          title: "Sign out failed",
-          description: error.message,
-          variant: "destructive",
+          title: "Sign out completed",
+          description: "You have been signed out (with cleanup).",
         });
       }
     } catch (error) {
       console.error("Sign out error:", error);
+      // Force cleanup even on error
+      setSession(null);
+      setUser(null);
+      localStorage.clear();
     } finally {
       setLoading(false);
     }
