@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { SupabaseService } from '@/lib/supabase-service';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Notification {
   id: string;
@@ -29,33 +30,37 @@ export const NotificationCenter: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   // Load notifications on component mount
   useEffect(() => {
     const initializeNotifications = async () => {
+      // Only load if user is authenticated
+      if (!user) {
+        console.log('No user authenticated, skipping notification initialization');
+        return;
+      }
+
       loadNotifications();
       loadUnreadCount();
 
       // Set up real-time subscription
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const subscription = SupabaseService.subscribeToNotifications(
-            user.id,
-            handleNewNotification
-          );
+        const subscription = SupabaseService.subscribeToNotifications(
+          user.id,
+          handleNewNotification
+        );
 
-          return () => {
-            subscription.unsubscribe();
-          };
-        }
+        return () => {
+          subscription.unsubscribe();
+        };
       } catch (error) {
-        console.error('Error getting user for notifications:', error);
+        console.error('Error setting up notification subscription:', error);
       }
     };
 
     initializeNotifications();
-  }, []);
+  }, [user]); // Re-run when user changes
 
   const loadNotifications = async () => {
     setLoading(true);
