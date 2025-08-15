@@ -90,7 +90,7 @@ const LessonPlanning: React.FC = () => {
     localStorage.setItem("catalyst-lesson-plans", JSON.stringify(savedPlans));
   }, [savedPlans]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     console.log("🔥 Generate lesson plan button clicked!", formData);
 
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
@@ -111,10 +111,10 @@ const LessonPlanning: React.FC = () => {
         .filter((obj) => obj.trim())
         .map((obj) => obj.trim());
 
-      const plan = generateLessonPlan({
+      const plan = await AIService.generateLessonPlan({
         subject: formData.subject,
         topic: formData.topic,
-        gradeLevel: formData.gradeLevel,
+        gradeLevel: parseInt(formData.gradeLevel),
         duration: formData.duration,
         objectives: objectives.length > 0 ? objectives : undefined,
       });
