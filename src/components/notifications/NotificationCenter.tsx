@@ -60,10 +60,18 @@ export const NotificationCenter: React.FC = () => {
   const loadNotifications = async () => {
     setLoading(true);
     try {
+      // Check if user is authenticated first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found, skipping notification load');
+        return;
+      }
+
       const data = await SupabaseService.getUserNotifications(20);
-      setNotifications(data);
+      setNotifications(data || []);
     } catch (error) {
       console.error('Error loading notifications:', error);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
@@ -71,10 +79,18 @@ export const NotificationCenter: React.FC = () => {
 
   const loadUnreadCount = async () => {
     try {
+      // Check if user is authenticated first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found, skipping unread count load');
+        return;
+      }
+
       const count = await SupabaseService.getUnreadNotificationCount();
-      setUnreadCount(count);
+      setUnreadCount(count || 0);
     } catch (error) {
       console.error('Error loading unread count:', error);
+      setUnreadCount(0);
     }
   };
 
@@ -99,6 +115,13 @@ export const NotificationCenter: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
+      // Check if user is authenticated first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found, cannot mark notification as read');
+        return;
+      }
+
       const success = await SupabaseService.markNotificationRead(notificationId);
       if (success) {
         setNotifications(prev =>
@@ -115,6 +138,13 @@ export const NotificationCenter: React.FC = () => {
 
   const markAllAsRead = async () => {
     try {
+      // Check if user is authenticated first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found, cannot mark all notifications as read');
+        return;
+      }
+
       const unreadNotifications = notifications.filter(n => !n.read);
       for (const notification of unreadNotifications) {
         await SupabaseService.markNotificationRead(notification.id);
