@@ -1,24 +1,25 @@
-// Re-export the lightweight AI service functions
+// Re-export the AI service functions with async support
 import { AIService } from './ai-service';
 
-export function generateLessonPlan(params: any): any {
+export async function generateLessonPlan(params: any): Promise<any> {
   console.log("🎓 Generating ECZ-aligned lesson plan for:", params);
-  return AIService.generateLessonPlan(params);
+  return await AIService.generateLessonPlan(params);
 }
 
-export function generateAssessment(params: any): any {
+export async function generateAssessment(params: any): Promise<any> {
   console.log("📝 Generating ECZ-aligned assessment for:", params);
-  return AIService.generateAssessment(params);
+  return await AIService.generateAssessment(params);
 }
 
-export function generateEducationalInsights(data: any): any {
+export async function generateEducationalInsights(data: any): Promise<any> {
   console.log("🧠 Generating data-driven educational insights for:", data);
-  return AIService.generateEducationalInsights({ data });
+  return await AIService.generateEducationalInsights({ data });
 }
 
-export function analyzePerformance(data: any): any {
+export async function analyzePerformance(data: any): Promise<any> {
   console.log("📊 Analyzing real performance data:", data);
-  return AIService.generateEducationalInsights({ data }).performance || {
+  const insights = await AIService.generateEducationalInsights({ data });
+  return insights.performance || {
     message: "Performance analysis requires student assessment data",
     recommendations: ["Conduct assessments to enable performance analysis"]
   };
