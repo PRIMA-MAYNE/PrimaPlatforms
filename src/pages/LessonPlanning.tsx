@@ -35,7 +35,7 @@ import {
   FileDown,
   Save,
 } from "lucide-react";
-import { generateLessonPlan } from "@/lib/immediate-ai";
+import { AIService } from "@/lib/ai-service";
 import {
   exportLessonPlanToPDF,
   exportLessonPlanToDocx,
