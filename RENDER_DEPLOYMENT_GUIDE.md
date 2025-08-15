@@ -67,6 +67,9 @@ Add these in Render Dashboard → Environment:
 VITE_SUPABASE_URL=https://mkheppdwmzylmiiaxelq.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1raGVwcGR3bXp5bG1paWF4ZWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA1NDg3NjMsImV4cCI6MjA2NjEyNDc2M30.XqshTY7HKTkHBK0Gm9DBVcrFnThD7OfFa2Upw18ny9o
 
+# Real AI: OpenRouter DeepSeek R1
+VITE_OPENROUTER_API_KEY=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
+
 # App Configuration (Update URL after deployment)
 VITE_APP_URL=https://your-app-name.onrender.com
 VITE_APP_NAME=Catalyst Educational Management System
@@ -77,6 +80,7 @@ VITE_ENABLE_ANALYTICS=true
 VITE_ENABLE_EXPORTS=true
 VITE_ENABLE_AI_FEATURES=true
 VITE_ENABLE_REALTIME=true
+VITE_USE_REAL_AI=true
 
 # Environment
 NODE_ENV=production
@@ -164,7 +168,7 @@ UI Components:     327KB (gzipped: 101KB)
 1. **✅ Update Supabase Settings**
    ```
    Go to: https://app.supabase.com/project/mkheppdwmzylmiiaxelq/auth/settings
-   
+
    Site URL: https://your-app.onrender.com
    Redirect URLs:
    - https://your-app.onrender.com/verify-email
@@ -193,7 +197,7 @@ UI Components:     327KB (gzipped: 101KB)
 - 📋 **Streamlined attendance tracking**
 - 📈 **Real-time student insights**
 
-### **For Schools** 
+### **For Schools**
 - 📑 **ECZ-compliant documentation**
 - 🔄 **Real-time data synchronization**
 - 📊 **Professional reporting**
@@ -245,8 +249,8 @@ UI Components:     327KB (gzipped: 101KB)
 
 ---
 
-**Last Updated**: January 15, 2025  
-**Status**: Production Ready ✅  
-**Build**: Successful (3.7MB optimized)  
-**Security**: Zero vulnerabilities  
+**Last Updated**: January 15, 2025
+**Status**: Production Ready ✅
+**Build**: Successful (3.7MB optimized)
+**Security**: Zero vulnerabilities
 **API Keys**: Verified working
