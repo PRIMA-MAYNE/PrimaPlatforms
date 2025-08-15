@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { AIStatusIndicator } from "@/components/ai/AIStatusIndicator";
 
 interface HeaderProps {
   onMenuClick: () => void;
