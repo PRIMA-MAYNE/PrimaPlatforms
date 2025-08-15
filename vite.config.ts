@@ -25,11 +25,15 @@ export default defineConfig(({ mode }) => ({
           router: ["react-router-dom"],
         },
       },
+      external: mode === 'production' ? [] : undefined,
     },
     chunkSizeWarningLimit: 2000,
     target: "esnext",
     minify: "esbuild",
     sourcemap: false,
+    commonjsOptions: {
+      include: [/jspdf/, /docx/, /exceljs/, /file-saver/],
+    },
   },
   optimizeDeps: {
     include: [
@@ -41,5 +45,9 @@ export default defineConfig(({ mode }) => ({
       "exceljs",
       "file-saver",
     ],
+    force: true,
+  },
+  define: {
+    global: 'globalThis',
   },
 }));
