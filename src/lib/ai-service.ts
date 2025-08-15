@@ -1,5 +1,7 @@
-// Lightweight AI Service - Fast, Precise, Educational Content Generation
-// Optimized for educational contexts with ECZ alignment
+// Intelligent AI Service - DeepSeek R1 + Local Fallback
+// Real AI via OpenRouter DeepSeek R1 with local fallback for reliability
+
+import { OpenRouterAIService } from './openrouter-ai-service';
 
 interface LessonPlanParams {
   subject: string;
@@ -31,6 +33,11 @@ interface EducationalInsightsParams {
 }
 
 export class AIService {
+  // Check if real AI is enabled
+  private static get useRealAI(): boolean {
+    return import.meta.env.VITE_USE_REAL_AI === 'true' &&
+           import.meta.env.VITE_ENABLE_AI_FEATURES === 'true';
+  }
   // Educational content templates for rapid generation
   private static readonly ECZ_SUBJECTS = {
     mathematics: {
@@ -64,15 +71,31 @@ export class AIService {
   // LESSON PLAN GENERATION
   // =====================================================
 
-  static generateLessonPlan(params: LessonPlanParams): any {
+  static async generateLessonPlan(params: LessonPlanParams): Promise<any> {
+    // Try real AI first if enabled
+    if (this.useRealAI) {
+      try {
+        console.log('🤖 Generating lesson plan with DeepSeek R1 AI...');
+        return await OpenRouterAIService.generateLessonPlan(params);
+      } catch (error) {
+        console.warn('Real AI failed, falling back to local generation:', error);
+      }
+    }
+
+    // Fallback to local generation
+    console.log('📚 Generating lesson plan with local AI...');
+    return this.generateLocalLessonPlan(params);
+  }
+
+  private static generateLocalLessonPlan(params: LessonPlanParams): any {
     const { subject, topic, gradeLevel, duration } = params;
-    
+
     // Generate ECZ-aligned objectives
     const objectives = this.generateObjectives(subject, topic, gradeLevel);
-    
+
     // Generate contextual materials
     const materials = this.generateMaterials(subject, topic, gradeLevel);
-    
+
     // Generate structured content
     const content = this.generateLessonContent(subject, topic, gradeLevel, duration);
 
@@ -140,19 +163,19 @@ export class AIService {
 
     return {
       introduction: `Begin with a ${timeAllocation.introduction}-minute engaging hook connecting ${topic} to students' daily experiences. Review prerequisite knowledge and establish learning objectives. Use questioning to assess prior understanding and create curiosity about ${topic}.`,
-      
+
       development: `Spend ${timeAllocation.development} minutes systematically introducing ${topic} concepts. Use clear explanations, visual aids, and step-by-step demonstrations. Break complex ideas into manageable chunks. Encourage active participation through questioning and discussion. Provide multiple examples and check understanding frequently.`,
-      
+
       activities: [
         `Pair work (${Math.round(timeAllocation.activities * 0.4)} min): Students collaborate to explore ${topic} applications`,
         `Group activity (${Math.round(timeAllocation.activities * 0.35)} min): Teams solve problems related to ${topic}`,
         `Individual practice (${Math.round(timeAllocation.activities * 0.25)} min): Students work independently on exercises`
       ],
-      
+
       assessment: `Use formative assessment throughout via observation, questioning, and student responses. Quick comprehension checks every 10-15 minutes. Exit ticket or brief quiz to gauge understanding. Provide immediate feedback and address misconceptions.`,
-      
+
       conclusion: `Summarize key ${topic} concepts learned. Have students reflect on applications and connections. Preview next lesson. Assign homework to reinforce learning.`,
-      
+
       homework: `Complete practice exercises on ${topic}. Read textbook pages related to today's lesson. Prepare for next class by reviewing prerequisite concepts.`
     };
   }
@@ -161,9 +184,25 @@ export class AIService {
   // ASSESSMENT GENERATION
   // =====================================================
 
-  static generateAssessment(params: AssessmentParams): any {
+  static async generateAssessment(params: AssessmentParams): Promise<any> {
+    // Try real AI first if enabled
+    if (this.useRealAI) {
+      try {
+        console.log('🤖 Generating assessment with DeepSeek R1 AI...');
+        return await OpenRouterAIService.generateAssessment(params);
+      } catch (error) {
+        console.warn('Real AI failed, falling back to local generation:', error);
+      }
+    }
+
+    // Fallback to local generation
+    console.log('📝 Generating assessment with local AI...');
+    return this.generateLocalAssessment(params);
+  }
+
+  private static generateLocalAssessment(params: AssessmentParams): any {
     const { subject, topic, gradeLevel, questionCount, questionTypes, difficulty, duration = 60 } = params;
-    
+
     const questions = this.generateQuestions(subject, topic, gradeLevel, questionCount, questionTypes, difficulty);
     const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
 
@@ -243,7 +282,7 @@ export class AIService {
 
   private static generateMCQ(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
     const marks = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
-    
+
     return {
       question_number: questionNumber,
       question_type: 'multiple_choice',
@@ -263,7 +302,7 @@ export class AIService {
 
   private static generateShortAnswer(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
     const marks = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 5 : 7;
-    
+
     return {
       question_number: questionNumber,
       question_type: 'short_answer',
@@ -277,7 +316,7 @@ export class AIService {
 
   private static generateEssay(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
     const marks = difficulty === 'easy' ? 8 : difficulty === 'medium' ? 12 : 15;
-    
+
     return {
       question_number: questionNumber,
       question_type: 'essay',
@@ -291,7 +330,7 @@ export class AIService {
 
   private static generateProblemSolving(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
     const marks = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 8 : 12;
-    
+
     return {
       question_number: questionNumber,
       question_type: 'problem_solving',
@@ -328,7 +367,23 @@ export class AIService {
   // EDUCATIONAL INSIGHTS GENERATION
   // =====================================================
 
-  static generateEducationalInsights(params: EducationalInsightsParams): any {
+  static async generateEducationalInsights(params: EducationalInsightsParams): Promise<any> {
+    // Try real AI first if enabled
+    if (this.useRealAI) {
+      try {
+        console.log('🤖 Generating insights with DeepSeek R1 AI...');
+        return await OpenRouterAIService.generateEducationalInsights(params);
+      } catch (error) {
+        console.warn('Real AI failed, falling back to local generation:', error);
+      }
+    }
+
+    // Fallback to local generation
+    console.log('📊 Generating insights with local AI...');
+    return this.generateLocalInsights(params);
+  }
+
+  private static generateLocalInsights(params: EducationalInsightsParams): any {
     const { data, classId, subject } = params;
     const { attendance = [], grades = [], students = [] } = data;
 
@@ -345,10 +400,10 @@ export class AIService {
   }
 
   private static generateSummaryInsights(attendance: any[], grades: any[], students: any[]) {
-    const attendanceRate = attendance.length > 0 
-      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100 
+    const attendanceRate = attendance.length > 0
+      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100
       : 0;
-    
+
     const averagePerformance = grades.length > 0
       ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) / grades.length
       : 0;
@@ -357,7 +412,7 @@ export class AIService {
       total_students: students.length,
       attendance_rate: Math.round(attendanceRate),
       average_performance: Math.round(averagePerformance),
-      status: attendanceRate >= 80 && averagePerformance >= 70 ? 'excellent' : 
+      status: attendanceRate >= 80 && averagePerformance >= 70 ? 'excellent' :
               attendanceRate >= 70 && averagePerformance >= 60 ? 'good' : 'needs_attention'
     };
   }
@@ -440,8 +495,8 @@ export class AIService {
     const recommendations = [];
 
     // Attendance-based recommendations
-    const attendanceRate = attendance.length > 0 
-      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100 
+    const attendanceRate = attendance.length > 0
+      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100
       : 100;
 
     if (attendanceRate < 80) {
@@ -492,7 +547,7 @@ export class AIService {
 
     if (lowPerformance.length > 0) {
       interventions.push({
-        type: 'academic_intervention', 
+        type: 'academic_intervention',
         target: 'students_with_low_performance',
         action: 'Remedial teaching and additional support'
       });
