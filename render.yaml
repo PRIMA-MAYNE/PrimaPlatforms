@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: catalyst-education
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npx serve -s dist -l 10000
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_SUPABASE_URL
+        fromGroup: catalyst-env
+      - key: VITE_SUPABASE_ANON_KEY
+        fromGroup: catalyst-env
+      - key: VITE_APP_NAME
+        value: "Catalyst Educational Management System"
+      - key: VITE_APP_VERSION
+        value: "1.0.0"
+      - key: VITE_ENABLE_ANALYTICS
+        value: "true"
+      - key: VITE_ENABLE_EXPORTS
+        value: "true"
+      - key: VITE_ENABLE_AI_FEATURES
+        value: "true"
+    healthCheckPath: /health.json
+    disk:
+      name: catalyst-data
+      mountPath: /opt/render/project/data
+      sizeGB: 1
