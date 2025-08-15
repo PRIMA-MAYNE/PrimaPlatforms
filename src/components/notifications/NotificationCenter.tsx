@@ -63,15 +63,13 @@ export const NotificationCenter: React.FC = () => {
   }, [user]); // Re-run when user changes
 
   const loadNotifications = async () => {
+    if (!user) {
+      console.log('No user authenticated, skipping notification load');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Check if user is authenticated first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found, skipping notification load');
-        return;
-      }
-
       const data = await SupabaseService.getUserNotifications(20);
       setNotifications(data || []);
     } catch (error) {
@@ -83,14 +81,12 @@ export const NotificationCenter: React.FC = () => {
   };
 
   const loadUnreadCount = async () => {
-    try {
-      // Check if user is authenticated first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found, skipping unread count load');
-        return;
-      }
+    if (!user) {
+      console.log('No user authenticated, skipping unread count load');
+      return;
+    }
 
+    try {
       const count = await SupabaseService.getUnreadNotificationCount();
       setUnreadCount(count || 0);
     } catch (error) {
@@ -119,14 +115,12 @@ export const NotificationCenter: React.FC = () => {
   };
 
   const markAsRead = async (notificationId: string) => {
-    try {
-      // Check if user is authenticated first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found, cannot mark notification as read');
-        return;
-      }
+    if (!user) {
+      console.log('No user authenticated, cannot mark notification as read');
+      return;
+    }
 
+    try {
       const success = await SupabaseService.markNotificationRead(notificationId);
       if (success) {
         setNotifications(prev =>
@@ -142,14 +136,12 @@ export const NotificationCenter: React.FC = () => {
   };
 
   const markAllAsRead = async () => {
-    try {
-      // Check if user is authenticated first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found, cannot mark all notifications as read');
-        return;
-      }
+    if (!user) {
+      console.log('No user authenticated, cannot mark all notifications as read');
+      return;
+    }
 
+    try {
       const unreadNotifications = notifications.filter(n => !n.read);
       for (const notification of unreadNotifications) {
         await SupabaseService.markNotificationRead(notification.id);
