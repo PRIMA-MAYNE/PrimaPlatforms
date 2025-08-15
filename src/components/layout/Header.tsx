@@ -59,6 +59,11 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* AI Status Indicator */}
+          <div className="hidden lg:block">
+            <AIStatusIndicator />
+          </div>
+
           {/* Real-time Notifications */}
           <NotificationCenter />
 
