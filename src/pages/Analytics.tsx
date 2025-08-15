@@ -167,7 +167,7 @@ const Analytics: React.FC = () => {
         students: students,
       };
 
-      const result = generateEducationalInsights(data);
+      const result = await generateEducationalInsights(data);
       setInsights(result);
     } catch (error) {
       console.error("Insights generation failed:", error);
