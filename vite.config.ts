@@ -18,34 +18,37 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ["react", "react-dom"],
+          vendor: ["react", "react-dom", "react/jsx-runtime"],
           ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
           charts: ["recharts"],
           export: ["jspdf", "docx", "exceljs", "file-saver"],
           router: ["react-router-dom"],
         },
       },
-      external: mode === 'production' ? [] : undefined,
     },
     chunkSizeWarningLimit: 2000,
     target: "esnext",
     minify: "esbuild",
     sourcemap: false,
     commonjsOptions: {
-      include: [/jspdf/, /docx/, /exceljs/, /file-saver/],
+      include: [/jspdf/, /docx/, /exceljs/, /file-saver/, /node_modules/],
+      transformMixedEsModules: true,
     },
   },
   optimizeDeps: {
     include: [
       "react",
       "react-dom",
+      "react/jsx-runtime",
       "react-router-dom",
       "jspdf",
       "docx",
       "exceljs",
       "file-saver",
     ],
-    force: true,
+    esbuildOptions: {
+      target: "esnext",
+    },
   },
   define: {
     global: 'globalThis',
