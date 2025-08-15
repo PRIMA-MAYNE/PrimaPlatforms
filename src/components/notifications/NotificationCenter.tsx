@@ -32,21 +32,29 @@ export const NotificationCenter: React.FC = () => {
 
   // Load notifications on component mount
   useEffect(() => {
-    loadNotifications();
-    loadUnreadCount();
-    
-    // Set up real-time subscription
-    const { data: { user } } = supabase.auth.getUser();
-    if (user) {
-      const subscription = SupabaseService.subscribeToNotifications(
-        user.id,
-        handleNewNotification
-      );
+    const initializeNotifications = async () => {
+      loadNotifications();
+      loadUnreadCount();
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    }
+      // Set up real-time subscription
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const subscription = SupabaseService.subscribeToNotifications(
+            user.id,
+            handleNewNotification
+          );
+
+          return () => {
+            subscription.unsubscribe();
+          };
+        }
+      } catch (error) {
+        console.error('Error getting user for notifications:', error);
+      }
+    };
+
+    initializeNotifications();
   }, []);
 
   const loadNotifications = async () => {
@@ -72,13 +80,13 @@ export const NotificationCenter: React.FC = () => {
 
   const handleNewNotification = (payload: any) => {
     const newNotification = payload.new as Notification;
-    
+
     // Add to notifications list
     setNotifications(prev => [newNotification, ...prev.slice(0, 19)]);
-    
+
     // Update unread count
     setUnreadCount(prev => prev + 1);
-    
+
     // Show toast for high priority notifications
     if (newNotification.priority === 'high' || newNotification.priority === 'urgent') {
       toast({
@@ -111,7 +119,7 @@ export const NotificationCenter: React.FC = () => {
       for (const notification of unreadNotifications) {
         await SupabaseService.markNotificationRead(notification.id);
       }
-      
+
       setNotifications(prev =>
         prev.map(n => ({ ...n, read: true }))
       );
@@ -122,8 +130,8 @@ export const NotificationCenter: React.FC = () => {
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
-    const iconClass = priority === 'urgent' ? 'text-red-500' : 
-                     priority === 'high' ? 'text-orange-500' : 
+    const iconClass = priority === 'urgent' ? 'text-red-500' :
+                     priority === 'high' ? 'text-orange-500' :
                      'text-blue-500';
 
     switch (type) {
@@ -157,8 +165,8 @@ export const NotificationCenter: React.FC = () => {
         <Button variant="ghost" size="sm" className="relative">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
@@ -166,7 +174,7 @@ export const NotificationCenter: React.FC = () => {
           )}
         </Button>
       </PopoverTrigger>
-      
+
       <PopoverContent className="w-80 p-0" align="end">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
@@ -199,8 +207,8 @@ export const NotificationCenter: React.FC = () => {
                 <div key={notification.id}>
                   <div
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      !notification.read 
-                        ? 'bg-blue-50 hover:bg-blue-100' 
+                      !notification.read
+                        ? 'bg-blue-50 hover:bg-blue-100'
                         : 'hover:bg-gray-50'
                     }`}
                     onClick={() => markAsRead(notification.id)}
@@ -209,7 +217,7 @@ export const NotificationCenter: React.FC = () => {
                       <div className="flex-shrink-0 mt-0.5">
                         {getNotificationIcon(notification.type, notification.priority)}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className={`text-sm font-medium ${
@@ -221,18 +229,18 @@ export const NotificationCenter: React.FC = () => {
                             <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
                           )}
                         </div>
-                        
+
                         <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        
+
                         <p className="text-xs text-gray-400 mt-1">
                           {formatTimeAgo(notification.created_at)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   {index < notifications.length - 1 && (
                     <Separator className="my-1" />
                   )}
