@@ -35,7 +35,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import { generateAssessment } from "@/lib/immediate-ai";
+import { AIService } from "@/lib/ai-service";
 import {
   exportAssessmentToPDF,
   exportAssessmentToDocx,
