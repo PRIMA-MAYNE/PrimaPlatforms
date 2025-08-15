@@ -15,7 +15,7 @@ interface DemoSignInProps {
 export function DemoSignIn({ className }: DemoSignInProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [demoStatus, setDemoStatus] = useState<'ready' | 'signing-in' | 'success' | 'error'>('ready');
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const DEMO_CREDENTIALS = {
@@ -28,9 +28,42 @@ export function DemoSignIn({ className }: DemoSignInProps) {
     setDemoStatus('signing-in');
 
     try {
-      const { data, error } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+      // First try to sign in
+      let { data, error } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
 
-      if (error) {
+      // If user doesn't exist, create the demo account
+      if (error && error.message.includes('Invalid login credentials')) {
+        console.log('Demo account not found, creating demo user...');
+
+        toast({
+          title: "Creating Demo Account",
+          description: "Setting up demo user for first time access...",
+        });
+
+        // Create the demo user account
+        const { data: signUpData, error: signUpError } = await signUp(
+          DEMO_CREDENTIALS.email,
+          DEMO_CREDENTIALS.password,
+          {
+            full_name: 'Demo Teacher',
+            role: 'teacher',
+            school_name: 'Catalyst Demo Secondary School'
+          }
+        );
+
+        if (signUpError) {
+          throw new Error(`Failed to create demo account: ${signUpError.message}`);
+        }
+
+        // Now try to sign in again
+        const { data: signInData, error: signInError } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+
+        if (signInError) {
+          throw new Error(`Demo account created but sign-in failed: ${signInError.message}`);
+        }
+
+        data = signInData;
+      } else if (error) {
         throw new Error(error.message);
       }
 
@@ -65,8 +98,8 @@ export function DemoSignIn({ className }: DemoSignInProps) {
       setDemoStatus('error');
 
       toast({
-        title: "Demo Sign-In Failed",
-        description: error instanceof Error ? error.message : "Please try again or use manual sign-in",
+        title: "Demo Setup Failed",
+        description: error instanceof Error ? error.message : "Please try manual sign-in or contact support",
         variant: "destructive",
       });
     } finally {
