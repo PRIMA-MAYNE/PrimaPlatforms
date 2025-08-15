@@ -6,6 +6,7 @@ import { Play, User, Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-reac
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { DemoDataService } from '@/lib/demo-data-service';
 
 interface DemoSignInProps {
   className?: string;
@@ -27,28 +28,42 @@ export function DemoSignIn({ className }: DemoSignInProps) {
     setDemoStatus('signing-in');
 
     try {
-      const { error } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
-      
+      const { data, error } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+
       if (error) {
         throw new Error(error.message);
       }
 
       setDemoStatus('success');
-      
+
       toast({
         title: "Demo Access Granted!",
-        description: "Welcome to Catalyst Educational Management System",
+        description: "Setting up demo data with sample students, lessons, and assessments...",
       });
+
+      // Populate demo data in background
+      if (data?.user?.id) {
+        try {
+          await DemoDataService.populateDemoData(data.user.id);
+          toast({
+            title: "Demo Data Ready!",
+            description: "Explore the system with pre-loaded educational content",
+          });
+        } catch (demoError) {
+          console.warn('Demo data population failed:', demoError);
+          // Don't fail the login process if demo data fails
+        }
+      }
 
       // Navigate to dashboard after short delay
       setTimeout(() => {
         navigate('/dashboard');
-      }, 1000);
+      }, 2000);
 
     } catch (error) {
       console.error('Demo sign-in failed:', error);
       setDemoStatus('error');
-      
+
       toast({
         title: "Demo Sign-In Failed",
         description: error instanceof Error ? error.message : "Please try again or use manual sign-in",
@@ -104,7 +119,7 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           One-click access to explore all features with pre-loaded demo data
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
@@ -117,7 +132,7 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           </div>
         </div>
 
-        <Button 
+        <Button
           onClick={handleDemoSignIn}
           disabled={isSigningIn}
           className="w-full"
