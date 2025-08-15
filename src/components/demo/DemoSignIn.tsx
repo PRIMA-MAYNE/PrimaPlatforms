@@ -123,11 +123,11 @@ export function DemoSignIn({ className }: DemoSignInProps) {
   const getStatusText = () => {
     switch (demoStatus) {
       case 'signing-in':
-        return 'Authenticating...';
+        return 'Setting up demo...';
       case 'success':
-        return 'Access Granted';
+        return 'Demo Ready!';
       case 'error':
-        return 'Try Again';
+        return 'Retry Demo';
       default:
         return 'Quick Demo Access';
     }
@@ -179,6 +179,13 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           <p>🎓 <strong>Includes:</strong> Sample students, lessons, assessments</p>
           <p>⚡ <strong>AI Features:</strong> Real DeepSeek R1 integration</p>
           <p>📊 <strong>Analytics:</strong> Pre-generated insights and reports</p>
+
+          {demoStatus === 'error' && (
+            <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
+              <p className="font-medium">Demo account setup needed</p>
+              <p className="text-xs">Try again or use regular sign-up</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
