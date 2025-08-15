@@ -134,7 +134,7 @@ const AssessmentGenerator: React.FC = () => {
     }));
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     console.log("🔥 Generate button clicked!", formData);
 
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
@@ -159,12 +159,12 @@ const AssessmentGenerator: React.FC = () => {
     setIsGenerating(true);
 
     try {
-      const assessment = generateAssessment({
+      const assessment = await AIService.generateAssessment({
         subject: formData.subject,
         topic: formData.topic,
-        gradeLevel: formData.gradeLevel,
+        gradeLevel: parseInt(formData.gradeLevel),
         questionCount: formData.questionCount,
-        questionType: formData.questionTypes[0] || "multiple_choice",
+        questionTypes: formData.questionTypes,
         difficulty: formData.difficulty,
       });
 
