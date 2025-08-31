@@ -34,33 +34,34 @@ export const NotificationCenter: React.FC = () => {
 
   // Load notifications on component mount
   useEffect(() => {
-    const initializeNotifications = async () => {
-      // Only load if user is authenticated
-      if (!user) {
-        console.log('No user authenticated, skipping notification initialization');
-        return;
-      }
+    if (!user) return;
 
-      loadNotifications();
-      loadUnreadCount();
+    let subscription: any | null = null;
 
-      // Set up real-time subscription
+    const setup = async () => {
       try {
-        const subscription = SupabaseService.subscribeToNotifications(
+        await Promise.all([loadNotifications(), loadUnreadCount()]);
+        subscription = SupabaseService.subscribeToNotifications(
           user.id,
           handleNewNotification
         );
-
-        return () => {
-          subscription.unsubscribe();
-        };
       } catch (error) {
         console.error('Error setting up notification subscription:', error);
       }
     };
 
-    initializeNotifications();
-  }, [user]); // Re-run when user changes
+    setup();
+
+    return () => {
+      try {
+        if (subscription && typeof subscription.unsubscribe === 'function') {
+          subscription.unsubscribe();
+        }
+      } catch (err) {
+        console.error('Error unsubscribing from notifications:', err);
+      }
+    };
+  }, [user?.id]); // Re-run when user id changes
 
   const loadNotifications = async () => {
     if (!user) {
