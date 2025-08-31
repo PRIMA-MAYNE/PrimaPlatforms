@@ -1,26 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, Check, X, AlertCircle, Info, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Bell, Check, X, AlertCircle, Info, CheckCircle } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { SupabaseService } from '@/lib/supabase-service';
-import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { SupabaseService } from "@/lib/supabase-service";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Notification {
   id: string;
-  type: 'assessment_created' | 'grade_posted' | 'attendance_alert' | 'class_update' | 'system' | 'reminder';
+  type:
+    | "assessment_created"
+    | "grade_posted"
+    | "attendance_alert"
+    | "class_update"
+    | "system"
+    | "reminder";
   title: string;
   message: string;
   read: boolean;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
+  priority: "low" | "normal" | "high" | "urgent";
   created_at: string;
   data?: any;
 }
@@ -43,10 +49,10 @@ export const NotificationCenter: React.FC = () => {
         await Promise.all([loadNotifications(), loadUnreadCount()]);
         subscription = SupabaseService.subscribeToNotifications(
           user.id,
-          handleNewNotification
+          handleNewNotification,
         );
       } catch (error) {
-        console.error('Error setting up notification subscription:', error);
+        console.error("Error setting up notification subscription:", error);
       }
     };
 
@@ -54,18 +60,18 @@ export const NotificationCenter: React.FC = () => {
 
     return () => {
       try {
-        if (subscription && typeof subscription.unsubscribe === 'function') {
+        if (subscription && typeof subscription.unsubscribe === "function") {
           subscription.unsubscribe();
         }
       } catch (err) {
-        console.error('Error unsubscribing from notifications:', err);
+        console.error("Error unsubscribing from notifications:", err);
       }
     };
   }, [user?.id]); // Re-run when user id changes
 
   const loadNotifications = async () => {
     if (!user) {
-      console.log('No user authenticated, skipping notification load');
+      console.log("No user authenticated, skipping notification load");
       return;
     }
 
@@ -74,7 +80,7 @@ export const NotificationCenter: React.FC = () => {
       const data = await SupabaseService.getUserNotifications(20);
       setNotifications(data || []);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error("Error loading notifications:", error);
       setNotifications([]);
     } finally {
       setLoading(false);
@@ -83,7 +89,7 @@ export const NotificationCenter: React.FC = () => {
 
   const loadUnreadCount = async () => {
     if (!user) {
-      console.log('No user authenticated, skipping unread count load');
+      console.log("No user authenticated, skipping unread count load");
       return;
     }
 
@@ -91,7 +97,7 @@ export const NotificationCenter: React.FC = () => {
       const count = await SupabaseService.getUnreadNotificationCount();
       setUnreadCount(count || 0);
     } catch (error) {
-      console.error('Error loading unread count:', error);
+      console.error("Error loading unread count:", error);
       setUnreadCount(0);
     }
   };
@@ -100,13 +106,16 @@ export const NotificationCenter: React.FC = () => {
     const newNotification = payload.new as Notification;
 
     // Add to notifications list
-    setNotifications(prev => [newNotification, ...prev.slice(0, 19)]);
+    setNotifications((prev) => [newNotification, ...prev.slice(0, 19)]);
 
     // Update unread count
-    setUnreadCount(prev => prev + 1);
+    setUnreadCount((prev) => prev + 1);
 
     // Show toast for high priority notifications
-    if (newNotification.priority === 'high' || newNotification.priority === 'urgent') {
+    if (
+      newNotification.priority === "high" ||
+      newNotification.priority === "urgent"
+    ) {
       toast({
         title: newNotification.title,
         description: newNotification.message,
@@ -117,59 +126,61 @@ export const NotificationCenter: React.FC = () => {
 
   const markAsRead = async (notificationId: string) => {
     if (!user) {
-      console.log('No user authenticated, cannot mark notification as read');
+      console.log("No user authenticated, cannot mark notification as read");
       return;
     }
 
     try {
-      const success = await SupabaseService.markNotificationRead(notificationId);
+      const success =
+        await SupabaseService.markNotificationRead(notificationId);
       if (success) {
-        setNotifications(prev =>
-          prev.map(n =>
-            n.id === notificationId ? { ...n, read: true } : n
-          )
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)),
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
   const markAllAsRead = async () => {
     if (!user) {
-      console.log('No user authenticated, cannot mark all notifications as read');
+      console.log(
+        "No user authenticated, cannot mark all notifications as read",
+      );
       return;
     }
 
     try {
-      const unreadNotifications = notifications.filter(n => !n.read);
+      const unreadNotifications = notifications.filter((n) => !n.read);
       for (const notification of unreadNotifications) {
         await SupabaseService.markNotificationRead(notification.id);
       }
 
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.error("Error marking all notifications as read:", error);
     }
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
-    const iconClass = priority === 'urgent' ? 'text-red-500' :
-                     priority === 'high' ? 'text-orange-500' :
-                     'text-blue-500';
+    const iconClass =
+      priority === "urgent"
+        ? "text-red-500"
+        : priority === "high"
+          ? "text-orange-500"
+          : "text-blue-500";
 
     switch (type) {
-      case 'assessment_created':
+      case "assessment_created":
         return <Info className={`w-4 h-4 ${iconClass}`} />;
-      case 'grade_posted':
+      case "grade_posted":
         return <CheckCircle className={`w-4 h-4 ${iconClass}`} />;
-      case 'attendance_alert':
+      case "attendance_alert":
         return <AlertCircle className={`w-4 h-4 ${iconClass}`} />;
-      case 'class_update':
+      case "class_update":
         return <Bell className={`w-4 h-4 ${iconClass}`} />;
       default:
         return <Info className={`w-4 h-4 ${iconClass}`} />;
@@ -181,9 +192,10 @@ export const NotificationCenter: React.FC = () => {
     const date = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
@@ -197,7 +209,7 @@ export const NotificationCenter: React.FC = () => {
               variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
@@ -236,21 +248,28 @@ export const NotificationCenter: React.FC = () => {
                   <div
                     className={`p-3 rounded-lg cursor-pointer transition-colors ${
                       !notification.read
-                        ? 'bg-blue-50 hover:bg-blue-100'
-                        : 'hover:bg-gray-50'
+                        ? "bg-blue-50 hover:bg-blue-100"
+                        : "hover:bg-gray-50"
                     }`}
                     onClick={() => markAsRead(notification.id)}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="flex-shrink-0 mt-0.5">
-                        {getNotificationIcon(notification.type, notification.priority)}
+                        {getNotificationIcon(
+                          notification.type,
+                          notification.priority,
+                        )}
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className={`text-sm font-medium ${
-                            !notification.read ? 'text-gray-900' : 'text-gray-600'
-                          }`}>
+                          <p
+                            className={`text-sm font-medium ${
+                              !notification.read
+                                ? "text-gray-900"
+                                : "text-gray-600"
+                            }`}
+                          >
                             {notification.title}
                           </p>
                           {!notification.read && (
