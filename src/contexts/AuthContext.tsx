@@ -60,16 +60,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(session);
         setUser(session?.user ?? null);
       } catch (error) {
-        console.error('Session check error:', error);
-        // If there's any error, clear everything
-        try {
-          await supabase.auth.signOut();
-        } catch (signOutError) {
-          console.warn('Sign out during session check error failed:', signOutError);
-        }
-        localStorage.clear();
-        setSession(null);
-        setUser(null);
+        console.error('Session check error (non-fatal):', error);
+        // Do not sign out or clear storage on transient network errors
+        // Keep existing session/user state as-is and proceed
       } finally {
         setLoading(false);
       }
