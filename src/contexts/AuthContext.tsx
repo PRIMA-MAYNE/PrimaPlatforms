@@ -48,8 +48,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error && error.message.includes('Invalid Refresh Token')) {
-          // Clear invalid session data
-          await supabase.auth.signOut();
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.warn('Sign out during invalid session cleanup failed:', signOutError);
+          }
           localStorage.clear(); // Clear any stale data
           console.log('Cleared invalid session');
         }
@@ -59,7 +62,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('Session check error:', error);
         // If there's any error, clear everything
-        await supabase.auth.signOut();
+        try {
+          await supabase.auth.signOut();
+        } catch (signOutError) {
+          console.warn('Sign out during session check error failed:', signOutError);
+        }
         localStorage.clear();
         setSession(null);
         setUser(null);
