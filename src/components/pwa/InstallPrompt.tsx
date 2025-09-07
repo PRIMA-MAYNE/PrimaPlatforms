@@ -45,7 +45,12 @@ export function InstallPrompt({
   if (installed || !canInstall) return null;
 
   return (
-    <Button variant={variant} size={size} onClick={onInstall} className={className}>
+    <Button
+      variant={variant}
+      size={size}
+      onClick={onInstall}
+      className={className}
+    >
       <Download className="h-4 w-4 mr-1" /> Install app
     </Button>
   );

@@ -28,13 +28,41 @@ import {
   Funnel,
   LabelList,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
-export interface SubjectPerf { subject: string; average: number; assessments: number }
-export interface GradeBand { grade: string; count: number; percentage: number }
-export interface AttendanceStatus { status: string; count: number; percentage: number }
-export interface AttendanceDay { date: string; rate: number; present?: number; absent?: number; total?: number }
-export interface Correlation { name: string; attendance: number; performance: number }
+export interface SubjectPerf {
+  subject: string;
+  average: number;
+  assessments: number;
+}
+export interface GradeBand {
+  grade: string;
+  count: number;
+  percentage: number;
+}
+export interface AttendanceStatus {
+  status: string;
+  count: number;
+  percentage: number;
+}
+export interface AttendanceDay {
+  date: string;
+  rate: number;
+  present?: number;
+  absent?: number;
+  total?: number;
+}
+export interface Correlation {
+  name: string;
+  attendance: number;
+  performance: number;
+}
 
 interface AdvancedChartsProps {
   performanceBySubject: SubjectPerf[];
@@ -44,7 +72,16 @@ interface AdvancedChartsProps {
   correlation: Correlation[];
 }
 
-const COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#84cc16", "#f43f5e"];
+const COLORS = [
+  "#3b82f6",
+  "#22c55e",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
+  "#84cc16",
+  "#f43f5e",
+];
 
 function ensureData<T>(arr: T[], fallback: T[]): T[] {
   return Array.isArray(arr) && arr.length > 0 ? arr : fallback;
@@ -79,13 +116,16 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
     { status: "absent", count: 22, percentage: 4 },
   ]);
 
-  const attTrend = ensureData(attendanceTrend, Array.from({ length: 14 }).map((_, i) => ({
-    date: `Day ${i + 1}`,
-    rate: 70 + Math.round(Math.random() * 25),
-    present: 30 + Math.round(Math.random() * 8),
-    absent: 2 + Math.round(Math.random() * 3),
-    total: 35,
-  })));
+  const attTrend = ensureData(
+    attendanceTrend,
+    Array.from({ length: 14 }).map((_, i) => ({
+      date: `Day ${i + 1}`,
+      rate: 70 + Math.round(Math.random() * 25),
+      present: 30 + Math.round(Math.random() * 8),
+      absent: 2 + Math.round(Math.random() * 3),
+      total: 35,
+    })),
+  );
 
   const corr = ensureData(correlation, [
     { name: "Chipo", attendance: 92, performance: 78 },
@@ -96,13 +136,27 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
   ]);
 
   // Derived datasets
-  const attStatusAsRadial = attStatus.map((s, idx) => ({ name: s.status, value: s.count, fill: COLORS[idx % COLORS.length] }));
-  const perfTreemapData = perf.map((p) => ({ name: p.subject, size: Math.max(1, p.assessments * Math.max(1, Math.round(p.average / 10))) }));
+  const attStatusAsRadial = attStatus.map((s, idx) => ({
+    name: s.status,
+    value: s.count,
+    fill: COLORS[idx % COLORS.length],
+  }));
+  const perfTreemapData = perf.map((p) => ({
+    name: p.subject,
+    size: Math.max(1, p.assessments * Math.max(1, Math.round(p.average / 10))),
+  }));
   const funnelData = [
     { name: "Enrolled", value: 100 },
     { name: "Active", value: 92 },
     { name: "Assessed", value: 88 },
-    { name: "Passed", value: Math.round((bands.find(b => b.grade === "distinction")?.percentage || 0) + (bands.find(b => b.grade === "credit")?.percentage || 0) + (bands.find(b => b.grade === "merit")?.percentage || 0)) },
+    {
+      name: "Passed",
+      value: Math.round(
+        (bands.find((b) => b.grade === "distinction")?.percentage || 0) +
+          (bands.find((b) => b.grade === "credit")?.percentage || 0) +
+          (bands.find((b) => b.grade === "merit")?.percentage || 0),
+      ),
+    },
   ];
 
   const sparkline = attTrend.map((d) => ({ x: d.date, y: d.rate }));
@@ -113,11 +167,16 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle>Subject Performance Mix</CardTitle>
-          <CardDescription>Average score (bars) vs pass rate (line)</CardDescription>
+          <CardDescription>
+            Average score (bars) vs pass rate (line)
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={perf} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+            <ComposedChart
+              data={perf}
+              margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
+            >
               <defs>
                 <linearGradient id="avgGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
@@ -130,8 +189,25 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <YAxis yAxisId="right" orientation="right" />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="average" name="Average %" fill="url(#avgGrad)" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={900} />
-              <Line yAxisId="right" type="monotone" dataKey={(d: any) => Math.min(100, Math.round(d.average * 1.1))} name="Pass Rate %" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} isAnimationActive />
+              <Bar
+                yAxisId="left"
+                dataKey="average"
+                name="Average %"
+                fill="url(#avgGrad)"
+                radius={[6, 6, 0, 0]}
+                isAnimationActive
+                animationDuration={900}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey={(d: any) => Math.min(100, Math.round(d.average * 1.1))}
+                name="Pass Rate %"
+                stroke="#22c55e"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                isAnimationActive
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
@@ -161,8 +237,22 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <YAxis />
               <Tooltip />
               <Legend />
-              <Area type="monotone" dataKey="present" stackId="1" stroke="#22c55e" fill="url(#presentGrad)" name="Present" />
-              <Area type="monotone" dataKey="absent" stackId="1" stroke="#ef4444" fill="url(#absentGrad)" name="Absent" />
+              <Area
+                type="monotone"
+                dataKey="present"
+                stackId="1"
+                stroke="#22c55e"
+                fill="url(#presentGrad)"
+                name="Present"
+              />
+              <Area
+                type="monotone"
+                dataKey="absent"
+                stackId="1"
+                stroke="#ef4444"
+                fill="url(#absentGrad)"
+                name="Absent"
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
@@ -176,13 +266,24 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
-            <ComposedChart data={attTrend.map(d => ({ ...d, late: Math.max(0, Math.round((d.total || 35) * 0.05)), sick: Math.max(0, Math.round((d.total || 35) * 0.03)) }))}>
+            <ComposedChart
+              data={attTrend.map((d) => ({
+                ...d,
+                late: Math.max(0, Math.round((d.total || 35) * 0.05)),
+                sick: Math.max(0, Math.round((d.total || 35) * 0.03)),
+              }))}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="present" stackId="a" fill="#22c55e" name="Present" />
+              <Bar
+                dataKey="present"
+                stackId="a"
+                fill="#22c55e"
+                name="Present"
+              />
               <Bar dataKey="late" stackId="a" fill="#f59e0b" name="Late" />
               <Bar dataKey="sick" stackId="a" fill="#8b5cf6" name="Sick" />
               <Bar dataKey="absent" stackId="a" fill="#ef4444" name="Absent" />
@@ -199,8 +300,19 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
-            <RadialBarChart innerRadius="20%" outerRadius="95%" data={attStatusAsRadial} startAngle={90} endAngle={-270}>
-              <RadialBar background dataKey="value" clockWise label={{ position: "insideStart", fill: "#fff" }} />
+            <RadialBarChart
+              innerRadius="20%"
+              outerRadius="95%"
+              data={attStatusAsRadial}
+              startAngle={90}
+              endAngle={-270}
+            >
+              <RadialBar
+                background
+                dataKey="value"
+                clockWise
+                label={{ position: "insideStart", fill: "#fff" }}
+              />
               <Legend />
               <Tooltip />
             </RadialBarChart>
@@ -217,11 +329,27 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
             <PieChart>
-              <Pie data={bands} dataKey="count" nameKey="grade" cx="50%" cy="50%" innerRadius={70} outerRadius={110} paddingAngle={2}>
+              <Pie
+                data={bands}
+                dataKey="count"
+                nameKey="grade"
+                cx="50%"
+                cy="50%"
+                innerRadius={70}
+                outerRadius={110}
+                paddingAngle={2}
+              >
                 {bands.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
-                <LabelList dataKey="percentage" position="outside" formatter={(v: any) => `${v}%`} />
+                <LabelList
+                  dataKey="percentage"
+                  position="outside"
+                  formatter={(v: any) => `${v}%`}
+                />
               </Pie>
               <Tooltip />
               <Legend />
@@ -242,7 +370,13 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <PolarGrid />
               <PolarAngleAxis dataKey="subject" />
               <PolarRadiusAxis domain={[0, 100]} />
-              <Radar name="Average" dataKey="average" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.35} />
+              <Radar
+                name="Average"
+                dataKey="average"
+                stroke="#06b6d4"
+                fill="#06b6d4"
+                fillOpacity={0.35}
+              />
               <Tooltip />
               <Legend />
             </RadarChart>
@@ -260,8 +394,20 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
           <ResponsiveContainer width="100%" height={320}>
             <ScatterChart>
               <CartesianGrid />
-              <XAxis type="number" dataKey="attendance" name="Attendance" unit="%" domain={[0, 100]} />
-              <YAxis type="number" dataKey="performance" name="Performance" unit="%" domain={[0, 100]} />
+              <XAxis
+                type="number"
+                dataKey="attendance"
+                name="Attendance"
+                unit="%"
+                domain={[0, 100]}
+              />
+              <YAxis
+                type="number"
+                dataKey="performance"
+                name="Performance"
+                unit="%"
+                domain={[0, 100]}
+              />
               <ZAxis type="number" range={[60, 200]} />
               <Tooltip cursor={{ strokeDasharray: "3 3" }} />
               <Legend />
@@ -279,7 +425,13 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
-            <Treemap data={perfTreemapData} dataKey="size" aspectRatio={4/3} stroke="#fff" fill="#8b5cf6" />
+            <Treemap
+              data={perfTreemapData}
+              dataKey="size"
+              aspectRatio={4 / 3}
+              stroke="#fff"
+              fill="#8b5cf6"
+            />
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -295,7 +447,12 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
             <FunnelChart>
               <Tooltip />
               <Funnel dataKey="value" data={funnelData} isAnimationActive>
-                <LabelList position="right" fill="#111" stroke="none" dataKey="name" />
+                <LabelList
+                  position="right"
+                  fill="#111"
+                  stroke="none"
+                  dataKey="name"
+                />
               </Funnel>
             </FunnelChart>
           </ResponsiveContainer>
@@ -321,8 +478,19 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <XAxis dataKey="date" />
               <YAxis domain={[0, 100]} />
               <Tooltip />
-              <Area type="monotone" dataKey="rate" stroke="#3b82f6" fill="url(#lineGrad)" name="Attendance %" />
-              <Line type="monotone" dataKey="rate" stroke="#1d4ed8" dot={{ r: 2 }} />
+              <Area
+                type="monotone"
+                dataKey="rate"
+                stroke="#3b82f6"
+                fill="url(#lineGrad)"
+                name="Attendance %"
+              />
+              <Line
+                type="monotone"
+                dataKey="rate"
+                stroke="#1d4ed8"
+                dot={{ r: 2 }}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
@@ -336,14 +504,32 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            {[0,1,2,3].map((i) => (
+            {[0, 1, 2, 3].map((i) => (
               <div key={i} className="p-3 rounded-lg bg-muted/50">
                 <div className="text-sm mb-2 font-medium">Metric {i + 1}</div>
                 <div className="h-20">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={sparkline.map((d, idx) => ({ ...d, y: Math.max(40, Math.min(100, d.y + (idx % 3 === i ? 8 : -5))) }))}>
-                      <Area type="monotone" dataKey="y" stroke="#22c55e" fill="#22c55e20" />
-                      <Line type="monotone" dataKey="y" stroke="#16a34a" dot={false} />
+                    <ComposedChart
+                      data={sparkline.map((d, idx) => ({
+                        ...d,
+                        y: Math.max(
+                          40,
+                          Math.min(100, d.y + (idx % 3 === i ? 8 : -5)),
+                        ),
+                      }))}
+                    >
+                      <Area
+                        type="monotone"
+                        dataKey="y"
+                        stroke="#22c55e"
+                        fill="#22c55e20"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="y"
+                        stroke="#16a34a"
+                        dot={false}
+                      />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -357,7 +543,9 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
       <Card>
         <CardHeader>
           <CardTitle>Volume vs Quality</CardTitle>
-          <CardDescription>Assessments (bars) vs averages (line)</CardDescription>
+          <CardDescription>
+            Assessments (bars) vs averages (line)
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={320}>
@@ -368,8 +556,21 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="assessments" name="Assessments" fill="#f59e0b" radius={[6,6,0,0]} />
-              <Line yAxisId="right" type="monotone" dataKey="average" name="Average %" stroke="#3b82f6" strokeWidth={2} />
+              <Bar
+                yAxisId="left"
+                dataKey="assessments"
+                name="Assessments"
+                fill="#f59e0b"
+                radius={[6, 6, 0, 0]}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="average"
+                name="Average %"
+                stroke="#3b82f6"
+                strokeWidth={2}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
