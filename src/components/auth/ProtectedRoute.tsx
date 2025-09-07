@@ -12,7 +12,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  const hasDemoToken = typeof window !== 'undefined' && !!localStorage.getItem('catalyst-auth-token');
+  const hasDemoToken =
+    typeof window !== "undefined" &&
+    !!localStorage.getItem("catalyst-auth-token");
 
   if (loading && !hasDemoToken) {
     return (

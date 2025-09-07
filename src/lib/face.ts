@@ -1,6 +1,6 @@
-import * as faceapi from 'face-api.js';
+import * as faceapi from "face-api.js";
 
-const DEFAULT_MODELS = 'https://cdn.jsdelivr.net/npm/face-api.js/models';
+const DEFAULT_MODELS = "https://cdn.jsdelivr.net/npm/face-api.js/models";
 
 export async function loadFaceModels(baseUrl: string = DEFAULT_MODELS) {
   await Promise.all([
@@ -11,7 +11,15 @@ export async function loadFaceModels(baseUrl: string = DEFAULT_MODELS) {
   ]);
 }
 
-export async function detectFaces(input: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement) {
-  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
-  return faceapi.detectAllFaces(input, options).withFaceLandmarks().withFaceExpressions();
+export async function detectFaces(
+  input: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
+) {
+  const options = new faceapi.TinyFaceDetectorOptions({
+    inputSize: 320,
+    scoreThreshold: 0.5,
+  });
+  return faceapi
+    .detectAllFaces(input, options)
+    .withFaceLandmarks()
+    .withFaceExpressions();
 }

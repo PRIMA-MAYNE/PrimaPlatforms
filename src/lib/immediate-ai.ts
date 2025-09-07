@@ -1,5 +1,5 @@
 // Re-export the AI service functions with async support
-import { AIService } from './ai-service';
+import { AIService } from "./ai-service";
 
 export async function generateLessonPlan(params: any): Promise<any> {
   console.log("🎓 Generating ECZ-aligned lesson plan for:", params);
@@ -44,20 +44,24 @@ export async function analyzePerformance(data: any): Promise<any> {
         average: 0,
         highest: 0,
         lowest: 0,
-        totalStudents: Array.isArray(data) ? new Set(data.map((g: any) => g.studentId)).size : 0,
+        totalStudents: Array.isArray(data)
+          ? new Set(data.map((g: any) => g.studentId)).size
+          : 0,
       },
       insights: [],
       recommendations: ["Conduct assessments to enable performance analysis"],
       eczAlignment: null,
     };
   } catch (error) {
-    console.error('analyzePerformance error:', error);
+    console.error("analyzePerformance error:", error);
     return {
       overview: {
         average: 0,
         highest: 0,
         lowest: 0,
-        totalStudents: Array.isArray(data) ? new Set(data.map((g: any) => g.studentId)).size : 0,
+        totalStudents: Array.isArray(data)
+          ? new Set(data.map((g: any) => g.studentId)).size
+          : 0,
       },
       insights: [],
       recommendations: ["Analytics currently unavailable"],

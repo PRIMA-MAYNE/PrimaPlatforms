@@ -1,6 +1,6 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 let deferredPrompt: any = null;
 
@@ -14,19 +14,20 @@ export function InstallPrompt() {
       deferredPrompt = e;
       setCanInstall(true);
     };
-    window.addEventListener('beforeinstallprompt', handler as any);
-    window.addEventListener('appinstalled', () => {
+    window.addEventListener("beforeinstallprompt", handler as any);
+    window.addEventListener("appinstalled", () => {
       setInstalled(true);
       setCanInstall(false);
     });
-    return () => window.removeEventListener('beforeinstallprompt', handler as any);
+    return () =>
+      window.removeEventListener("beforeinstallprompt", handler as any);
   }, []);
 
   const onInstall = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setInstalled(true);
+    if (outcome === "accepted") setInstalled(true);
     deferredPrompt = null;
     setCanInstall(false);
   };

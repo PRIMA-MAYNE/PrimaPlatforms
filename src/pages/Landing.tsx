@@ -38,7 +38,11 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 sm:h-16 items-center justify-between">
             <div className="flex items-center space-x-2">
-              <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192" alt="Catalyst" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg" />
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192"
+                alt="Catalyst"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg"
+              />
               <span className="text-lg sm:text-xl font-bold text-foreground">
                 Catalyst
               </span>
@@ -190,7 +194,8 @@ const Landing: React.FC = () => {
                   AI Lesson Planning
                 </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  Generate ECZ-aligned lesson plans instantly with intelligent AI assistance
+                  Generate ECZ-aligned lesson plans instantly with intelligent
+                  AI assistance
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -323,7 +328,11 @@ const Landing: React.FC = () => {
             <div className="lg:order-first">
               <div className="aspect-square bg-gradient-to-br from-catalyst-50 to-catalyst-100 rounded-2xl p-8 sm:p-12 flex items-center justify-center">
                 <div className="text-center">
-                  <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2Fe7cb74a8d70c41d684ed641a5e36b2ea?format=webp&width=512" alt="Catalyst" className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl mx-auto mb-4 sm:mb-6" />
+                  <img
+                    src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2Fe7cb74a8d70c41d684ed641a5e36b2ea?format=webp&width=512"
+                    alt="Catalyst"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl mx-auto mb-4 sm:mb-6"
+                  />
                   <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
                     Catalyst Education
                   </h3>
@@ -369,7 +378,11 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192" alt="Catalyst" className="w-8 h-8 rounded-lg" />
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192"
+                alt="Catalyst"
+                className="w-8 h-8 rounded-lg"
+              />
               <span className="text-lg sm:text-xl font-bold">Catalyst</span>
             </div>
             <p className="text-sm sm:text-base text-gray-400 mb-4">

@@ -1,26 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Sparkles, Wifi, WifiOff, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { OpenAIProxyService } from '@/lib/openai-proxy-service';
-import { toast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Sparkles,
+  Wifi,
+  WifiOff,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { OpenAIProxyService } from "@/lib/openai-proxy-service";
+import { toast } from "@/hooks/use-toast";
 
 interface AIStatusIndicatorProps {
   className?: string;
 }
 
 export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
-  const [status, setStatus] = useState<'checking' | 'connected' | 'fallback' | 'error'>('checking');
+  const [status, setStatus] = useState<
+    "checking" | "connected" | "fallback" | "error"
+  >("checking");
   const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   const checkAIStatus = async () => {
     setIsTestingConnection(true);
     try {
       const isConnected = await OpenAIProxyService.testConnection();
-      setStatus(isConnected ? 'connected' : 'fallback');
+      setStatus(isConnected ? "connected" : "fallback");
     } catch (error) {
-      console.error('AI status check failed:', error);
-      setStatus('error');
+      console.error("AI status check failed:", error);
+      setStatus("error");
     } finally {
       setIsTestingConnection(false);
     }
@@ -32,44 +41,44 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
 
   const getStatusConfig = () => {
     switch (status) {
-      case 'checking':
+      case "checking":
         return {
           icon: <Loader2 className="h-3 w-3 animate-spin" />,
-          text: 'Checking AI',
-          variant: 'secondary' as const,
-          description: 'Testing AI connection...'
+          text: "Checking AI",
+          variant: "secondary" as const,
+          description: "Testing AI connection...",
         };
-      case 'connected':
+      case "connected":
         return {
           icon: <Sparkles className="h-3 w-3" />,
-          text: 'AI Active',
-          variant: 'default' as const,
-          description: 'Real AI content generation enabled'
+          text: "AI Active",
+          variant: "default" as const,
+          description: "Real AI content generation enabled",
         };
-      case 'fallback':
+      case "fallback":
         return {
           icon: <WifiOff className="h-3 w-3" />,
-          text: 'Local AI',
-          variant: 'outline' as const,
-          description: 'Using local AI generation (offline mode)'
+          text: "Local AI",
+          variant: "outline" as const,
+          description: "Using local AI generation (offline mode)",
         };
-      case 'error':
+      case "error":
         return {
           icon: <AlertCircle className="h-3 w-3" />,
-          text: 'AI Error',
-          variant: 'destructive' as const,
-          description: 'AI service unavailable'
+          text: "AI Error",
+          variant: "destructive" as const,
+          description: "AI service unavailable",
         };
     }
   };
 
   const config = getStatusConfig();
-  const useRealAI = import.meta.env.VITE_USE_REAL_AI === 'true';
+  const useRealAI = import.meta.env.VITE_USE_REAL_AI === "true";
 
   const handleTestAI = async () => {
     await checkAIStatus();
-    
-    if (status === 'connected') {
+
+    if (status === "connected") {
       toast({
         title: "AI Connection Successful",
         description: "AI is ready for content generation",
@@ -89,7 +98,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
         {config.icon}
         {config.text}
       </Badge>
-      
+
       {useRealAI && (
         <Button
           variant="ghost"
@@ -106,7 +115,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
           Test
         </Button>
       )}
-      
+
       <span className="text-xs text-muted-foreground hidden sm:inline">
         {config.description}
       </span>

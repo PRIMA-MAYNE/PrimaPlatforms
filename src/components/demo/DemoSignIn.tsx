@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, User, Lock, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
-import { DemoDataService } from '@/lib/demo-data-service';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Play,
+  User,
+  Lock,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { DemoDataService } from "@/lib/demo-data-service";
 
 interface DemoSignInProps {
   className?: string;
@@ -14,26 +27,31 @@ interface DemoSignInProps {
 
 export function DemoSignIn({ className }: DemoSignInProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [demoStatus, setDemoStatus] = useState<'ready' | 'signing-in' | 'success' | 'error'>('ready');
+  const [demoStatus, setDemoStatus] = useState<
+    "ready" | "signing-in" | "success" | "error"
+  >("ready");
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
   const DEMO_CREDENTIALS = {
-    email: import.meta.env.VITE_DEMO_EMAIL || 'demo@catalyst.edu',
-    password: import.meta.env.VITE_DEMO_PASSWORD || 'CatalystDemo2024!'
+    email: import.meta.env.VITE_DEMO_EMAIL || "demo@catalyst.edu",
+    password: import.meta.env.VITE_DEMO_PASSWORD || "CatalystDemo2024!",
   };
 
   const handleDemoSignIn = async () => {
     setIsSigningIn(true);
-    setDemoStatus('signing-in');
+    setDemoStatus("signing-in");
 
     try {
       // First try to sign in
-      let { data, error } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+      let { data, error } = await signIn(
+        DEMO_CREDENTIALS.email,
+        DEMO_CREDENTIALS.password,
+      );
 
       // If user doesn't exist, create the demo account
-      if (error && error.message.includes('Invalid login credentials')) {
-        console.log('Demo account not found, creating demo user...');
+      if (error && error.message.includes("Invalid login credentials")) {
+        console.log("Demo account not found, creating demo user...");
 
         toast({
           title: "Creating Demo Account",
@@ -45,21 +63,28 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           DEMO_CREDENTIALS.email,
           DEMO_CREDENTIALS.password,
           {
-            full_name: 'Demo Teacher',
-            role: 'teacher',
-            school_name: 'Catalyst Demo Secondary School'
-          }
+            full_name: "Demo Teacher",
+            role: "teacher",
+            school_name: "Catalyst Demo Secondary School",
+          },
         );
 
         if (signUpError) {
-          throw new Error(`Failed to create demo account: ${signUpError.message}`);
+          throw new Error(
+            `Failed to create demo account: ${signUpError.message}`,
+          );
         }
 
         // Now try to sign in again
-        const { data: signInData, error: signInError } = await signIn(DEMO_CREDENTIALS.email, DEMO_CREDENTIALS.password);
+        const { data: signInData, error: signInError } = await signIn(
+          DEMO_CREDENTIALS.email,
+          DEMO_CREDENTIALS.password,
+        );
 
         if (signInError) {
-          throw new Error(`Demo account created but sign-in failed: ${signInError.message}`);
+          throw new Error(
+            `Demo account created but sign-in failed: ${signInError.message}`,
+          );
         }
 
         data = signInData;
@@ -67,11 +92,12 @@ export function DemoSignIn({ className }: DemoSignInProps) {
         throw new Error(error.message);
       }
 
-      setDemoStatus('success');
+      setDemoStatus("success");
 
       toast({
         title: "Demo Access Granted!",
-        description: "Setting up demo data with sample students, lessons, and assessments...",
+        description:
+          "Setting up demo data with sample students, lessons, and assessments...",
       });
 
       // Populate demo data in background
@@ -80,26 +106,29 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           await DemoDataService.populateDemoData(data.user.id);
           toast({
             title: "Demo Data Ready!",
-            description: "Explore the system with pre-loaded educational content",
+            description:
+              "Explore the system with pre-loaded educational content",
           });
         } catch (demoError) {
-          console.warn('Demo data population failed:', demoError);
+          console.warn("Demo data population failed:", demoError);
           // Don't fail the login process if demo data fails
         }
       }
 
       // Navigate to dashboard after short delay
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }, 2000);
-
     } catch (error) {
-      console.error('Demo sign-in failed:', error);
-      setDemoStatus('error');
+      console.error("Demo sign-in failed:", error);
+      setDemoStatus("error");
 
       toast({
         title: "Demo Setup Failed",
-        description: error instanceof Error ? error.message : "Please try manual sign-in or contact support",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try manual sign-in or contact support",
         variant: "destructive",
       });
     } finally {
@@ -109,11 +138,11 @@ export function DemoSignIn({ className }: DemoSignInProps) {
 
   const getStatusIcon = () => {
     switch (demoStatus) {
-      case 'signing-in':
+      case "signing-in":
         return <Loader2 className="h-4 w-4 animate-spin" />;
-      case 'success':
+      case "success":
         return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'error':
+      case "error":
         return <AlertCircle className="h-4 w-4 text-red-600" />;
       default:
         return <Play className="h-4 w-4" />;
@@ -122,25 +151,27 @@ export function DemoSignIn({ className }: DemoSignInProps) {
 
   const getStatusText = () => {
     switch (demoStatus) {
-      case 'signing-in':
-        return 'Setting up demo...';
-      case 'success':
-        return 'Demo Ready!';
-      case 'error':
-        return 'Retry Demo';
+      case "signing-in":
+        return "Setting up demo...";
+      case "success":
+        return "Demo Ready!";
+      case "error":
+        return "Retry Demo";
       default:
-        return 'Quick Demo Access';
+        return "Quick Demo Access";
     }
   };
 
-  const isDemoEnabled = import.meta.env.VITE_DEMO_MODE === 'true';
+  const isDemoEnabled = import.meta.env.VITE_DEMO_MODE === "true";
 
   if (!isDemoEnabled) {
     return null;
   }
 
   return (
-    <Card className={`border-2 border-dashed border-primary/30 bg-primary/5 ${className}`}>
+    <Card
+      className={`border-2 border-dashed border-primary/30 bg-primary/5 ${className}`}
+    >
       <CardHeader className="text-center pb-2">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -176,11 +207,17 @@ export function DemoSignIn({ className }: DemoSignInProps) {
         </Button>
 
         <div className="text-xs text-muted-foreground text-center space-y-1">
-          <p>🎓 <strong>Includes:</strong> Sample students, lessons, assessments</p>
-          <p>⚡ <strong>AI Features:</strong> Real AI integration</p>
-          <p>📊 <strong>Analytics:</strong> Pre-generated insights and reports</p>
+          <p>
+            🎓 <strong>Includes:</strong> Sample students, lessons, assessments
+          </p>
+          <p>
+            ⚡ <strong>AI Features:</strong> Real AI integration
+          </p>
+          <p>
+            📊 <strong>Analytics:</strong> Pre-generated insights and reports
+          </p>
 
-          {demoStatus === 'error' && (
+          {demoStatus === "error" && (
             <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
               <p className="font-medium">Demo account setup needed</p>
               <p className="text-xs">Try again or use regular sign-up</p>

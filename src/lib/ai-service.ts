@@ -1,7 +1,7 @@
 // Intelligent AI Service - OpenAI + Local Fallback
 // Real AI via Netlify Function proxy to OpenAI with local fallback for reliability
 
-import { OpenAIProxyService } from './openai-proxy-service';
+import { OpenAIProxyService } from "./openai-proxy-service";
 
 interface LessonPlanParams {
   subject: string;
@@ -18,7 +18,7 @@ interface AssessmentParams {
   gradeLevel: number;
   questionCount: number;
   questionTypes: string[];
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   duration?: number;
 }
 
@@ -35,36 +35,71 @@ interface EducationalInsightsParams {
 export class AIService {
   // Check if real AI is enabled
   private static get useRealAI(): boolean {
-    return import.meta.env.VITE_USE_REAL_AI === 'true' &&
-           import.meta.env.VITE_ENABLE_AI_FEATURES === 'true';
+    return (
+      import.meta.env.VITE_USE_REAL_AI === "true" &&
+      import.meta.env.VITE_ENABLE_AI_FEATURES === "true"
+    );
   }
   // Educational content templates for rapid generation
   private static readonly ECZ_SUBJECTS = {
     mathematics: {
-      topics: ['algebra', 'geometry', 'trigonometry', 'calculus', 'statistics'],
-      skills: ['problem solving', 'logical reasoning', 'numerical computation', 'spatial awareness']
+      topics: ["algebra", "geometry", "trigonometry", "calculus", "statistics"],
+      skills: [
+        "problem solving",
+        "logical reasoning",
+        "numerical computation",
+        "spatial awareness",
+      ],
     },
     english: {
-      topics: ['grammar', 'literature', 'composition', 'comprehension', 'poetry'],
-      skills: ['communication', 'critical thinking', 'analysis', 'creativity']
+      topics: [
+        "grammar",
+        "literature",
+        "composition",
+        "comprehension",
+        "poetry",
+      ],
+      skills: ["communication", "critical thinking", "analysis", "creativity"],
     },
     science: {
-      topics: ['biology', 'chemistry', 'physics', 'earth science', 'scientific method'],
-      skills: ['observation', 'experimentation', 'analysis', 'hypothesis testing']
+      topics: [
+        "biology",
+        "chemistry",
+        "physics",
+        "earth science",
+        "scientific method",
+      ],
+      skills: [
+        "observation",
+        "experimentation",
+        "analysis",
+        "hypothesis testing",
+      ],
     },
     social_studies: {
-      topics: ['history', 'geography', 'civics', 'economics', 'culture'],
-      skills: ['research', 'critical analysis', 'map skills', 'cultural awareness']
-    }
+      topics: ["history", "geography", "civics", "economics", "culture"],
+      skills: [
+        "research",
+        "critical analysis",
+        "map skills",
+        "cultural awareness",
+      ],
+    },
   };
 
   private static readonly BLOOM_LEVELS = {
-    remember: ['list', 'identify', 'recall', 'state', 'define'],
-    understand: ['explain', 'describe', 'summarize', 'interpret', 'compare'],
-    apply: ['solve', 'demonstrate', 'calculate', 'use', 'implement'],
-    analyze: ['examine', 'investigate', 'categorize', 'differentiate', 'analyze'],
-    evaluate: ['assess', 'judge', 'critique', 'justify', 'evaluate'],
-    create: ['design', 'construct', 'develop', 'formulate', 'create']
+    remember: ["list", "identify", "recall", "state", "define"],
+    understand: ["explain", "describe", "summarize", "interpret", "compare"],
+    apply: ["solve", "demonstrate", "calculate", "use", "implement"],
+    analyze: [
+      "examine",
+      "investigate",
+      "categorize",
+      "differentiate",
+      "analyze",
+    ],
+    evaluate: ["assess", "judge", "critique", "justify", "evaluate"],
+    create: ["design", "construct", "develop", "formulate", "create"],
   };
 
   // =====================================================
@@ -75,15 +110,18 @@ export class AIService {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating lesson plan with AI...');
+        console.log("🤖 Generating lesson plan with AI...");
         return await OpenAIProxyService.generateLessonPlan(params);
       } catch (error) {
-        console.warn('Real AI failed, falling back to local generation:', error);
+        console.warn(
+          "Real AI failed, falling back to local generation:",
+          error,
+        );
       }
     }
 
     // Fallback to local generation
-    console.log('📚 Generating lesson plan with local AI...');
+    console.log("📚 Generating lesson plan with local AI...");
     return this.generateLocalLessonPlan(params);
   }
 
@@ -97,7 +135,12 @@ export class AIService {
     const materials = this.generateMaterials(subject, topic, gradeLevel);
 
     // Generate structured content
-    const content = this.generateLessonContent(subject, topic, gradeLevel, duration);
+    const content = this.generateLessonContent(
+      subject,
+      topic,
+      gradeLevel,
+      duration,
+    );
 
     return {
       title: `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`,
@@ -116,49 +159,77 @@ export class AIService {
       notes: `ECZ Curriculum aligned for Grade ${gradeLevel}. Differentiated instruction included.`,
       syllabi_alignment: `ECZ ${subject.charAt(0).toUpperCase() + subject.slice(1)} Syllabus - Grade ${gradeLevel}`,
       ecz_compliance: true,
-      generated_at: new Date().toISOString()
+      generated_at: new Date().toISOString(),
     };
   }
 
-  private static generateObjectives(subject: string, topic: string, gradeLevel: number): string[] {
+  private static generateObjectives(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+  ): string[] {
     const bloomVerbs = [
       ...this.BLOOM_LEVELS.understand,
       ...this.BLOOM_LEVELS.apply,
-      ...this.BLOOM_LEVELS.analyze
+      ...this.BLOOM_LEVELS.analyze,
     ];
 
     return [
       `Students will ${bloomVerbs[0]} the key concepts of ${topic} in ${subject}`,
       `Students will ${bloomVerbs[1]} ${topic} principles to solve practical problems`,
       `Students will ${bloomVerbs[2]} real-world applications of ${topic}`,
-      `Students will demonstrate understanding through hands-on activities and assessments`
+      `Students will demonstrate understanding through hands-on activities and assessments`,
     ];
   }
 
-  private static generateMaterials(subject: string, topic: string, gradeLevel: number): string[] {
+  private static generateMaterials(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+  ): string[] {
     const baseMaterials = [
-      'Whiteboard and markers',
-      'Student exercise books',
-      'Textbooks',
-      'Calculator (where applicable)'
+      "Whiteboard and markers",
+      "Student exercise books",
+      "Textbooks",
+      "Calculator (where applicable)",
     ];
 
     const subjectSpecific: { [key: string]: string[] } = {
-      mathematics: ['Graph paper', 'Geometric instruments', 'Mathematical tables'],
-      science: ['Laboratory equipment', 'Charts and diagrams', 'Specimens/models'],
-      english: ['Reading materials', 'Dictionary', 'Writing materials'],
-      social_studies: ['Maps and atlases', 'Historical documents', 'Current affairs materials']
+      mathematics: [
+        "Graph paper",
+        "Geometric instruments",
+        "Mathematical tables",
+      ],
+      science: [
+        "Laboratory equipment",
+        "Charts and diagrams",
+        "Specimens/models",
+      ],
+      english: ["Reading materials", "Dictionary", "Writing materials"],
+      social_studies: [
+        "Maps and atlases",
+        "Historical documents",
+        "Current affairs materials",
+      ],
     };
 
-    return [...baseMaterials, ...(subjectSpecific[subject.toLowerCase()] || [])];
+    return [
+      ...baseMaterials,
+      ...(subjectSpecific[subject.toLowerCase()] || []),
+    ];
   }
 
-  private static generateLessonContent(subject: string, topic: string, gradeLevel: number, duration: number) {
+  private static generateLessonContent(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    duration: number,
+  ) {
     const timeAllocation = {
       introduction: Math.round(duration * 0.15),
-      development: Math.round(duration * 0.50),
+      development: Math.round(duration * 0.5),
       activities: Math.round(duration * 0.25),
-      conclusion: Math.round(duration * 0.10)
+      conclusion: Math.round(duration * 0.1),
     };
 
     return {
@@ -169,14 +240,14 @@ export class AIService {
       activities: [
         `Pair work (${Math.round(timeAllocation.activities * 0.4)} min): Students collaborate to explore ${topic} applications`,
         `Group activity (${Math.round(timeAllocation.activities * 0.35)} min): Teams solve problems related to ${topic}`,
-        `Individual practice (${Math.round(timeAllocation.activities * 0.25)} min): Students work independently on exercises`
+        `Individual practice (${Math.round(timeAllocation.activities * 0.25)} min): Students work independently on exercises`,
       ],
 
       assessment: `Use formative assessment throughout via observation, questioning, and student responses. Quick comprehension checks every 10-15 minutes. Exit ticket or brief quiz to gauge understanding. Provide immediate feedback and address misconceptions.`,
 
       conclusion: `Summarize key ${topic} concepts learned. Have students reflect on applications and connections. Preview next lesson. Assign homework to reinforce learning.`,
 
-      homework: `Complete practice exercises on ${topic}. Read textbook pages related to today's lesson. Prepare for next class by reviewing prerequisite concepts.`
+      homework: `Complete practice exercises on ${topic}. Read textbook pages related to today's lesson. Prepare for next class by reviewing prerequisite concepts.`,
     };
   }
 
@@ -188,22 +259,40 @@ export class AIService {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating assessment with AI...');
+        console.log("🤖 Generating assessment with AI...");
         return await OpenAIProxyService.generateAssessment(params);
       } catch (error) {
-        console.warn('Real AI failed, falling back to local generation:', error);
+        console.warn(
+          "Real AI failed, falling back to local generation:",
+          error,
+        );
       }
     }
 
     // Fallback to local generation
-    console.log('📝 Generating assessment with local AI...');
+    console.log("📝 Generating assessment with local AI...");
     return this.generateLocalAssessment(params);
   }
 
   private static generateLocalAssessment(params: AssessmentParams): any {
-    const { subject, topic, gradeLevel, questionCount, questionTypes, difficulty, duration = 60 } = params;
+    const {
+      subject,
+      topic,
+      gradeLevel,
+      questionCount,
+      questionTypes,
+      difficulty,
+      duration = 60,
+    } = params;
 
-    const questions = this.generateQuestions(subject, topic, gradeLevel, questionCount, questionTypes, difficulty);
+    const questions = this.generateQuestions(
+      subject,
+      topic,
+      gradeLevel,
+      questionCount,
+      questionTypes,
+      difficulty,
+    );
     const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
 
     return {
@@ -214,16 +303,28 @@ export class AIService {
       difficulty_level: difficulty,
       total_marks: totalMarks,
       duration_minutes: duration,
-      instructions: this.generateInstructions(duration, totalMarks, questionTypes),
+      instructions: this.generateInstructions(
+        duration,
+        totalMarks,
+        questionTypes,
+      ),
       questions: questions,
-      assessment_type: totalMarks > 50 ? 'exam' : totalMarks > 20 ? 'test' : 'quiz',
+      assessment_type:
+        totalMarks > 50 ? "exam" : totalMarks > 20 ? "test" : "quiz",
       syllabi_alignment: `ECZ ${subject.charAt(0).toUpperCase() + subject.slice(1)} Syllabus - Grade ${gradeLevel}`,
       ecz_compliance: true,
-      generated_at: new Date().toISOString()
+      generated_at: new Date().toISOString(),
     };
   }
 
-  private static generateQuestions(subject: string, topic: string, gradeLevel: number, count: number, types: string[], difficulty: string) {
+  private static generateQuestions(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    count: number,
+    types: string[],
+    difficulty: string,
+  ) {
     const questions = [];
     const typeDistribution = this.distributeQuestionTypes(types, count);
 
@@ -231,22 +332,54 @@ export class AIService {
 
     // Generate multiple choice questions
     for (let i = 0; i < typeDistribution.multiple_choice; i++) {
-      questions.push(this.generateMCQ(subject, topic, gradeLevel, questionNumber++, difficulty));
+      questions.push(
+        this.generateMCQ(
+          subject,
+          topic,
+          gradeLevel,
+          questionNumber++,
+          difficulty,
+        ),
+      );
     }
 
     // Generate short answer questions
     for (let i = 0; i < typeDistribution.short_answer; i++) {
-      questions.push(this.generateShortAnswer(subject, topic, gradeLevel, questionNumber++, difficulty));
+      questions.push(
+        this.generateShortAnswer(
+          subject,
+          topic,
+          gradeLevel,
+          questionNumber++,
+          difficulty,
+        ),
+      );
     }
 
     // Generate essay questions
     for (let i = 0; i < typeDistribution.essay; i++) {
-      questions.push(this.generateEssay(subject, topic, gradeLevel, questionNumber++, difficulty));
+      questions.push(
+        this.generateEssay(
+          subject,
+          topic,
+          gradeLevel,
+          questionNumber++,
+          difficulty,
+        ),
+      );
     }
 
     // Generate problem solving questions
     for (let i = 0; i < typeDistribution.problem_solving; i++) {
-      questions.push(this.generateProblemSolving(subject, topic, gradeLevel, questionNumber++, difficulty));
+      questions.push(
+        this.generateProblemSolving(
+          subject,
+          topic,
+          gradeLevel,
+          questionNumber++,
+          difficulty,
+        ),
+      );
     }
 
     return questions;
@@ -257,7 +390,7 @@ export class AIService {
       multiple_choice: 0,
       short_answer: 0,
       essay: 0,
-      problem_solving: 0
+      problem_solving: 0,
     };
 
     // Default distribution if no types specified
@@ -273,84 +406,134 @@ export class AIService {
     const remainder = total % types.length;
 
     types.forEach((type, index) => {
-      const key = type.replace('-', '_');
+      const key = type.replace("-", "_");
       distribution[key] = perType + (index < remainder ? 1 : 0);
     });
 
     return distribution;
   }
 
-  private static generateMCQ(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
-    const marks = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
+  private static generateMCQ(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    questionNumber: number,
+    difficulty: string,
+  ) {
+    const marks = difficulty === "easy" ? 1 : difficulty === "medium" ? 2 : 3;
 
     return {
       question_number: questionNumber,
-      question_type: 'multiple_choice',
+      question_type: "multiple_choice",
       question_text: `Which of the following best describes ${topic} in ${subject}?`,
       marks: marks,
       options: [
         `${topic} is primarily used for basic calculations and simple operations`,
         `${topic} involves complex theoretical frameworks and advanced concepts`,
         `${topic} applies to real-world problem solving and practical applications`,
-        `${topic} is mainly theoretical with limited practical applications`
+        `${topic} is mainly theoretical with limited practical applications`,
       ],
       correct_answer: `${topic} applies to real-world problem solving and practical applications`,
       answer_explanation: `This demonstrates comprehensive understanding of ${topic} and its practical relevance in ${subject}.`,
-      bloom_taxonomy_level: difficulty === 'easy' ? 'remember' : difficulty === 'medium' ? 'understand' : 'apply'
+      bloom_taxonomy_level:
+        difficulty === "easy"
+          ? "remember"
+          : difficulty === "medium"
+            ? "understand"
+            : "apply",
     };
   }
 
-  private static generateShortAnswer(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
-    const marks = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 5 : 7;
+  private static generateShortAnswer(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    questionNumber: number,
+    difficulty: string,
+  ) {
+    const marks = difficulty === "easy" ? 3 : difficulty === "medium" ? 5 : 7;
 
     return {
       question_number: questionNumber,
-      question_type: 'short_answer',
+      question_type: "short_answer",
       question_text: `Explain the main principles of ${topic} and provide one practical example from ${subject}.`,
       marks: marks,
       correct_answer: `The main principles include understanding core concepts, applying knowledge systematically, and connecting theory to practice. Example: Using ${topic} to solve real-world problems in ${subject}.`,
       answer_explanation: `This assesses both theoretical knowledge and practical application skills in ${subject}.`,
-      bloom_taxonomy_level: difficulty === 'easy' ? 'understand' : difficulty === 'medium' ? 'apply' : 'analyze'
+      bloom_taxonomy_level:
+        difficulty === "easy"
+          ? "understand"
+          : difficulty === "medium"
+            ? "apply"
+            : "analyze",
     };
   }
 
-  private static generateEssay(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
-    const marks = difficulty === 'easy' ? 8 : difficulty === 'medium' ? 12 : 15;
+  private static generateEssay(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    questionNumber: number,
+    difficulty: string,
+  ) {
+    const marks = difficulty === "easy" ? 8 : difficulty === "medium" ? 12 : 15;
 
     return {
       question_number: questionNumber,
-      question_type: 'essay',
+      question_type: "essay",
       question_text: `Discuss the importance of ${topic} in modern ${subject}. Include examples and explain its relevance to Grade ${gradeLevel} students.`,
       marks: marks,
       correct_answer: `A comprehensive essay should cover: 1) Definition and key concepts of ${topic}, 2) Historical development and context, 3) Current applications in ${subject}, 4) Future relevance and career connections, 5) Personal reflection on learning ${topic}.`,
       answer_explanation: `This evaluates critical thinking, analysis, synthesis, and communication skills in ${subject}.`,
-      bloom_taxonomy_level: difficulty === 'easy' ? 'understand' : difficulty === 'medium' ? 'analyze' : 'evaluate'
+      bloom_taxonomy_level:
+        difficulty === "easy"
+          ? "understand"
+          : difficulty === "medium"
+            ? "analyze"
+            : "evaluate",
     };
   }
 
-  private static generateProblemSolving(subject: string, topic: string, gradeLevel: number, questionNumber: number, difficulty: string) {
-    const marks = difficulty === 'easy' ? 5 : difficulty === 'medium' ? 8 : 12;
+  private static generateProblemSolving(
+    subject: string,
+    topic: string,
+    gradeLevel: number,
+    questionNumber: number,
+    difficulty: string,
+  ) {
+    const marks = difficulty === "easy" ? 5 : difficulty === "medium" ? 8 : 12;
 
     return {
       question_number: questionNumber,
-      question_type: 'problem_solving',
+      question_type: "problem_solving",
       question_text: `Solve the following problem using ${topic} concepts: A practical scenario requires application of ${topic} principles to find a solution.`,
       marks: marks,
       correct_answer: `Step-by-step solution: 1) Identify the problem components, 2) Apply relevant ${topic} principles, 3) Calculate/analyze systematically, 4) Verify the solution, 5) Explain the reasoning.`,
       answer_explanation: `This tests problem-solving skills, logical reasoning, and practical application of ${topic} in ${subject}.`,
-      bloom_taxonomy_level: difficulty === 'easy' ? 'apply' : difficulty === 'medium' ? 'analyze' : 'create'
+      bloom_taxonomy_level:
+        difficulty === "easy"
+          ? "apply"
+          : difficulty === "medium"
+            ? "analyze"
+            : "create",
     };
   }
 
-  private static generateInstructions(duration: number, totalMarks: number, questionTypes: string[]): string {
+  private static generateInstructions(
+    duration: number,
+    totalMarks: number,
+    questionTypes: string[],
+  ): string {
     const typeDescriptions = {
-      'multiple-choice': 'multiple choice questions',
-      'short-answer': 'short answer questions',
-      'essay': 'essay questions',
-      'problem-solving': 'problem solving questions'
+      "multiple-choice": "multiple choice questions",
+      "short-answer": "short answer questions",
+      essay: "essay questions",
+      "problem-solving": "problem solving questions",
     };
 
-    const types = questionTypes.map(t => typeDescriptions[t as keyof typeof typeDescriptions]).join(', ');
+    const types = questionTypes
+      .map((t) => typeDescriptions[t as keyof typeof typeDescriptions])
+      .join(", ");
 
     return `INSTRUCTIONS:
 1. Read all questions carefully before beginning
@@ -367,19 +550,24 @@ export class AIService {
   // EDUCATIONAL INSIGHTS GENERATION
   // =====================================================
 
-  static async generateEducationalInsights(params: EducationalInsightsParams): Promise<any> {
+  static async generateEducationalInsights(
+    params: EducationalInsightsParams,
+  ): Promise<any> {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating insights with AI...');
+        console.log("🤖 Generating insights with AI...");
         return await OpenAIProxyService.generateEducationalInsights(params);
       } catch (error) {
-        console.warn('Real AI failed, falling back to local generation:', error);
+        console.warn(
+          "Real AI failed, falling back to local generation:",
+          error,
+        );
       }
     }
 
     // Fallback to local generation
-    console.log('📊 Generating insights with local AI...');
+    console.log("📊 Generating insights with local AI...");
     return this.generateLocalInsights(params);
   }
 
@@ -391,165 +579,242 @@ export class AIService {
       summary: this.generateSummaryInsights(attendance, grades, students),
       attendance: this.generateAttendanceInsights(attendance),
       performance: this.generatePerformanceInsights(grades, subject),
-      recommendations: this.generateRecommendations(attendance, grades, students),
+      recommendations: this.generateRecommendations(
+        attendance,
+        grades,
+        students,
+      ),
       trends: this.generateTrendAnalysis(attendance, grades),
-      interventions: this.generateInterventions(attendance, grades, students)
+      interventions: this.generateInterventions(attendance, grades, students),
     };
 
     return insights;
   }
 
-  private static generateSummaryInsights(attendance: any[], grades: any[], students: any[]) {
-    const attendanceRate = attendance.length > 0
-      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100
-      : 0;
+  private static generateSummaryInsights(
+    attendance: any[],
+    grades: any[],
+    students: any[],
+  ) {
+    const attendanceRate =
+      attendance.length > 0
+        ? (attendance.filter((a) => a.status === "present").length /
+            attendance.length) *
+          100
+        : 0;
 
-    const averagePerformance = grades.length > 0
-      ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) / grades.length
-      : 0;
+    const averagePerformance =
+      grades.length > 0
+        ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) /
+          grades.length
+        : 0;
 
     return {
       total_students: students.length,
       attendance_rate: Math.round(attendanceRate),
       average_performance: Math.round(averagePerformance),
-      status: attendanceRate >= 80 && averagePerformance >= 70 ? 'excellent' :
-              attendanceRate >= 70 && averagePerformance >= 60 ? 'good' : 'needs_attention'
+      status:
+        attendanceRate >= 80 && averagePerformance >= 70
+          ? "excellent"
+          : attendanceRate >= 70 && averagePerformance >= 60
+            ? "good"
+            : "needs_attention",
     };
   }
 
   private static generateAttendanceInsights(attendance: any[]) {
     if (attendance.length === 0) {
       return {
-        message: 'No attendance data available for analysis',
-        recommendations: ['Begin tracking attendance to enable insights']
+        message: "No attendance data available for analysis",
+        recommendations: ["Begin tracking attendance to enable insights"],
       };
     }
 
     const totalRecords = attendance.length;
-    const presentCount = attendance.filter(a => a.status === 'present').length;
-    const absentCount = attendance.filter(a => a.status === 'absent').length;
+    const presentCount = attendance.filter(
+      (a) => a.status === "present",
+    ).length;
+    const absentCount = attendance.filter((a) => a.status === "absent").length;
     const rate = Math.round((presentCount / totalRecords) * 100);
 
     return {
       overall_rate: rate,
-      pattern: rate >= 90 ? 'excellent' : rate >= 80 ? 'good' : rate >= 70 ? 'average' : 'concerning',
+      pattern:
+        rate >= 90
+          ? "excellent"
+          : rate >= 80
+            ? "good"
+            : rate >= 70
+              ? "average"
+              : "concerning",
       insights: [
-        rate >= 85 ? 'Strong attendance pattern supports learning outcomes' :
-        rate >= 70 ? 'Moderate attendance - some improvement needed' :
-        'Low attendance may impact academic performance'
+        rate >= 85
+          ? "Strong attendance pattern supports learning outcomes"
+          : rate >= 70
+            ? "Moderate attendance - some improvement needed"
+            : "Low attendance may impact academic performance",
       ],
-      recommendations: rate < 80 ? [
-        'Implement attendance improvement strategies',
-        'Identify and address barriers to attendance',
-        'Engage with parents/guardians about attendance importance'
-      ] : ['Maintain current positive attendance patterns']
+      recommendations:
+        rate < 80
+          ? [
+              "Implement attendance improvement strategies",
+              "Identify and address barriers to attendance",
+              "Engage with parents/guardians about attendance importance",
+            ]
+          : ["Maintain current positive attendance patterns"],
     };
   }
 
   private static generatePerformanceInsights(grades: any[], subject?: string) {
     if (grades.length === 0) {
       return {
-        message: 'No performance data available for analysis',
-        recommendations: ['Conduct assessments to enable performance insights']
+        message: "No performance data available for analysis",
+        recommendations: ["Conduct assessments to enable performance insights"],
       };
     }
 
-    const averageScore = grades.reduce((sum, g) => sum + (g.percentage || 0), 0) / grades.length;
-    const highPerformers = grades.filter(g => (g.percentage || 0) >= 75).length;
-    const lowPerformers = grades.filter(g => (g.percentage || 0) < 50).length;
+    const averageScore =
+      grades.reduce((sum, g) => sum + (g.percentage || 0), 0) / grades.length;
+    const highPerformers = grades.filter(
+      (g) => (g.percentage || 0) >= 75,
+    ).length;
+    const lowPerformers = grades.filter((g) => (g.percentage || 0) < 50).length;
 
     return {
       average_score: Math.round(averageScore),
       distribution: {
         high_performers: highPerformers,
         low_performers: lowPerformers,
-        total_assessed: grades.length
+        total_assessed: grades.length,
       },
-      trend: averageScore >= 75 ? 'excellent' : averageScore >= 65 ? 'good' : averageScore >= 50 ? 'average' : 'needs_improvement',
-      recommendations: this.getPerformanceRecommendations(averageScore, lowPerformers, grades.length)
+      trend:
+        averageScore >= 75
+          ? "excellent"
+          : averageScore >= 65
+            ? "good"
+            : averageScore >= 50
+              ? "average"
+              : "needs_improvement",
+      recommendations: this.getPerformanceRecommendations(
+        averageScore,
+        lowPerformers,
+        grades.length,
+      ),
     };
   }
 
-  private static getPerformanceRecommendations(average: number, lowPerformers: number, total: number): string[] {
+  private static getPerformanceRecommendations(
+    average: number,
+    lowPerformers: number,
+    total: number,
+  ): string[] {
     const recommendations = [];
 
     if (average < 60) {
-      recommendations.push('Review teaching strategies and curriculum delivery');
-      recommendations.push('Implement differentiated instruction approaches');
+      recommendations.push(
+        "Review teaching strategies and curriculum delivery",
+      );
+      recommendations.push("Implement differentiated instruction approaches");
     }
 
     if (lowPerformers / total > 0.3) {
-      recommendations.push('Provide additional support for struggling students');
-      recommendations.push('Consider peer tutoring or remedial sessions');
+      recommendations.push(
+        "Provide additional support for struggling students",
+      );
+      recommendations.push("Consider peer tutoring or remedial sessions");
     }
 
     if (average >= 75) {
-      recommendations.push('Maintain current effective teaching practices');
-      recommendations.push('Challenge high achievers with extension activities');
+      recommendations.push("Maintain current effective teaching practices");
+      recommendations.push(
+        "Challenge high achievers with extension activities",
+      );
     }
 
     return recommendations;
   }
 
-  private static generateRecommendations(attendance: any[], grades: any[], students: any[]): string[] {
+  private static generateRecommendations(
+    attendance: any[],
+    grades: any[],
+    students: any[],
+  ): string[] {
     const recommendations = [];
 
     // Attendance-based recommendations
-    const attendanceRate = attendance.length > 0
-      ? (attendance.filter(a => a.status === 'present').length / attendance.length) * 100
-      : 100;
+    const attendanceRate =
+      attendance.length > 0
+        ? (attendance.filter((a) => a.status === "present").length /
+            attendance.length) *
+          100
+        : 100;
 
     if (attendanceRate < 80) {
-      recommendations.push('Implement strategies to improve student attendance');
-      recommendations.push('Engage with parents about attendance importance');
+      recommendations.push(
+        "Implement strategies to improve student attendance",
+      );
+      recommendations.push("Engage with parents about attendance importance");
     }
 
     // Performance-based recommendations
-    const avgPerformance = grades.length > 0
-      ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) / grades.length
-      : 0;
+    const avgPerformance =
+      grades.length > 0
+        ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) /
+          grades.length
+        : 0;
 
     if (avgPerformance < 65) {
-      recommendations.push('Review and adjust teaching methodologies');
-      recommendations.push('Provide additional learning resources');
+      recommendations.push("Review and adjust teaching methodologies");
+      recommendations.push("Provide additional learning resources");
     }
 
     // General recommendations
-    recommendations.push('Use formative assessment to track progress');
-    recommendations.push('Encourage active student participation');
-    recommendations.push('Maintain regular communication with students and parents');
+    recommendations.push("Use formative assessment to track progress");
+    recommendations.push("Encourage active student participation");
+    recommendations.push(
+      "Maintain regular communication with students and parents",
+    );
 
     return recommendations;
   }
 
   private static generateTrendAnalysis(attendance: any[], grades: any[]) {
     return {
-      attendance_trend: attendance.length > 10 ? 'stable' : 'limited_data',
-      performance_trend: grades.length > 5 ? 'improving' : 'limited_data',
-      correlation: 'Positive correlation between attendance and performance expected'
+      attendance_trend: attendance.length > 10 ? "stable" : "limited_data",
+      performance_trend: grades.length > 5 ? "improving" : "limited_data",
+      correlation:
+        "Positive correlation between attendance and performance expected",
     };
   }
 
-  private static generateInterventions(attendance: any[], grades: any[], students: any[]) {
+  private static generateInterventions(
+    attendance: any[],
+    grades: any[],
+    students: any[],
+  ) {
     const interventions = [];
 
     // Students needing attention
-    const lowAttendance = attendance.filter(a => a.status === 'absent').map(a => a.student_id);
-    const lowPerformance = grades.filter(g => (g.percentage || 0) < 50).map(g => g.student_id);
+    const lowAttendance = attendance
+      .filter((a) => a.status === "absent")
+      .map((a) => a.student_id);
+    const lowPerformance = grades
+      .filter((g) => (g.percentage || 0) < 50)
+      .map((g) => g.student_id);
 
     if (lowAttendance.length > 0) {
       interventions.push({
-        type: 'attendance_intervention',
-        target: 'students_with_low_attendance',
-        action: 'Individual counseling and parent engagement'
+        type: "attendance_intervention",
+        target: "students_with_low_attendance",
+        action: "Individual counseling and parent engagement",
       });
     }
 
     if (lowPerformance.length > 0) {
       interventions.push({
-        type: 'academic_intervention',
-        target: 'students_with_low_performance',
-        action: 'Remedial teaching and additional support'
+        type: "academic_intervention",
+        target: "students_with_low_performance",
+        action: "Remedial teaching and additional support",
       });
     }
 
