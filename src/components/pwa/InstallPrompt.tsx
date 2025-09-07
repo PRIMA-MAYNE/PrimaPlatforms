@@ -1,10 +1,20 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { Download } from "lucide-react";
 
 let deferredPrompt: any = null;
 
-export function InstallPrompt() {
+interface InstallPromptProps {
+  size?: ButtonProps["size"];
+  variant?: ButtonProps["variant"];
+  className?: string;
+}
+
+export function InstallPrompt({
+  size = "sm",
+  variant = "outline",
+  className,
+}: InstallPromptProps) {
   const [canInstall, setCanInstall] = React.useState(false);
   const [installed, setInstalled] = React.useState(false);
 
@@ -35,7 +45,7 @@ export function InstallPrompt() {
   if (installed || !canInstall) return null;
 
   return (
-    <Button variant="outline" size="sm" onClick={onInstall} className="h-8">
+    <Button variant={variant} size={size} onClick={onInstall} className={className}>
       <Download className="h-4 w-4 mr-1" /> Install app
     </Button>
   );
