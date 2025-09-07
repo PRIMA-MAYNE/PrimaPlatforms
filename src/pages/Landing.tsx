@@ -150,7 +150,6 @@ const Landing: React.FC = () => {
                 className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4"
               />
             </div>
-
           </div>
         </div>
       </section>
