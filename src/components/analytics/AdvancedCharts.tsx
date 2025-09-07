@@ -1,4 +1,5 @@
 import React from "react";
+import React from "react";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -341,7 +342,7 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 <div className="text-sm mb-2 font-medium">Metric {i + 1}</div>
                 <div className="h-20">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={sparkline.map((d, idx) => ({ ...d, y: Math.max(40, Math.min(100, d.y + (idx%3===i?8:-5)))) }))}>
+                    <ComposedChart data={sparkline.map((d, idx) => ({ ...d, y: Math.max(40, Math.min(100, d.y + (idx % 3 === i ? 8 : -5))) }))}>
                       <Area type="monotone" dataKey="y" stroke="#22c55e" fill="#22c55e20" />
                       <Line type="monotone" dataKey="y" stroke="#16a34a" dot={false} />
                     </ComposedChart>
