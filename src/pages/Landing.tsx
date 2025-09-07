@@ -323,9 +323,7 @@ const Landing: React.FC = () => {
             <div className="lg:order-first">
               <div className="aspect-square bg-gradient-to-br from-catalyst-50 to-catalyst-100 rounded-2xl p-8 sm:p-12 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 catalyst-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
-                    <GraduationCap className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-                  </div>
+                  <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2Fe7cb74a8d70c41d684ed641a5e36b2ea?format=webp&width=512" alt="Catalyst" className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl mx-auto mb-4 sm:mb-6" />
                   <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
                     Catalyst Education
                   </h3>
