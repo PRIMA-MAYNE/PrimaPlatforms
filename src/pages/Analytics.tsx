@@ -606,6 +606,15 @@ const Analytics: React.FC = () => {
                       </Card>
                     )}
                   </div>
+
+                  {/* Advanced visualizations */}
+                  <AdvancedCharts
+                    performanceBySubject={performanceAnalytics?.bySubject || []}
+                    gradeBands={performanceAnalytics?.gradeBands || []}
+                    attendanceByStatus={attendanceAnalytics?.byStatus || []}
+                    attendanceTrend={attendanceAnalytics?.trend || []}
+                    correlation={correlationData || []}
+                  />
                 </>
               )}
             </TabsContent>
