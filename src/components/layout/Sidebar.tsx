@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/branding/Logo";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -115,11 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4">
             <div className="flex h-16 shrink-0 items-center justify-between">
               <div className="flex items-center space-x-3">
-                <img
-                  src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192"
-                  alt="Catalyst"
-                  className="w-10 h-10 rounded-lg object-cover"
-                />
+                <Logo className="w-10 h-10 rounded-lg object-cover" />
                 <span className="text-xl font-bold text-foreground">
                   Catalyst
                 </span>
