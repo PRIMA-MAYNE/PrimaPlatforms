@@ -7,12 +7,7 @@ const LOGO_URLS = [
   "https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=800",
   "https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2Fe7cb74a8d70c41d684ed641a5e36b2ea?format=webp&width=800",
 ];
-const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/placeholder.svg",
-];
+const APP_SHELL = ["/", "/index.html", "/manifest.json", "/placeholder.svg"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -25,7 +20,9 @@ self.addEventListener("install", (event) => {
       // Best-effort cache of remote logos for offline branding
       try {
         await Promise.all(
-          LOGO_URLS.map((url) => cache.add(new Request(url, { mode: "no-cors" }))),
+          LOGO_URLS.map((url) =>
+            cache.add(new Request(url, { mode: "no-cors" })),
+          ),
         );
       } catch (_) {}
     })(),
@@ -37,7 +34,9 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.map((key) => key !== CACHE_NAME && caches.delete(key))),
+        Promise.all(
+          keys.map((key) => key !== CACHE_NAME && caches.delete(key)),
+        ),
       ),
   );
   self.clients.claim();
