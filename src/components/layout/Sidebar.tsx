@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold transition-colors",
                             isActive
                               ? "catalyst-gradient text-white"
-                              : "text-gray-700 hover:text-pink-600 hover:bg-pink-50",
+                              : "text-gray-700 hover:text-catalyst-600 hover:bg-catalyst-50",
                           )}
                         >
                           <item.icon
@@ -141,8 +141,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             className={cn(
                               "group flex gap-x-3 rounded-md p-4 text-base leading-6 font-semibold transition-colors touch-manipulation",
                               isActive
-                                ? "catalyst-gradient text-white"
-                                : "text-gray-700 hover:text-pink-600 hover:bg-pink-50",
+                              ? "catalyst-gradient text-white"
+                              : "text-gray-700 hover:text-catalyst-600 hover:bg-catalyst-50",
                             )}
                           >
                             <item.icon

@@ -1,7 +1,7 @@
-// Intelligent AI Service - DeepSeek R1 + Local Fallback
-// Real AI via OpenRouter DeepSeek R1 with local fallback for reliability
+// Intelligent AI Service - OpenAI + Local Fallback
+// Real AI via Netlify Function proxy to OpenAI with local fallback for reliability
 
-import { OpenRouterAIService } from './openrouter-ai-service';
+import { OpenAIProxyService } from './openai-proxy-service';
 
 interface LessonPlanParams {
   subject: string;
@@ -75,8 +75,8 @@ export class AIService {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating lesson plan with DeepSeek R1 AI...');
-        return await OpenRouterAIService.generateLessonPlan(params);
+        console.log('🤖 Generating lesson plan with AI...');
+        return await OpenAIProxyService.generateLessonPlan(params);
       } catch (error) {
         console.warn('Real AI failed, falling back to local generation:', error);
       }
@@ -188,8 +188,8 @@ export class AIService {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating assessment with DeepSeek R1 AI...');
-        return await OpenRouterAIService.generateAssessment(params);
+        console.log('🤖 Generating assessment with AI...');
+        return await OpenAIProxyService.generateAssessment(params);
       } catch (error) {
         console.warn('Real AI failed, falling back to local generation:', error);
       }
@@ -371,8 +371,8 @@ export class AIService {
     // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log('🤖 Generating insights with DeepSeek R1 AI...');
-        return await OpenRouterAIService.generateEducationalInsights(params);
+        console.log('🤖 Generating insights with AI...');
+        return await OpenAIProxyService.generateEducationalInsights(params);
       } catch (error) {
         console.warn('Real AI failed, falling back to local generation:', error);
       }

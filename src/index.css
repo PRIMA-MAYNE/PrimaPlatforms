@@ -22,8 +22,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 210 11% 15%;
 
-    /* Primary brand colors - Beautiful Pink */
-    --primary: 330 81% 60%;
+    /* Primary brand colors - Deep Blue */
+    --primary: 219 85% 35%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary colors - Clean gray */
@@ -45,22 +45,22 @@
     /* Border and input colors */
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 330 81% 60%;
+    --ring: 219 85% 50%;
 
     /* Border radius */
     --radius: 8px;
 
-    /* Catalyst brand colors - Pink gradient */
-    --catalyst-50: 330 100% 98%;
-    --catalyst-100: 330 95% 94%;
-    --catalyst-200: 329 96% 89%;
-    --catalyst-300: 329 95% 82%;
-    --catalyst-400: 329 90% 74%;
-    --catalyst-500: 330 81% 60%;
-    --catalyst-600: 332 75% 51%;
-    --catalyst-700: 333 71% 43%;
-    --catalyst-800: 334 67% 35%;
-    --catalyst-900: 335 65% 28%;
+    /* Catalyst brand colors - Deep Blue gradient */
+    --catalyst-50: 214 100% 97%;
+    --catalyst-100: 214 95% 92%;
+    --catalyst-200: 215 96% 85%;
+    --catalyst-300: 216 94% 74%;
+    --catalyst-400: 217 91% 60%;
+    --catalyst-500: 219 85% 50%;
+    --catalyst-600: 221 78% 42%;
+    --catalyst-700: 223 71% 35%;
+    --catalyst-800: 224 64% 28%;
+    --catalyst-900: 226 57% 22%;
 
     /* Success colors - Green */
     --success: 142 76% 36%;
@@ -77,7 +77,7 @@
     /* Sidebar colors */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 210 11% 15%;
-    --sidebar-primary: 330 81% 60%;
+    --sidebar-primary: 219 85% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 40% 96%;
     --sidebar-accent-foreground: 210 11% 15%;
@@ -113,19 +113,19 @@
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 330 81% 60%;
+    --ring: 219 85% 50%;
 
-    /* Dark catalyst colors - Pink theme */
-    --catalyst-50: 335 65% 28%;
-    --catalyst-100: 334 67% 35%;
-    --catalyst-200: 333 71% 43%;
-    --catalyst-300: 332 75% 51%;
-    --catalyst-400: 330 81% 60%;
-    --catalyst-500: 329 90% 74%;
-    --catalyst-600: 329 95% 82%;
-    --catalyst-700: 329 96% 89%;
-    --catalyst-800: 330 95% 94%;
-    --catalyst-900: 330 100% 98%;
+    /* Dark catalyst colors - Deep Blue theme */
+    --catalyst-50: 226 57% 22%;
+    --catalyst-100: 224 64% 28%;
+    --catalyst-200: 223 71% 35%;
+    --catalyst-300: 221 78% 42%;
+    --catalyst-400: 219 85% 50%;
+    --catalyst-500: 217 91% 60%;
+    --catalyst-600: 216 94% 74%;
+    --catalyst-700: 215 96% 85%;
+    --catalyst-800: 214 95% 92%;
+    --catalyst-900: 214 100% 97%;
 
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -139,7 +139,7 @@
     /* Dark sidebar */
     --sidebar-background: 222 84% 5%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 330 81% 60%;
+    --sidebar-primary: 219 85% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
@@ -172,7 +172,7 @@
 
 @layer components {
   .catalyst-gradient {
-    @apply bg-gradient-to-br from-catalyst-500 to-catalyst-700;
+    @apply bg-gradient-to-br from-catalyst-600 to-catalyst-800;
   }
 
   .catalyst-glass {
