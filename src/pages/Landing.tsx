@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DemoSignIn } from "@/components/demo/DemoSignIn";
 import {
   GraduationCap,
   Users,
@@ -152,10 +151,6 @@ const Landing: React.FC = () => {
               />
             </div>
 
-            {/* Demo Auto Sign-In */}
-            <div className="mt-8 sm:mt-12 max-w-md mx-auto">
-              <DemoSignIn />
-            </div>
           </div>
         </div>
       </section>
