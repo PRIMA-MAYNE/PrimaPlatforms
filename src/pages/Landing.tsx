@@ -148,6 +148,11 @@ const Landing: React.FC = () => {
                   View Demo
                 </Button>
               </Link>
+              <InstallPrompt
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4"
+              />
             </div>
 
             {/* Demo Auto Sign-In */}
