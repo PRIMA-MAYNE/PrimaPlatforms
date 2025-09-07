@@ -12,7 +12,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  const hasDemoToken = typeof window !== 'undefined' && !!localStorage.getItem('catalyst-auth-token');
+
+  if (loading && !hasDemoToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -23,7 +25,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!user) {
+  if (!user && !hasDemoToken) {
     // Redirect to sign in page with return url
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
