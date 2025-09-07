@@ -142,9 +142,7 @@ const SignIn: React.FC = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center space-x-2">
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl catalyst-gradient">
-              <GraduationCap className="w-7 h-7 text-white" />
-            </div>
+            <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192" alt="Catalyst" className="w-12 h-12 rounded-xl" />
             <span className="text-2xl font-bold text-foreground">Catalyst</span>
           </Link>
         </div>
