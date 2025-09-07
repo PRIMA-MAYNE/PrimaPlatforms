@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { generateEducationalInsights } from "@/lib/immediate-ai";
 import { toast } from "@/hooks/use-toast";
+import AdvancedCharts from "@/components/analytics/AdvancedCharts";
 
 interface Grade {
   id: string;
