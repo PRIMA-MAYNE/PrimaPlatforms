@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Wifi, WifiOff, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { OpenRouterAIService } from '@/lib/openrouter-ai-service';
+import { OpenAIProxyService } from '@/lib/openai-proxy-service';
 import { toast } from '@/hooks/use-toast';
 
 interface AIStatusIndicatorProps {
@@ -16,7 +16,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
   const checkAIStatus = async () => {
     setIsTestingConnection(true);
     try {
-      const isConnected = await OpenRouterAIService.testConnection();
+      const isConnected = await OpenAIProxyService.testConnection();
       setStatus(isConnected ? 'connected' : 'fallback');
     } catch (error) {
       console.error('AI status check failed:', error);
@@ -37,12 +37,12 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
           icon: <Loader2 className="h-3 w-3 animate-spin" />,
           text: 'Checking AI',
           variant: 'secondary' as const,
-          description: 'Testing DeepSeek R1 connection...'
+          description: 'Testing AI connection...'
         };
       case 'connected':
         return {
           icon: <Sparkles className="h-3 w-3" />,
-          text: 'DeepSeek R1 Active',
+          text: 'AI Active',
           variant: 'default' as const,
           description: 'Real AI content generation enabled'
         };
@@ -72,7 +72,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
     if (status === 'connected') {
       toast({
         title: "AI Connection Successful",
-        description: "DeepSeek R1 is ready for content generation",
+        description: "AI is ready for content generation",
       });
     } else {
       toast({
