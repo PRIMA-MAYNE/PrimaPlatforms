@@ -148,7 +148,7 @@ export class DemoDataService {
         teacher_id: userId,
         class_id: mathClass?.id,
         ai_generated: true,
-        ai_model: 'DeepSeek R1',
+        ai_model: 'AI',
         status: 'approved'
       },
       {
@@ -169,7 +169,7 @@ export class DemoDataService {
         teacher_id: userId,
         class_id: englishClass?.id,
         ai_generated: true,
-        ai_model: 'DeepSeek R1',
+        ai_model: 'AI',
         status: 'taught'
       }
     ];
@@ -198,7 +198,7 @@ export class DemoDataService {
         class_id: mathClass?.id,
         assessment_type: 'test',
         ai_generated: true,
-        ai_model: 'DeepSeek R1',
+        ai_model: 'AI',
         status: 'conducted',
         syllabi_alignment: 'ECZ Mathematics Syllabus - Grade 10'
       }
