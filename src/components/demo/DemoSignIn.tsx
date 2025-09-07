@@ -161,7 +161,7 @@ export function DemoSignIn({ className }: DemoSignInProps) {
           </div>
           <div className="flex items-center gap-2 p-2 bg-gray-50 rounded">
             <Lock className="h-3 w-3 text-gray-600" />
-            <span className="font-mono text-gray-700">••••••••••••</span>
+            <span className="font-mono text-gray-700">••••••���•••••</span>
           </div>
         </div>
 
@@ -177,7 +177,7 @@ export function DemoSignIn({ className }: DemoSignInProps) {
 
         <div className="text-xs text-muted-foreground text-center space-y-1">
           <p>🎓 <strong>Includes:</strong> Sample students, lessons, assessments</p>
-          <p>⚡ <strong>AI Features:</strong> Real DeepSeek R1 integration</p>
+          <p>⚡ <strong>AI Features:</strong> Real AI integration</p>
           <p>📊 <strong>Analytics:</strong> Pre-generated insights and reports</p>
 
           {demoStatus === 'error' && (
