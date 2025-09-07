@@ -234,8 +234,7 @@ const SignIn: React.FC = () => {
             <div className="flex justify-center">
               <span className="text-xs text-muted-foreground mr-2">Install:</span>
               <div>
-                {/* inline import to avoid SSR issues */}
-                {React.createElement(require('@/components/pwa/InstallPrompt').InstallPrompt)}
+                <InstallPrompt />
               </div>
             </div>
 
