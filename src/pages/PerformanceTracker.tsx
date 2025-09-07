@@ -693,13 +693,13 @@ const PerformanceTracker: React.FC = () => {
                         Generating AI insights...
                       </p>
                     </div>
-                  ) : analytics ? (
+                  ) : analytics && analytics.overview ? (
                     <div className="space-y-6">
                       {/* Overview Stats */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-muted/50 rounded-lg">
                           <p className="text-2xl font-bold text-catalyst-600">
-                            {analytics.overview.average}%
+                            {analytics?.overview?.average ?? 0}%
                           </p>
                           <p className="text-sm text-muted-foreground">
                             Class Average
@@ -707,7 +707,7 @@ const PerformanceTracker: React.FC = () => {
                         </div>
                         <div className="text-center p-4 bg-muted/50 rounded-lg">
                           <p className="text-2xl font-bold text-green-600">
-                            {analytics.overview.highest}%
+                            {analytics?.overview?.highest ?? 0}%
                           </p>
                           <p className="text-sm text-muted-foreground">
                             Highest Score
@@ -715,7 +715,7 @@ const PerformanceTracker: React.FC = () => {
                         </div>
                         <div className="text-center p-4 bg-muted/50 rounded-lg">
                           <p className="text-2xl font-bold text-red-600">
-                            {analytics.overview.lowest}%
+                            {analytics?.overview?.lowest ?? 0}%
                           </p>
                           <p className="text-sm text-muted-foreground">
                             Lowest Score
@@ -723,7 +723,7 @@ const PerformanceTracker: React.FC = () => {
                         </div>
                         <div className="text-center p-4 bg-muted/50 rounded-lg">
                           <p className="text-2xl font-bold text-blue-600">
-                            {analytics.overview.totalStudents}
+                            {analytics?.overview?.totalStudents ?? 0}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             Students
@@ -734,7 +734,7 @@ const PerformanceTracker: React.FC = () => {
                       {/* Insights */}
                       <div className="space-y-4">
                         <h3 className="font-semibold">Key Insights</h3>
-                        {analytics.insights.map(
+                        {(analytics?.insights || []).map(
                           (insight: any, index: number) => (
                             <div
                               key={index}
@@ -765,7 +765,7 @@ const PerformanceTracker: React.FC = () => {
                       <div className="space-y-4">
                         <h3 className="font-semibold">Recommendations</h3>
                         <ul className="space-y-2">
-                          {analytics.recommendations.map(
+                          {(analytics?.recommendations || []).map(
                             (rec: string, index: number) => (
                               <li
                                 key={index}
@@ -782,13 +782,13 @@ const PerformanceTracker: React.FC = () => {
                       </div>
 
                       {/* ECZ Alignment */}
-                      {analytics.eczAlignment && (
+                      {analytics?.eczAlignment && (
                         <div className="p-4 bg-catalyst-50 rounded-lg border-l-4 border-catalyst-500">
                           <h4 className="font-medium text-catalyst-900 mb-2">
                             ECZ Alignment Assessment
                           </h4>
                           <p className="text-sm text-catalyst-700">
-                            {analytics.eczAlignment}
+                            {analytics?.eczAlignment}
                           </p>
                         </div>
                       )}
