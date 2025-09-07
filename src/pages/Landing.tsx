@@ -81,14 +81,14 @@ const Landing: React.FC = () => {
               <div className="px-2 pt-2 pb-3 space-y-1">
                 <Link
                   to="/signin"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-pink-600 hover:bg-pink-50 rounded-md"
+                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-catalyst-600 hover:bg-catalyst-50 rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="block px-3 py-2 text-base font-medium text-white bg-gradient-to-r from-pink-500 to-violet-500 rounded-md hover:from-pink-600 hover:to-violet-600"
+                  className="block px-3 py-2 text-base font-medium text-white catalyst-gradient rounded-md hover:opacity-90"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Get Started
@@ -110,12 +110,12 @@ const Landing: React.FC = () => {
                 className="px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm"
               >
                 <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Now with DeepSeek AI Integration
+                AI Features Enabled
               </Badge>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6">
               Revolutionize Education with{" "}
-              <span className="bg-gradient-to-r from-pink-500 to-violet-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-catalyst-500 to-catalyst-700 bg-clip-text text-transparent">
                 AI-Powered
               </span>{" "}
               Management
@@ -170,7 +170,7 @@ const Landing: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Users className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
@@ -185,22 +185,21 @@ const Landing: React.FC = () => {
 
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
                   AI Lesson Planning
                 </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  Generate ECZ-aligned lesson plans instantly with DeepSeek AI
-                  integration
+                  Generate ECZ-aligned lesson plans instantly with intelligent AI assistance
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <ClipboardList className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
@@ -215,7 +214,7 @@ const Landing: React.FC = () => {
 
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
@@ -230,7 +229,7 @@ const Landing: React.FC = () => {
 
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
@@ -245,7 +244,7 @@ const Landing: React.FC = () => {
 
             <Card className="relative group hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardHeader className="text-center pb-4">
-                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-pink-500 to-violet-500 rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 catalyst-gradient rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
                   <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <CardTitle className="text-lg sm:text-xl mb-2">
@@ -324,9 +323,9 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="lg:order-first">
-              <div className="aspect-square bg-gradient-to-br from-pink-100 to-violet-100 rounded-2xl p-8 sm:p-12 flex items-center justify-center">
+              <div className="aspect-square bg-gradient-to-br from-catalyst-50 to-catalyst-100 rounded-2xl p-8 sm:p-12 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-pink-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 catalyst-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
                     <GraduationCap className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
@@ -343,13 +342,13 @@ const Landing: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-24 bg-gradient-to-r from-pink-500 to-violet-500">
+      <section className="py-12 sm:py-16 lg:py-24 catalyst-gradient">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-3 sm:mb-4">
               Ready to Transform Your Education Management?
             </h2>
-            <p className="mx-auto max-w-2xl text-base sm:text-lg text-pink-100 mb-6 sm:mb-8">
+            <p className="mx-auto max-w-2xl text-base sm:text-lg text-catalyst-100 mb-6 sm:mb-8">
               Join thousands of educators already using Catalyst to streamline
               their workflow and improve student outcomes.
             </p>
