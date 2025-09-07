@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { GraduationCap, Loader2, Eye, EyeOff, Mail, Zap } from "lucide-react";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { toast } from "@/hooks/use-toast";
 
 const signInSchema = z.object({
