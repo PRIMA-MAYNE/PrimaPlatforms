@@ -369,9 +369,7 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg catalyst-gradient">
-                <GraduationCap className="w-4 h-4 text-white" />
-              </div>
+              <img src="https://cdn.builder.io/api/v1/image/assets%2Fb0ce78c613014eb194e6c86c886e717d%2F8a8e0cb23614495a9f5637c129cc7c00?format=webp&width=192" alt="Catalyst" className="w-8 h-8 rounded-lg" />
               <span className="text-lg sm:text-xl font-bold">Catalyst</span>
             </div>
             <p className="text-sm sm:text-base text-gray-400 mb-4">
