@@ -60,6 +60,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         {/* Right side actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Install PWA */}
+          <InstallPrompt />
+
           {/* AI Status Indicator */}
           <div className="hidden lg:block">
             <AIStatusIndicator />
