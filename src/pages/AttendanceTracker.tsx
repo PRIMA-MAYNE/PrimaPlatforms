@@ -40,6 +40,7 @@ import {
   exportDayAttendanceToExcel,
 } from "@/lib/export-utils";
 import { toast } from "@/hooks/use-toast";
+import { fetchAttendanceForDate, upsertAttendance } from "@/lib/attendance-supabase";
 
 interface Student {
   id: string;
@@ -128,19 +129,27 @@ const AttendanceTracker: React.FC = () => {
     );
   }, [attendanceRecords]);
 
-  // Update students when class selection changes
+  // Update students when class selection changes and merge with cloud
   useEffect(() => {
-    if (selectedClass) {
+    (async () => {
+      if (!selectedClass) return;
       const currentClass = classes.find((c) => c.id === selectedClass);
-      if (currentClass) {
-        // Reset status for new session
-        const studentsWithStatus = currentClass.students.map((student) => ({
-          ...student,
-          status: getTodayAttendanceStatus(student.id, currentDate),
+      if (!currentClass) return;
+      // local base
+      let studentsWithStatus = currentClass.students.map((student) => ({
+        ...student,
+        status: getTodayAttendanceStatus(student.id, currentDate),
+      }));
+      // merge with cloud if available
+      const cloud = await fetchAttendanceForDate(selectedClass, currentDate);
+      if (cloud.size) {
+        studentsWithStatus = studentsWithStatus.map((s) => ({
+          ...s,
+          status: cloud.get(s.id) ?? s.status,
         }));
-        setStudents(studentsWithStatus);
       }
-    }
+      setStudents(studentsWithStatus);
+    })();
   }, [selectedClass, classes, currentDate, attendanceRecords]);
 
   const getTodayAttendanceStatus = (
@@ -206,6 +215,16 @@ const AttendanceTracker: React.FC = () => {
         );
       } else {
         setAttendanceRecords((prev) => [...prev, record]);
+      }
+
+      // Best-effort cloud sync
+      if (selectedClass) {
+        upsertAttendance({
+          student_id: studentId,
+          class_id: selectedClass,
+          date: currentDate,
+          status: (status as any),
+        });
       }
     }
   };
