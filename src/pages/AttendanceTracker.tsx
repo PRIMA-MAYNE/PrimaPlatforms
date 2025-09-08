@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/ui/stats-card";
 import {
@@ -74,7 +75,7 @@ type AttendanceStatus = "present" | "absent" | "late" | "sick" | null;
 
 const AttendanceTracker: React.FC = () => {
   // State management
-  const [classes, setClasses] = useState<Class[]>([
+  const [classes, setClasses] = React.useState<Class[]>([
     {
       id: "demo-class",
       name: "Grade 10A - Mathematics",
@@ -82,9 +83,9 @@ const AttendanceTracker: React.FC = () => {
       students: [],
     },
   ]);
-  const [selectedClass, setSelectedClass] = useState<string>("");
-  const [students, setStudents] = useState<Student[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = useState<
+  const [selectedClass, setSelectedClass] = React.useState<string>("");
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = React.useState<
     AttendanceRecord[]
   >([]);
   const [searchTerm, setSearchTerm] = React.useState("");
