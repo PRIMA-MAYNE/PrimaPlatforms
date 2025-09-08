@@ -16,10 +16,10 @@ interface Props {
 }
 
 export const VoiceRollCall: React.FC<Props> = ({ students, onMarkStatus }) => {
-  const [active, setActive] = useState(false);
-  const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
-  const recognitionRef = useRef<any>(null);
-  const [log, setLog] = useState<string[]>([]);
+  const [active, setActive] = React.useState(false);
+  const [currentStudent, setCurrentStudent] = React.useState<Student | null>(null);
+  const recognitionRef = React.useRef<any>(null);
+  const [log, setLog] = React.useState<string[]>([]);
 
   const speak = (text: string) => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
@@ -29,7 +29,7 @@ export const VoiceRollCall: React.FC<Props> = ({ students, onMarkStatus }) => {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!active) return;
     const SpeechRecognition: any =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
