@@ -35,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { StudentManagement } from "@/components/attendance/StudentManagement";
 import { VoiceRollCall } from "@/components/attendance/VoiceRollCall";
+import { ImageRollCall } from "@/components/attendance/ImageRollCall";
 import {
   exportAttendanceToExcel,
   exportDayAttendanceToExcel,
@@ -461,8 +462,9 @@ const AttendanceTracker: React.FC = () => {
         </Card>
 
         <Tabs defaultValue="roll-call" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="roll-call">Roll Call</TabsTrigger>
+            <TabsTrigger value="photo">Photo</TabsTrigger>
             <TabsTrigger value="voice">Voice</TabsTrigger>
             <TabsTrigger value="summary">Daily Summary</TabsTrigger>
             <TabsTrigger value="term-stats">Term Statistics</TabsTrigger>
@@ -638,6 +640,18 @@ const AttendanceTracker: React.FC = () => {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="photo" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Photo Roll Call</CardTitle>
+                <CardDescription>Upload a class photo, detect faces, and assign names. Manual boxes supported.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ImageRollCall students={students} onMarkPresent={(id)=>updateAttendanceStatus(id, "present")} />
               </CardContent>
             </Card>
           </TabsContent>
