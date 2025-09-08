@@ -200,7 +200,7 @@ export function StudentManagement({
     });
   };
 
-  const handleBulkImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBulkImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -251,6 +251,94 @@ export function StudentManagement({
 
     reader.readAsText(file);
     setIsBulkImport(false);
+  };
+
+  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const { default: ExcelJS } = await import("exceljs");
+      const workbook = new ExcelJS.Workbook();
+      const arrayBuffer = await file.arrayBuffer();
+      await workbook.xlsx.load(arrayBuffer);
+      const sheet = workbook.worksheets[0];
+      const header: string[] = [];
+      sheet.getRow(1).eachCell((cell: any) => header.push(String(cell.value || "").trim()));
+      const rows: any[] = [];
+      sheet.eachRow((row: any, rowNumber: number) => {
+        if (rowNumber === 1) return;
+        const obj: any = {};
+        row.eachCell((cell: any, colNumber: number) => {
+          obj[header[colNumber - 1] || `col${colNumber}`] = String(cell.value ?? "").trim();
+        });
+        rows.push(obj);
+      });
+      const imported = rows.map((row: any, idx: number) => ({
+        id: row.StudentID || `imp_${Date.now()}_${idx}`,
+        name: row.Name || row.FullName || `Student ${idx + 1}`,
+        gender: row.Gender === "Female" ? "Female" : "Male",
+        dateOfBirth: row.DateOfBirth || row.DOB || "",
+        admissionNumber: row.StudentID || row.Admission || `ADM${Date.now()}${idx}`,
+        class: selectedClass,
+        status: null,
+      })) as Student[];
+
+      if (imported.length) {
+        const updatedClasses = classes.map((cls) =>
+          cls.id === selectedClass ? { ...cls, students: [...cls.students, ...imported] } : cls,
+        );
+        onClassUpdate(updatedClasses);
+        onStudentAdd([...(currentClass?.students || []), ...imported]);
+        toast({ title: "Students Imported", description: `${imported.length} students imported from Excel` });
+      }
+    } catch (e) {
+      console.error("Excel import failed", e);
+      toast({ title: "Import Failed", description: "Could not read Excel file", variant: "destructive" });
+    } finally {
+      setIsBulkImport(false);
+    }
+  };
+
+  const handleImageOCRImport = async () => {
+    try {
+      const { createWorker } = await import("tesseract.js");
+      const worker = await createWorker();
+      await worker.load();
+      await worker.loadLanguage("eng");
+      await worker.initialize("eng");
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.onchange = async (e) => {
+        const f = (e.target as HTMLInputElement).files?.[0];
+        if (!f) return;
+        const { data } = await worker.recognize(URL.createObjectURL(f));
+        const lines = data.text.split(/\r?\n/).map((l: string) => l.trim()).filter(Boolean);
+        const imported: Student[] = lines.map((line: string, idx: number) => ({
+          id: `ocr_${Date.now()}_${idx}`,
+          name: line,
+          gender: "Male",
+          dateOfBirth: "",
+          admissionNumber: `ADM${Date.now()}${idx}`,
+          class: selectedClass,
+          status: null,
+        }));
+        if (imported.length) {
+          const updatedClasses = classes.map((cls) =>
+            cls.id === selectedClass ? { ...cls, students: [...cls.students, ...imported] } : cls,
+          );
+          onClassUpdate(updatedClasses);
+          onStudentAdd([...(currentClass?.students || []), ...imported]);
+          toast({ title: "OCR Import", description: `${imported.length} lines detected and added as students` });
+        }
+        await worker.terminate();
+      };
+      input.click();
+    } catch (e) {
+      console.error("OCR import failed", e);
+      toast({ title: "OCR Failed", description: "Ensure tesseract.js is available", variant: "destructive" });
+    }
   };
 
   const downloadTemplate = () => {
@@ -460,30 +548,49 @@ export function StudentManagement({
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                 <FileSpreadsheet className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <p className="text-sm text-muted-foreground mb-4">
-                  Upload a CSV file with student data
+                  Upload CSV/Excel or use OCR to extract names from an image
                 </p>
                 <input
                   type="file"
                   accept=".csv"
-                  onChange={handleBulkImport}
+                  onChange={handleBulkImportCSV}
                   className="hidden"
                   id="csvImport"
                 />
-                <Button asChild variant="outline">
-                  <label htmlFor="csvImport" className="cursor-pointer">
+                <input
+                  type="file"
+                  accept=".xls,.xlsx"
+                  onChange={handleExcelImport}
+                  className="hidden"
+                  id="xlsxImport"
+                />
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button asChild variant="outline">
+                    <label htmlFor="csvImport" className="cursor-pointer">
+                      <Upload className="w-4 h-4 mr-2" />
+                      CSV
+                    </label>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <label htmlFor="xlsxImport" className="cursor-pointer">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Excel (.xlsx)
+                    </label>
+                  </Button>
+                  <Button variant="outline" onClick={handleImageOCRImport}>
                     <Upload className="w-4 h-4 mr-2" />
-                    Choose CSV File
-                  </label>
-                </Button>
+                    Import from Image (OCR)
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium">CSV Format:</p>
+                <p className="text-sm font-medium">CSV/Excel Columns:</p>
                 <p className="text-xs text-muted-foreground">
-                  Name, Gender, Date of Birth, Admission Number
+                  Name, Gender, Date of Birth, Admission Number (headers optional)
                 </p>
                 <Button size="sm" variant="ghost" onClick={downloadTemplate}>
                   <Download className="w-3 h-3 mr-1" />
-                  Download Template
+                  Download CSV Template
                 </Button>
               </div>
             </div>
