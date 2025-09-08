@@ -94,16 +94,16 @@ interface Class {
 }
 
 const Analytics: React.FC = () => {
-  const [selectedClass, setSelectedClass] = useState<string>("");
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [insights, setInsights] = useState<any>(null);
-  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [selectedClass, setSelectedClass] = React.useState<string>("");
+  const [classes, setClasses] = React.useState<Class[]>([]);
+  const [grades, setGrades] = React.useState<Grade[]>([]);
+  const [attendance, setAttendance] = React.useState<AttendanceRecord[]>([]);
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [insights, setInsights] = React.useState<any>(null);
+  const [isGeneratingInsights, setIsGeneratingInsights] = React.useState(false);
 
   // Load data from localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     const savedClasses = localStorage.getItem("catalyst-classes");
     const savedGrades = localStorage.getItem("catalyst-grades");
     const savedAttendance = localStorage.getItem("catalyst-attendance");
@@ -138,7 +138,7 @@ const Analytics: React.FC = () => {
   }, []);
 
   // Update students when class selection changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedClass) {
       const currentClass = classes.find((c) => c.id === selectedClass);
       if (currentClass) {
@@ -148,7 +148,7 @@ const Analytics: React.FC = () => {
   }, [selectedClass, classes]);
 
   // Generate insights when class or data changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedClass && (grades.length > 0 || attendance.length > 0)) {
       generateInsights();
     }
