@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import * as React from 'react';
 import { clearAuthData, handleAuthError } from '@/lib/auth-utils';
 import { toast } from '@/hooks/use-toast';
 
