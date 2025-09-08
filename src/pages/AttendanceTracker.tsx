@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/ui/stats-card";
 import {
@@ -87,15 +87,15 @@ const AttendanceTracker: React.FC = () => {
   const [attendanceRecords, setAttendanceRecords] = useState<
     AttendanceRecord[]
   >([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [rollCallActive, setRollCallActive] = useState(false);
-  const [currentDate, setCurrentDate] = useState(
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [rollCallActive, setRollCallActive] = React.useState(false);
+  const [currentDate, setCurrentDate] = React.useState(
     new Date().toISOString().split("T")[0],
   );
-  const [currentTerm, setCurrentTerm] = useState("Term 1");
+  const [currentTerm, setCurrentTerm] = React.useState("Term 1");
 
   // Load saved data from localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     const savedClasses = localStorage.getItem("catalyst-classes");
     const savedAttendance = localStorage.getItem("catalyst-attendance");
 
@@ -119,11 +119,11 @@ const AttendanceTracker: React.FC = () => {
   }, []);
 
   // Save data to localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem("catalyst-classes", JSON.stringify(classes));
   }, [classes]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem(
       "catalyst-attendance",
       JSON.stringify(attendanceRecords),
@@ -131,7 +131,7 @@ const AttendanceTracker: React.FC = () => {
   }, [attendanceRecords]);
 
   // Update students when class selection changes and merge with cloud
-  useEffect(() => {
+  React.useEffect(() => {
     (async () => {
       if (!selectedClass) return;
       const currentClass = classes.find((c) => c.id === selectedClass);

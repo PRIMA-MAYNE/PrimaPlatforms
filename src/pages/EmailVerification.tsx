@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import * as React from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -25,9 +25,9 @@ const EmailVerification: React.FC = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = React.useState("");
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleEmailVerification = async () => {
       try {
         const token = searchParams.get("token");

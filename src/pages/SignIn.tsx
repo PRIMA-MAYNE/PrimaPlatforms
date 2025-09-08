@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import * as React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,8 @@ const SignIn: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const from = location.state?.from?.pathname || "/dashboard";
 
@@ -414,9 +414,9 @@ import {
 
 const ForgotPasswordDialog: React.FC = () => {
   const { resetPassword } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [email, setEmail] = React.useState("");
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
