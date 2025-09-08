@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "./button";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
