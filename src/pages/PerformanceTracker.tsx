@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   Card,
@@ -81,14 +81,14 @@ interface Class {
 }
 
 const PerformanceTracker: React.FC = () => {
-  const [selectedClass, setSelectedClass] = useState<string>("");
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [analytics, setAnalytics] = useState<any>(null);
-  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [selectedClass, setSelectedClass] = React.useState<string>("");
+  const [classes, setClasses] = React.useState<Class[]>([]);
+  const [grades, setGrades] = React.useState<Grade[]>([]);
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [analytics, setAnalytics] = React.useState<any>(null);
+  const [isGeneratingInsights, setIsGeneratingInsights] = React.useState(false);
 
-  const [newGrade, setNewGrade] = useState({
+  const [newGrade, setNewGrade] = React.useState({
     studentId: "",
     subject: "",
     assessmentName: "",
@@ -98,7 +98,7 @@ const PerformanceTracker: React.FC = () => {
   });
 
   // Load data from localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     const savedClasses = localStorage.getItem("catalyst-classes");
     const savedGrades = localStorage.getItem("catalyst-grades");
 
@@ -124,7 +124,7 @@ const PerformanceTracker: React.FC = () => {
   }, []);
 
   // Update students when class selection changes
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedClass) {
       const currentClass = classes.find((c) => c.id === selectedClass);
       if (currentClass) {
@@ -134,12 +134,12 @@ const PerformanceTracker: React.FC = () => {
   }, [selectedClass, classes]);
 
   // Save grades to localStorage
-  useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem("catalyst-grades", JSON.stringify(grades));
   }, [grades]);
 
   // Generate analytics when class or grades change
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedClass && grades.length > 0) {
       const classGrades = grades.filter((g) => g.class === selectedClass);
       if (classGrades.length > 0) {
