@@ -13,6 +13,7 @@ import { SupabaseService } from "@/lib/supabase-service";
 import { supabase } from "@/lib/supabase";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import * as React from "react";
 
 interface Notification {
   id: string;
