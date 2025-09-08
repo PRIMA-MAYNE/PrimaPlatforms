@@ -11,12 +11,12 @@ interface Props {
 interface Box { x: number; y: number; w: number; h: number; studentId?: string; }
 
 export const ImageRollCall: React.FC<Props> = ({ students, onMarkPresent }) => {
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [boxes, setBoxes] = useState<Box[]>([]);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [dragStart, setDragStart] = useState<{x:number;y:number}|null>(null);
+  const [imageUrl, setImageUrl] = React.useState<string>("");
+  const [boxes, setBoxes] = React.useState<Box[]>([]);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [dragStart, setDragStart] = React.useState<{x:number;y:number}|null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!imageUrl || !canvasRef.current) return;
     const img = new Image();
     img.onload = () => {
