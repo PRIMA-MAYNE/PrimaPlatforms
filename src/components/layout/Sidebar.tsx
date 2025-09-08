@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/branding/Logo";
 
+import * as React from "react";
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
