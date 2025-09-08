@@ -1,4 +1,3 @@
-import React from "react";
 import { Bell, Menu, Search, User, LogOut } from "lucide-react";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { Button } from "@/components/ui/button";
