@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { config } from "@/lib/config";
 import { Loader2 } from "lucide-react";
 
+import * as React from "react";
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
