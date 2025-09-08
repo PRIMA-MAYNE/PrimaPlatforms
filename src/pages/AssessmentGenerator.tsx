@@ -81,11 +81,11 @@ interface MarkingCriteria {
 }
 
 const AssessmentGenerator: React.FC = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [currentAssessment, setCurrentAssessment] = useState<Assessment | null>(
+  const [isGenerating, setIsGenerating] = React.React.useState(false);
+  const [currentAssessment, setCurrentAssessment] = React.useState<Assessment | null>(
     null,
   );
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.React.useState({
     subject: "",
     topic: "",
     gradeLevel: "",
@@ -94,10 +94,10 @@ const AssessmentGenerator: React.FC = () => {
     questionTypes: ["multiple-choice", "short-answer"],
   });
 
-  const [savedAssessments, setSavedAssessments] = useState<Assessment[]>([]);
+  const [savedAssessments, setSavedAssessments] = React.useState<Assessment[]>([]);
 
   // Load saved assessments from localStorage
-  useEffect(() => {
+  React.React.useEffect(() => {
     const saved = localStorage.getItem("catalyst-assessments");
     if (saved) {
       try {
@@ -109,7 +109,7 @@ const AssessmentGenerator: React.FC = () => {
   }, []);
 
   // Save assessments to localStorage
-  useEffect(() => {
+  React.React.useEffect(() => {
     localStorage.setItem(
       "catalyst-assessments",
       JSON.stringify(savedAssessments),
