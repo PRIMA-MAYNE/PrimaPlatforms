@@ -8,7 +8,7 @@ interface AuthErrorBoundaryProps {
 }
 
 export const AuthErrorBoundary: React.FC<AuthErrorBoundaryProps> = ({ children }) => {
-  useEffect(() => {
+  React.useEffect(() => {
     // Listen for unhandled promise rejections that might be auth-related
     const handleRejection = (event: PromiseRejectionEvent) => {
       const error = event.reason;
