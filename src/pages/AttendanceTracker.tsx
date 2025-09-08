@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentManagement } from "@/components/attendance/StudentManagement";
+import { VoiceRollCall } from "@/components/attendance/VoiceRollCall";
 import {
   exportAttendanceToExcel,
   exportDayAttendanceToExcel,
@@ -441,8 +442,9 @@ const AttendanceTracker: React.FC = () => {
         </Card>
 
         <Tabs defaultValue="roll-call" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="roll-call">Roll Call</TabsTrigger>
+            <TabsTrigger value="voice">Voice</TabsTrigger>
             <TabsTrigger value="summary">Daily Summary</TabsTrigger>
             <TabsTrigger value="term-stats">Term Statistics</TabsTrigger>
             <TabsTrigger value="reports">Reports & Export</TabsTrigger>
@@ -617,6 +619,18 @@ const AttendanceTracker: React.FC = () => {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="voice" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Voice Roll Call</CardTitle>
+                <CardDescription>Use your voice to select a student and mark their status.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <VoiceRollCall students={students} onMarkStatus={updateAttendanceStatus} />
               </CardContent>
             </Card>
           </TabsContent>
