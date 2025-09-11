@@ -41,7 +41,6 @@ import {
   Trash2,
   Sparkles,
   Brain,
-  Syllabus, // If you have it — else replace with BookOpen
   BookOpen,
 } from "lucide-react";
 import { AIService } from "@/lib/ai-service";
@@ -51,49 +50,71 @@ import {
 } from "@/lib/export-utils";
 import { toast } from "@/hooks/use-toast";
 
-// Types remain unchanged
-interface Assessment {
+// ================
+// UPDATED TYPES — NOW MATCHES DUAL-DOCUMENT STRUCTURE
+// ================
+
+interface AssessmentDocument {
+  question_paper: QuestionPaper;
+  marking_scheme: MarkingScheme;
+}
+
+interface QuestionPaper {
   title: string;
   subject: string;
   topic: string;
-  gradeLevel: string;
+  grade_level: number;
   difficulty: "easy" | "medium" | "hard";
-  totalMarks: number;
-  duration: number;
+  total_marks: number;
+  duration_minutes: number;
   instructions: string;
   questions: Question[];
-  markingScheme: MarkingCriteria[];
-  eczCompliance?: string;
-  syllabiSource?: string;
-  generatedAt: string;
+  syllabus_code: string;
+  generated_at: string;
+}
+
+interface MarkingScheme {
+  title: string;
+  subject: string;
+  topic: string;
+  grade_level: number;
+  total_marks: number;
+  questions: ModelAnswer[];
+  grading_notes: string;
+  syllabus_code: string;
+  generated_at: string;
 }
 
 interface Question {
-  id: string;
   number: number;
   type: string;
-  question: string;
+  text: string;
   marks: number;
-  answer: string;
   options?: string[];
-  explanation: string;
-  eczCriteria?: string;
-  syllabiAlignment?: string;
 }
 
-interface MarkingCriteria {
-  questionId: string;
+interface ModelAnswer {
+  number: number;
+  type: string;
   marks: number;
-  criteria: string;
-  partialCredit: string;
-  eczStandards?: string;
-  syllabiAlignment?: string;
+  model_answer: string;
+  key_points?: string[];
+  partial_credit?: { description: string; marks: number }[];
+  ecz_code?: string;
+  bloom_level?: string;
+}
+
+// For saved assessments (flattened for localStorage)
+interface SavedAssessment extends AssessmentDocument {
+  id: string;
+  savedAt: string;
 }
 
 const AssessmentGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [currentAssessment, setCurrentAssessment] =
-    React.useState<Assessment | null>(null);
+    React.useState<AssessmentDocument | null>(null);
+  const [viewMode, setViewMode] = React.useState<"paper" | "scheme">("paper"); // New state for tabs
   const [formData, setFormData] = React.useState({
     subject: "",
     topic: "",
@@ -103,7 +124,7 @@ const AssessmentGenerator: React.FC = () => {
     questionTypes: ["multiple-choice", "short-answer"],
   });
 
-  const [savedAssessments, setSavedAssessments] = React.useState<Assessment[]>(
+  const [savedAssessments, setSavedAssessments] = React.useState<SavedAssessment[]>(
     [],
   );
 
@@ -112,7 +133,10 @@ const AssessmentGenerator: React.FC = () => {
     const saved = localStorage.getItem("catalyst-assessments");
     if (saved) {
       try {
-        setSavedAssessments(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Validate structure
+        const valid = parsed.filter((a: any) => a.question_paper && a.marking_scheme);
+        setSavedAssessments(valid);
       } catch (error) {
         console.error("Error loading saved assessments:", error);
       }
@@ -133,7 +157,7 @@ const AssessmentGenerator: React.FC = () => {
     { id: "essay", label: "Essay", icon: "📝" },
     { id: "true-false", label: "True/False", icon: "✅" },
     { id: "structured", label: "Structured", icon: "📊" },
-    { id: "practical", label: "Practical", icon: "🧪" },
+    { id: "problem-solving", label: "Problem Solving", icon: "🧮" }, // Updated icon
   ];
 
   const handleQuestionTypeChange = (typeId: string, checked: boolean) => {
@@ -176,30 +200,20 @@ const AssessmentGenerator: React.FC = () => {
         difficulty: formData.difficulty,
       });
 
-      // Normalize assessment to match UI expectations
-      const normalizedAssessment = {
-        ...assessment,
-        gradeLevel: `Grade ${formData.gradeLevel}`,
-        id: Date.now().toString(),
-        questions: (assessment.questions || []).map((q, idx) => ({
-          ...q,
-          id: `q-${idx + 1}`,
-          number: q.question_number || idx + 1,
-          type: q.question_type || "unknown",
-          question: q.question_text || "No question text",
-          answer: q.correct_answer || "No answer provided",
-          explanation: q.answer_explanation || "No explanation provided",
-          marks: q.marks || 1,
-        })),
-        markingScheme: [],
-        generatedAt: new Date().toISOString(),
-        eczCompliance: assessment.ecz_compliance ? "Fully compliant with ECZ standards" : undefined,
-        syllabiSource: assessment.syllabi_alignment || undefined,
-        duration: assessment.duration_minutes || 60,
-        totalMarks: assessment.total_marks || 0,
+      // Add metadata for UI
+      const enhancedAssessment: AssessmentDocument = {
+        question_paper: {
+          ...assessment.question_paper,
+          gradeLevelDisplay: `Grade ${formData.gradeLevel}`, // For display only
+        },
+        marking_scheme: {
+          ...assessment.marking_scheme,
+          gradeLevelDisplay: `Grade ${formData.gradeLevel}`, // For display only
+        },
       };
 
-      setCurrentAssessment(normalizedAssessment);
+      setCurrentAssessment(enhancedAssessment);
+      setViewMode("paper"); // Reset to question paper view
 
       toast({
         title: "✨ Assessment Generated!",
@@ -220,27 +234,18 @@ const AssessmentGenerator: React.FC = () => {
 
   const handleSave = () => {
     if (currentAssessment) {
-      const existingIndex = savedAssessments.findIndex(
-        (a) =>
-          a.title === currentAssessment.title &&
-          a.subject === currentAssessment.subject,
-      );
+      const now = new Date().toISOString();
+      const newSavedAssessment: SavedAssessment = {
+        ...currentAssessment,
+        id: Date.now().toString(),
+        savedAt: now,
+      };
 
-      if (existingIndex >= 0) {
-        setSavedAssessments((prev) =>
-          prev.map((a, i) => (i === existingIndex ? currentAssessment : a)),
-        );
-        toast({
-          title: "✅ Assessment Updated",
-          description: "Your changes have been saved",
-        });
-      } else {
-        setSavedAssessments((prev) => [currentAssessment, ...prev]);
-        toast({
-          title: "✅ Assessment Saved",
-          description: "Added to your library",
-        });
-      }
+      setSavedAssessments((prev) => [newSavedAssessment, ...prev]);
+      toast({
+        title: "✅ Assessment Saved",
+        description: "Added to your library",
+      });
     }
   };
 
@@ -250,7 +255,7 @@ const AssessmentGenerator: React.FC = () => {
       exportAssessmentToPDF(currentAssessment, includeAnswers);
       toast({
         title: "📥 PDF Exported",
-        description: includeAnswers ? "With marking scheme" : "Student version",
+        description: includeAnswers ? "Marking Scheme" : "Question Paper",
       });
     } catch (error) {
       toast({
@@ -267,7 +272,7 @@ const AssessmentGenerator: React.FC = () => {
       await exportAssessmentToDocx(currentAssessment, includeAnswers);
       toast({
         title: "📥 DOCX Exported",
-        description: includeAnswers ? "With answers included" : "Clean copy",
+        description: includeAnswers ? "Marking Scheme" : "Question Paper",
       });
     } catch (error) {
       toast({
@@ -278,18 +283,22 @@ const AssessmentGenerator: React.FC = () => {
     }
   };
 
-  const handleLoadAssessment = (assessment: Assessment) => {
+  const handleLoadAssessment = (assessment: SavedAssessment) => {
     setCurrentAssessment(assessment);
-    setFormData({
-      subject: assessment.subject,
-      topic: assessment.topic,
-      gradeLevel: assessment.gradeLevel.replace("Grade ", ""),
-      questionCount: assessment.questions.length,
-      difficulty: assessment.difficulty,
-      questionTypes: [
-        ...new Set(assessment.questions.map((q) => q.type)),
-      ] as string[],
-    });
+    setViewMode("paper");
+    // Sync form data
+    if (assessment.question_paper) {
+      setFormData({
+        subject: assessment.question_paper.subject,
+        topic: assessment.question_paper.topic,
+        gradeLevel: assessment.question_paper.grade_level.toString(),
+        questionCount: assessment.question_paper.questions.length,
+        difficulty: assessment.question_paper.difficulty,
+        questionTypes: [
+          ...new Set(assessment.question_paper.questions.map((q) => q.type)),
+        ] as string[],
+      });
+    }
   };
 
   const handleDeleteAssessment = (index: number) => {
@@ -329,7 +338,7 @@ const AssessmentGenerator: React.FC = () => {
               AI Assessment Generator
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Create ECZ-compliant assessments powered by OpenAI — syllabi-aligned, intelligent, and ready to use.
+              Create ECZ-compliant assessments with separate Question Papers and Marking Schemes.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 justify-end">
@@ -398,7 +407,7 @@ const AssessmentGenerator: React.FC = () => {
                   Configure Your AI Assessment
                 </CardTitle>
                 <CardDescription>
-                  Our AI uses real ECZ syllabi to generate meaningful, curriculum-aligned questions.
+                  Our AI uses real ECZ syllabi to generate meaningful, curriculum-aligned questions and marking schemes.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -581,7 +590,7 @@ const AssessmentGenerator: React.FC = () => {
             </Card>
           </TabsContent>
 
-          {/* Review Tab */}
+          {/* Review Tab — NOW WITH QUESTION PAPER / MARKING SCHEME TOGGLE */}
           <TabsContent value="review">
             {isGenerating ? (
               <Card className="border-0 shadow-lg">
@@ -591,7 +600,7 @@ const AssessmentGenerator: React.FC = () => {
                     Generating Your Assessment...
                   </CardTitle>
                   <CardDescription>
-                    Our AI is crafting syllabi-aligned questions just for you. This may take 10-30 seconds.
+                    Our AI is crafting syllabi-aligned questions and marking schemes just for you.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -604,20 +613,22 @@ const AssessmentGenerator: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="space-y-1">
                       <CardTitle className="text-xl font-bold">
-                        {currentAssessment.title}
+                        {viewMode === "paper" 
+                          ? currentAssessment.question_paper.title 
+                          : currentAssessment.marking_scheme.title}
                       </CardTitle>
                       <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                         <span className="flex items-center gap-1">
-                          <BookOpen className="h-4 w-4" /> {currentAssessment.subject}
+                          <BookOpen className="h-4 w-4" /> {currentAssessment.question_paper.subject}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Target className="h-4 w-4" /> {currentAssessment.gradeLevel}
+                          <Target className="h-4 w-4" /> Grade {currentAssessment.question_paper.grade_level}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" /> {currentAssessment.duration} min
+                          <Clock className="h-4 w-4" /> {currentAssessment.question_paper.duration_minutes} min
                         </span>
                         <span className="flex items-center gap-1">
-                          <FileCheck className="h-4 w-4" /> {currentAssessment.totalMarks} marks
+                          <FileCheck className="h-4 w-4" /> {currentAssessment.question_paper.total_marks} marks
                         </span>
                       </CardDescription>
                     </div>
@@ -636,7 +647,7 @@ const AssessmentGenerator: React.FC = () => {
                         onClick={() => handleDownloadPDF(false)}
                         className="gap-1.5"
                       >
-                        <FileDown className="h-4 w-4" /> PDF
+                        <FileDown className="h-4 w-4" /> Paper (PDF)
                       </Button>
                       <Button
                         variant="outline"
@@ -644,7 +655,7 @@ const AssessmentGenerator: React.FC = () => {
                         onClick={() => handleDownloadDocx(false)}
                         className="gap-1.5"
                       >
-                        <Download className="h-4 w-4" /> DOCX
+                        <Download className="h-4 w-4" /> Paper (DOCX)
                       </Button>
                       <Button
                         variant="outline"
@@ -652,30 +663,44 @@ const AssessmentGenerator: React.FC = () => {
                         onClick={() => handleDownloadPDF(true)}
                         className="gap-1.5"
                       >
-                        <FileCheck className="h-4 w-4" /> With Answers
+                        <FileCheck className="h-4 w-4" /> Scheme (PDF)
                       </Button>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
-                    {currentAssessment.eczCompliance && (
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        <CheckCircle className="h-3 w-3 mr-1" /> ECZ Compliant
-                      </Badge>
-                    )}
-                    {currentAssessment.syllabiSource && (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                        <BookOpen className="h-3 w-3 mr-1" /> Syllabi-Based
-                      </Badge>
-                    )}
+                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                      <CheckCircle className="h-3 w-3 mr-1" /> ECZ Compliant
+                    </Badge>
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                      <BookOpen className="h-3 w-3 mr-1" /> Syllabus-Based
+                    </Badge>
                     <Badge variant="secondary" className="capitalize">
-                      {currentAssessment.difficulty} Difficulty
+                      {currentAssessment.question_paper.difficulty} Difficulty
                     </Badge>
                     <Badge variant="outline">
-                      {currentAssessment.questions.length} Questions
+                      {currentAssessment.question_paper.questions.length} Questions
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* View Mode Toggle */}
+                  <div className="flex border-b mb-6">
+                    <Button
+                      variant={viewMode === "paper" ? "default" : "ghost"}
+                      onClick={() => setViewMode("paper")}
+                      className="flex-1 rounded-none rounded-tl-lg rounded-bl-lg font-medium"
+                    >
+                      Question Paper
+                    </Button>
+                    <Button
+                      variant={viewMode === "scheme" ? "default" : "ghost"}
+                      onClick={() => setViewMode("scheme")}
+                      className="flex-1 rounded-none rounded-tr-lg rounded-br-lg font-medium"
+                    >
+                      Marking Scheme
+                    </Button>
+                  </div>
+
                   {/* AI Generation Notice */}
                   <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                     <div className="flex items-start gap-3">
@@ -683,99 +708,166 @@ const AssessmentGenerator: React.FC = () => {
                       <div>
                         <h4 className="font-medium text-purple-900 mb-1">AI-Generated Content</h4>
                         <p className="text-sm text-purple-700">
-                          This assessment was generated using OpenAI, aligned with ECZ syllabi and curriculum standards.
+                          This assessment was generated using GPT-4o-mini, aligned with ECZ syllabi and curriculum standards.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Instructions */}
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5" /> Instructions
-                    </h3>
-                    <div className="bg-muted/40 p-4 rounded-lg">
-                      <p className="leading-relaxed">{currentAssessment.instructions}</p>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Questions */}
-                  <div className="space-y-6">
-                    <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
-                      <FileCheck className="h-5 w-5" /> Questions ({currentAssessment.questions.length})
-                    </h3>
-                    <div className="space-y-6">
-                      {currentAssessment.questions.map((question) => (
-                        <div
-                          key={question.id}
-                          className="border rounded-xl p-5 bg-background hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-                            <h4 className="font-medium text-lg">
-                              Question {question.number}
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline" className="text-xs capitalize">
-                                {question.type.replace("-", " ")}
-                              </Badge>
-                              <Badge variant="secondary" className="text-xs">
-                                {question.marks} marks
-                              </Badge>
-                              {question.syllabiAlignment && (
-                                <Badge className="text-xs bg-blue-100 text-blue-800">
-                                  Syllabus: {question.syllabiAlignment}
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="mb-4 leading-relaxed text-foreground">
-                            {question.question}
-                          </p>
-
-                          {question.options && (
-                            <div className="ml-4 mb-4 space-y-2">
-                              {question.options.map((option, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 p-2 rounded bg-muted/50"
-                                >
-                                  <span className="font-medium w-6 h-6 rounded-full bg-background flex items-center justify-center text-xs border">
-                                    {String.fromCharCode(65 + index)}
-                                  </span>
-                                  <span>{option}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="mt-4 pt-4 border-t bg-muted/30 p-4 rounded-lg">
-                            <div className="grid gap-2 text-sm">
-                              <div>
-                                <strong className="text-foreground">Answer:</strong>{" "}
-                                <span className="text-muted-foreground">{question.answer}</span>
-                              </div>
-                              <div>
-                                <strong className="text-foreground">Explanation:</strong>{" "}
-                                <span className="text-muted-foreground">{question.explanation}</span>
-                              </div>
-                              {question.eczCriteria && (
-                                <div>
-                                  <strong className="text-foreground">ECZ Criteria:</strong>{" "}
-                                  <span className="text-muted-foreground">{question.eczCriteria}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                  {viewMode === "paper" && currentAssessment.question_paper && (
+                    <>
+                      {/* Instructions */}
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
+                          <ClipboardList className="h-5 w-5" /> Instructions
+                        </h3>
+                        <div className="bg-muted/40 p-4 rounded-lg">
+                          <p className="leading-relaxed">{currentAssessment.question_paper.instructions}</p>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Questions */}
+                      <div className="space-y-6">
+                        <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
+                          <FileCheck className="h-5 w-5" /> Questions ({currentAssessment.question_paper.questions.length})
+                        </h3>
+                        <div className="space-y-6">
+                          {currentAssessment.question_paper.questions.map((question) => (
+                            <div
+                              key={question.number}
+                              className="border rounded-xl p-5 bg-background hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                                <h4 className="font-medium text-lg">
+                                  Question {question.number} ({question.marks} marks)
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="outline" className="text-xs capitalize">
+                                    {question.type.replace("-", " ")}
+                                  </Badge>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {question.marks} marks
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <p className="mb-4 leading-relaxed text-foreground">
+                                {question.text}
+                              </p>
+
+                              {question.options && (
+                                <div className="ml-4 mb-4 space-y-2">
+                                  {question.options.map((option, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-2 p-2 rounded bg-muted/50"
+                                    >
+                                      <span className="font-medium w-6 h-6 rounded-full bg-background flex items-center justify-center text-xs border">
+                                        {String.fromCharCode(65 + index)}
+                                      </span>
+                                      <span>{option}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {viewMode === "scheme" && currentAssessment.marking_scheme && (
+                    <>
+                      {/* Grading Notes */}
+                      {currentAssessment.marking_scheme.grading_notes && (
+                        <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-lg mb-6">
+                          <h4 className="font-medium text-amber-900 mb-2">Grading Notes</h4>
+                          <p className="text-amber-800 text-sm">
+                            {currentAssessment.marking_scheme.grading_notes}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Marking Scheme Questions */}
+                      <div className="space-y-6">
+                        <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
+                          <FileCheck className="h-5 w-5" /> Marking Scheme ({currentAssessment.marking_scheme.questions.length} questions)
+                        </h3>
+                        <div className="space-y-6">
+                          {currentAssessment.marking_scheme.questions.map((q) => (
+                            <div
+                              key={q.number}
+                              className="border rounded-xl p-5 bg-background hover:shadow-md transition-shadow"
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                                <h4 className="font-medium text-lg">
+                                  Question {q.number} ({q.marks} marks)
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                  <Badge variant="outline" className="text-xs capitalize">
+                                    {q.type.replace("-", " ")}
+                                  </Badge>
+                                  {q.bloom_level && (
+                                    <Badge className="text-xs bg-blue-100 text-blue-800">
+                                      Bloom: {q.bloom_level}
+                                    </Badge>
+                                  )}
+                                  {q.ecz_code && (
+                                    <Badge className="text-xs bg-green-100 text-green-800">
+                                      {q.ecz_code}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div>
+                                  <strong className="font-medium">Model Answer:</strong>
+                                  <p className="mt-1 text-muted-foreground">{q.model_answer}</p>
+                                </div>
+
+                                {q.key_points && q.key_points.length > 0 && (
+                                  <div>
+                                    <strong className="font-medium">Key Points:</strong>
+                                    <ul className="mt-1 space-y-1">
+                                      {q.key_points.map((point, idx) => (
+                                        <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                                          <span className="w-1.5 h-1.5 bg-foreground rounded-full mt-2 flex-shrink-0"></span>
+                                          {point}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {q.partial_credit && q.partial_credit.length > 0 && (
+                                  <div>
+                                    <strong className="font-medium">Partial Credit:</strong>
+                                    <div className="mt-1 space-y-1">
+                                      {q.partial_credit.map((pc, idx) => (
+                                        <div key={idx} className="flex items-center justify-between bg-muted/50 p-2 rounded">
+                                          <span className="text-sm text-muted-foreground">{pc.description}</span>
+                                          <Badge variant="secondary" className="text-xs">
+                                            +{pc.marks} marks
+                                          </Badge>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                   <div className="text-xs text-muted-foreground text-right pt-4 border-t">
-                    Generated on {new Date(currentAssessment.generatedAt).toLocaleString()}
+                    Generated on {new Date(currentAssessment.question_paper.generated_at).toLocaleString()}
                   </div>
                 </CardContent>
               </Card>
@@ -819,34 +911,42 @@ const AssessmentGenerator: React.FC = () => {
                   >
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg font-semibold line-clamp-2">
-                        {assessment.title}
+                        {assessment.question_paper.title}
                       </CardTitle>
                       <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                        <span>{assessment.gradeLevel}</span>
-                        <span>{assessment.questions.length} Qs</span>
-                        <span>{assessment.totalMarks} marks</span>
+                        <span>Grade {assessment.question_paper.grade_level}</span>
+                        <span>{assessment.question_paper.questions.length} Qs</span>
+                        <span>{assessment.question_paper.total_marks} marks</span>
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex flex-wrap gap-1.5">
-                        {assessment.eczCompliance && (
-                          <Badge className="text-xs bg-green-100 text-green-800">
-                            ECZ
-                          </Badge>
-                        )}
-                        {assessment.syllabiSource && (
-                          <Badge className="text-xs bg-blue-100 text-blue-800">
-                            Syllabus
-                          </Badge>
-                        )}
+                        <Badge className="text-xs bg-green-100 text-green-800">
+                          ECZ
+                        </Badge>
+                        <Badge className="text-xs bg-blue-100 text-blue-800">
+                          Syllabus
+                        </Badge>
                         <Badge variant="outline" className="text-xs capitalize">
-                          {assessment.difficulty}
+                          {assessment.question_paper.difficulty}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(assessment.generatedAt).toLocaleDateString()}
+                        {new Date(assessment.savedAt).toLocaleDateString()}
                       </p>
                       <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentAssessment(assessment);
+                            setViewMode("paper");
+                          }}
+                          className="flex-1"
+                        >
+                          View
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -857,7 +957,7 @@ const AssessmentGenerator: React.FC = () => {
                           }}
                           className="flex-1"
                         >
-                          <Download className="h-3 w-3 mr-1" /> Export
+                          <Download className="h-3 w-3 mr-1" /> Paper
                         </Button>
                         <Button
                           size="sm"
