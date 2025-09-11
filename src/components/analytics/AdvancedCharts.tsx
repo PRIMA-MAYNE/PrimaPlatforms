@@ -197,6 +197,7 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 radius={[6, 6, 0, 0]}
                 isAnimationActive
                 animationDuration={900}
+                animationEasing="ease-out"
               />
               <Line
                 yAxisId="right"
@@ -207,6 +208,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 strokeWidth={2}
                 dot={{ r: 3 }}
                 isAnimationActive
+                animationDuration={800}
+                animationEasing="ease-out"
               />
             </ComposedChart>
           </ResponsiveContainer>
