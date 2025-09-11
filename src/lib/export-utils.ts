@@ -275,12 +275,13 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
 
 // Export assessments to PDF
 export function exportAssessmentToPDF(assessment: any, includeAnswers = false) {
-  const pdf = new jsPDF();
-  const margin = 20;
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 40;
   const pageWidth = pdf.internal.pageSize.getWidth();
-  let yPosition = margin;
+  let yPosition = margin + 20;
+  addHeader(pdf, "Assessment");
 
-  const addText = (text: string, fontSize = 10, isBold = false) => {
+  const addText = (text: string, fontSize = 11, isBold = false) => {
     pdf.setFontSize(fontSize);
     if (isBold) {
       pdf.setFont(undefined, "bold");
