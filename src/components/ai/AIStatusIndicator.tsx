@@ -35,7 +35,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
     }
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     checkAIStatus();
   }, []);
 
