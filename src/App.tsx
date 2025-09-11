@@ -9,20 +9,20 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ui/error-boundary";
 import AuthErrorBoundary from "@/components/auth/AuthErrorBoundary";
 
-// Public pages
-import Landing from "./pages/Landing";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import EmailVerification from "./pages/EmailVerification";
+// Public pages (code-split)
+const Landing = React.lazy(() => import("./pages/Landing"));
+const SignIn = React.lazy(() => import("./pages/SignIn"));
+const SignUp = React.lazy(() => import("./pages/SignUp"));
+const EmailVerification = React.lazy(() => import("./pages/EmailVerification"));
 
-// Protected pages
-import Index from "./pages/Index";
-import AttendanceTracker from "./pages/AttendanceTracker";
-import LessonPlanning from "./pages/LessonPlanning";
-import AssessmentGenerator from "./pages/AssessmentGenerator";
-import PerformanceTracker from "./pages/PerformanceTracker";
-import Analytics from "./pages/Analytics";
-import NotFound from "./pages/NotFound";
+// Protected pages (code-split)
+const Index = React.lazy(() => import("./pages/Index"));
+const AttendanceTracker = React.lazy(() => import("./pages/AttendanceTracker"));
+const LessonPlanning = React.lazy(() => import("./pages/LessonPlanning"));
+const AssessmentGenerator = React.lazy(() => import("./pages/AssessmentGenerator"));
+const PerformanceTracker = React.lazy(() => import("./pages/PerformanceTracker"));
+const Analytics = React.lazy(() => import("./pages/Analytics"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
