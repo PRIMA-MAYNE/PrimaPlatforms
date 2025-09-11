@@ -366,7 +366,7 @@ export async function exportAssessmentToDocx(
       heading: HeadingLevel.TITLE,
       alignment: AlignmentType.CENTER,
     }),
-    new Paragraph({ text: "" }),
+    new Paragraph({ text: `Date: ${new Date().toLocaleDateString()}` }),
     new Paragraph({
       children: [
         new TextRun({
