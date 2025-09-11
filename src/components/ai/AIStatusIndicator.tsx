@@ -17,7 +17,7 @@ interface AIStatusIndicatorProps {
 }
 
 export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
-  const [status, setStatus] = useState<
+  const [status, setStatus] = React.useState<
     "checking" | "connected" | "fallback" | "error"
   >("checking");
   const [isTestingConnection, setIsTestingConnection] = useState(false);
