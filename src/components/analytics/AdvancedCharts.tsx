@@ -247,6 +247,9 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 stroke="#22c55e"
                 fill="url(#presentGrad)"
                 name="Present"
+                isAnimationActive
+                animationDuration={900}
+                animationEasing="ease-out"
               />
               <Area
                 type="monotone"
@@ -255,6 +258,9 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 stroke="#ef4444"
                 fill="url(#absentGrad)"
                 name="Absent"
+                isAnimationActive
+                animationDuration={900}
+                animationEasing="ease-out"
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -286,10 +292,12 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 stackId="a"
                 fill="#22c55e"
                 name="Present"
+                isAnimationActive
+                animationDuration={700}
               />
-              <Bar dataKey="late" stackId="a" fill="#f59e0b" name="Late" />
-              <Bar dataKey="sick" stackId="a" fill="#8b5cf6" name="Sick" />
-              <Bar dataKey="absent" stackId="a" fill="#ef4444" name="Absent" />
+              <Bar dataKey="late" stackId="a" fill="#f59e0b" name="Late" isAnimationActive animationDuration={700} />
+              <Bar dataKey="sick" stackId="a" fill="#8b5cf6" name="Sick" isAnimationActive animationDuration={700} />
+              <Bar dataKey="absent" stackId="a" fill="#ef4444" name="Absent" isAnimationActive animationDuration={700} />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
@@ -315,6 +323,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 dataKey="value"
                 clockWise
                 label={{ position: "insideStart", fill: "#fff" }}
+                isAnimationActive
+                animationDuration={900}
               />
               <Legend />
               <Tooltip />
@@ -341,6 +351,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 innerRadius={70}
                 outerRadius={110}
                 paddingAngle={2}
+                isAnimationActive
+                animationDuration={900}
               >
                 {bands.map((entry, index) => (
                   <Cell
@@ -379,6 +391,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 stroke="#06b6d4"
                 fill="#06b6d4"
                 fillOpacity={0.35}
+                isAnimationActive
+                animationDuration={900}
               />
               <Tooltip />
               <Legend />
@@ -414,7 +428,7 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <ZAxis type="number" range={[60, 200]} />
               <Tooltip cursor={{ strokeDasharray: "3 3" }} />
               <Legend />
-              <Scatter name="Students" data={corr} fill="#3b82f6" />
+              <Scatter name="Students" data={corr} fill="#3b82f6" isAnimationActive animationDuration={800} />
             </ScatterChart>
           </ResponsiveContainer>
         </CardContent>
@@ -487,12 +501,18 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 stroke="#3b82f6"
                 fill="url(#lineGrad)"
                 name="Attendance %"
+                isAnimationActive
+                animationDuration={900}
+                animationEasing="ease-out"
               />
               <Line
                 type="monotone"
                 dataKey="rate"
                 stroke="#1d4ed8"
                 dot={{ r: 2 }}
+                isAnimationActive
+                animationDuration={800}
+                animationEasing="ease-out"
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -565,6 +585,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 name="Assessments"
                 fill="#f59e0b"
                 radius={[6, 6, 0, 0]}
+                isAnimationActive
+                animationDuration={800}
               />
               <Line
                 yAxisId="right"
@@ -573,6 +595,8 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 name="Average %"
                 stroke="#3b82f6"
                 strokeWidth={2}
+                isAnimationActive
+                animationDuration={800}
               />
             </ComposedChart>
           </ResponsiveContainer>
