@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import { Bell, Check, X, AlertCircle, Info, CheckCircle } from "lucide-react";
 import {
   Popover,
