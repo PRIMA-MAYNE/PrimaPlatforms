@@ -26,8 +26,8 @@ interface DemoSignInProps {
 }
 
 export function DemoSignIn({ className }: DemoSignInProps) {
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const [demoStatus, setDemoStatus] = useState<
+  const [isSigningIn, setIsSigningIn] = React.useState(false);
+  const [demoStatus, setDemoStatus] = React.useState<
     "ready" | "signing-in" | "success" | "error"
   >("ready");
   const { signIn, signUp } = useAuth();
