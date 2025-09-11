@@ -10,6 +10,38 @@ import {
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
+// Helpers for robust exports
+function normalizeLessonPlan(lp: any) {
+  return {
+    title: lp.title || "Lesson Plan",
+    subject: lp.subject,
+    topic: lp.topic,
+    gradeLevel: lp.gradeLevel ?? lp.grade_level ?? "",
+    duration: lp.duration ?? lp.duration_minutes ?? 0,
+    objectives: lp.objectives || [],
+    materials: lp.materials || [],
+    introduction: lp.introduction || lp.lesson_introduction || "",
+    lessonDevelopment: lp.lessonDevelopment ?? lp.lesson_development ?? "",
+    activities: lp.activities || [],
+    assessment: lp.assessment || "",
+    conclusion: lp.conclusion || "",
+    generatedAt: lp.generatedAt ?? lp.generated_at ?? new Date().toISOString(),
+  };
+}
+
+function addHeader(pdf: jsPDF, title: string) {
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  pdf.setDrawColor(230);
+  pdf.line(40, 40, pageWidth - 40, 40);
+  pdf.setFontSize(14);
+  pdf.setFont(undefined, "bold");
+  pdf.text(title, 40, 32);
+  pdf.setFontSize(10);
+  pdf.setFont(undefined, "normal");
+  const dateStr = new Date().toLocaleString();
+  pdf.text(dateStr, pageWidth - 40, 32, { align: "right" });
+}
+
 // Export lesson plans to PDF
 export function exportLessonPlanToPDF(lessonPlan: any) {
   const pdf = new jsPDF();
