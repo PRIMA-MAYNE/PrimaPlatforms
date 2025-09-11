@@ -67,17 +67,17 @@ export function StudentManagement({
   onClassUpdate,
   onStudentAdd,
 }: StudentManagementProps) {
-  const [isAddingStudent, setIsAddingStudent] = useState(false);
-  const [isAddingClass, setIsAddingClass] = useState(false);
-  const [isBulkImport, setIsBulkImport] = useState(false);
-  const [newStudent, setNewStudent] = useState({
+  const [isAddingStudent, setIsAddingStudent] = React.useState(false);
+  const [isAddingClass, setIsAddingClass] = React.useState(false);
+  const [isBulkImport, setIsBulkImport] = React.useState(false);
+  const [newStudent, setNewStudent] = React.useState({
     name: "",
     gender: "Male" as "Male" | "Female",
     dateOfBirth: "",
     admissionNumber: "",
     class: selectedClass,
   });
-  const [newClass, setNewClass] = useState({
+  const [newClass, setNewClass] = React.useState({
     name: "",
     grade: "",
   });
