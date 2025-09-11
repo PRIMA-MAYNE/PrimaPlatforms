@@ -148,12 +148,12 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
   const doc = new Document({
     sections: [
       {
-        properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
+        properties: {
+          page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } },
+        },
         children: [
           new Paragraph({
-            children: [
-              new TextRun({ text: plan.title, bold: true, size: 32 }),
-            ],
+            children: [new TextRun({ text: plan.title, bold: true, size: 32 })],
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
           }),
@@ -587,5 +587,8 @@ export async function exportDayAttendanceToExcel(
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  saveAs(blob, `${className}_Attendance_${date.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`);
+  saveAs(
+    blob,
+    `${className}_Attendance_${date.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`,
+  );
 }

@@ -20,8 +20,12 @@ const EmailVerification = React.lazy(() => import("./pages/EmailVerification"));
 const Index = React.lazy(() => import("./pages/Index"));
 const AttendanceTracker = React.lazy(() => import("./pages/AttendanceTracker"));
 const LessonPlanning = React.lazy(() => import("./pages/LessonPlanning"));
-const AssessmentGenerator = React.lazy(() => import("./pages/AssessmentGenerator"));
-const PerformanceTracker = React.lazy(() => import("./pages/PerformanceTracker"));
+const AssessmentGenerator = React.lazy(
+  () => import("./pages/AssessmentGenerator"),
+);
+const PerformanceTracker = React.lazy(
+  () => import("./pages/PerformanceTracker"),
+);
 const Analytics = React.lazy(() => import("./pages/Analytics"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
@@ -37,13 +41,18 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <React.Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+                <React.Suspense
+                  fallback={<div className="p-6 text-center">Loading...</div>}
+                >
                   <Routes>
                     {/* Public routes */}
                     <Route path="/" element={<Landing />} />
                     <Route path="/signin" element={<SignIn />} />
                     <Route path="/signup" element={<SignUp />} />
-                    <Route path="/verify-email" element={<EmailVerification />} />
+                    <Route
+                      path="/verify-email"
+                      element={<EmailVerification />}
+                    />
 
                     {/* Protected routes */}
                     <Route

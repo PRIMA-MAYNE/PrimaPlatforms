@@ -295,9 +295,30 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
                 isAnimationActive
                 animationDuration={700}
               />
-              <Bar dataKey="late" stackId="a" fill="#f59e0b" name="Late" isAnimationActive animationDuration={700} />
-              <Bar dataKey="sick" stackId="a" fill="#8b5cf6" name="Sick" isAnimationActive animationDuration={700} />
-              <Bar dataKey="absent" stackId="a" fill="#ef4444" name="Absent" isAnimationActive animationDuration={700} />
+              <Bar
+                dataKey="late"
+                stackId="a"
+                fill="#f59e0b"
+                name="Late"
+                isAnimationActive
+                animationDuration={700}
+              />
+              <Bar
+                dataKey="sick"
+                stackId="a"
+                fill="#8b5cf6"
+                name="Sick"
+                isAnimationActive
+                animationDuration={700}
+              />
+              <Bar
+                dataKey="absent"
+                stackId="a"
+                fill="#ef4444"
+                name="Absent"
+                isAnimationActive
+                animationDuration={700}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
@@ -428,7 +449,13 @@ export const AdvancedCharts: React.FC<AdvancedChartsProps> = ({
               <ZAxis type="number" range={[60, 200]} />
               <Tooltip cursor={{ strokeDasharray: "3 3" }} />
               <Legend />
-              <Scatter name="Students" data={corr} fill="#3b82f6" isAnimationActive animationDuration={800} />
+              <Scatter
+                name="Students"
+                data={corr}
+                fill="#3b82f6"
+                isAnimationActive
+                animationDuration={800}
+              />
             </ScatterChart>
           </ResponsiveContainer>
         </CardContent>
