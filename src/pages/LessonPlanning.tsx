@@ -61,9 +61,9 @@ interface LessonPlan {
 }
 
 const LessonPlanning: React.FC = () => {
-  const [isGenerating, setIsGenerating] = React.React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
   const [currentPlan, setCurrentPlan] = React.useState<LessonPlan | null>(null);
-  const [formData, setFormData] = React.React.useState({
+  const [formData, setFormData] = React.useState({
     subject: "",
     topic: "",
     gradeLevel: "",
@@ -74,7 +74,7 @@ const LessonPlanning: React.FC = () => {
   const [savedPlans, setSavedPlans] = React.useState<LessonPlan[]>([]);
 
   // Load saved plans from localStorage
-  React.React.useEffect(() => {
+  React.useEffect(() => {
     const saved = localStorage.getItem("catalyst-lesson-plans");
     if (saved) {
       try {
@@ -86,7 +86,7 @@ const LessonPlanning: React.FC = () => {
   }, []);
 
   // Save plans to localStorage
-  React.React.useEffect(() => {
+  React.useEffect(() => {
     localStorage.setItem("catalyst-lesson-plans", JSON.stringify(savedPlans));
   }, [savedPlans]);
 
