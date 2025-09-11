@@ -144,10 +144,11 @@ export function exportLessonPlanToPDF(lessonPlan: any) {
 
 // Export lesson plans to DOCX
 export async function exportLessonPlanToDocx(lessonPlan: any) {
+  const plan = normalizeLessonPlan(lessonPlan);
   const doc = new Document({
     sections: [
       {
-        properties: {},
+        properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
         children: [
           new Paragraph({
             children: [
