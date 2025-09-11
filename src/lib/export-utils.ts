@@ -299,14 +299,21 @@ export function exportAssessmentToPDF(assessment: any, includeAnswers = false) {
     }
   };
 
-  // Header
-  addText(assessment.title, 16, true);
+  // Title block
+  pdf.setFontSize(18);
+  pdf.setFont(undefined, "bold");
+  pdf.text(assessment.title, margin, yPosition);
+  yPosition += 10;
+  pdf.setDrawColor(220);
+  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 15;
+
   addText(
-    `Subject: ${assessment.subject} | Grade: ${assessment.gradeLevel}`,
+    `Subject: ${assessment.subject} | Grade: ${assessment.gradeLevel ?? assessment.grade_level}`,
     12,
   );
   addText(
-    `Duration: ${assessment.duration} minutes | Total Marks: ${assessment.totalMarks}`,
+    `Duration: ${(assessment.duration ?? assessment.duration_minutes) || 60} minutes | Total Marks: ${assessment.totalMarks ?? assessment.total_marks}`,
     12,
   );
   yPosition += 10;
