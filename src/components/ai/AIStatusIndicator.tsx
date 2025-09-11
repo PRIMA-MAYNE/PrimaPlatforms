@@ -20,7 +20,7 @@ export function AIStatusIndicator({ className }: AIStatusIndicatorProps) {
   const [status, setStatus] = React.useState<
     "checking" | "connected" | "fallback" | "error"
   >("checking");
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = React.useState(false);
 
   const checkAIStatus = async () => {
     setIsTestingConnection(true);
