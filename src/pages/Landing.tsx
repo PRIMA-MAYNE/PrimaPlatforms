@@ -108,8 +108,7 @@ const Landing: React.FC = () => {
                 variant="secondary"
                 className="px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm"
               >
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                AI Features Enabled
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
               </Badge>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground mb-4 sm:mb-6">
