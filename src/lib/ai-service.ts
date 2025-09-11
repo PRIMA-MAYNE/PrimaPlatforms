@@ -1,7 +1,13 @@
-// Intelligent AI Service - OpenAI + Local Fallback
-// Real AI via Netlify Function proxy to OpenAI with local fallback for reliability
+// Intelligent AI Service - OpenAI Direct + Local Fallback
+// Real AI via direct OpenAI API with local fallback for reliability
 
-import { OpenAIProxyService } from "./openai-proxy-service";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true, // ⚠️ Only for dev or protected environments
+});
 
 interface LessonPlanParams {
   subject: string;
@@ -40,6 +46,7 @@ export class AIService {
       import.meta.env.VITE_ENABLE_AI_FEATURES === "true"
     );
   }
+
   // Educational content templates for rapid generation
   private static readonly ECZ_SUBJECTS = {
     mathematics: {
@@ -107,20 +114,33 @@ export class AIService {
   // =====================================================
 
   static async generateLessonPlan(params: LessonPlanParams): Promise<any> {
-    // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log("🤖 Generating lesson plan with AI...");
-        return await OpenAIProxyService.generateLessonPlan(params);
+        console.log("🤖 Generating lesson plan with OpenAI...");
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4-turbo",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert Zambian curriculum (ECZ) lesson planner. Generate structured, grade-appropriate lesson plans aligned with ECZ standards. Output ONLY valid JSON.",
+            },
+            {
+              role: "user",
+              content: `Generate a detailed lesson plan for subject: ${params.subject}, topic: ${params.topic}, grade level: ${params.gradeLevel}, duration: ${params.duration} minutes. Include: title, subject, topic, grade_level, duration_minutes, objectives (array), materials (array), introduction (string), lesson_development (string or array), activities (array), assessment (string), conclusion (string), homework (string), notes (string), syllabi_alignment (string), ecz_compliance (boolean), generated_at (ISO string). Format as JSON.`,
+            },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.3,
+        });
+
+        const content = completion.choices[0]?.message?.content || "{}";
+        return JSON.parse(content);
       } catch (error) {
-        console.warn(
-          "Real AI failed, falling back to local generation:",
-          error,
-        );
+        console.warn("OpenAI failed, falling back to local generation:", error);
       }
     }
 
-    // Fallback to local generation
     console.log("📚 Generating lesson plan with local AI...");
     return this.generateLocalLessonPlan(params);
   }
@@ -128,19 +148,9 @@ export class AIService {
   private static generateLocalLessonPlan(params: LessonPlanParams): any {
     const { subject, topic, gradeLevel, duration } = params;
 
-    // Generate ECZ-aligned objectives
     const objectives = this.generateObjectives(subject, topic, gradeLevel);
-
-    // Generate contextual materials
     const materials = this.generateMaterials(subject, topic, gradeLevel);
-
-    // Generate structured content
-    const content = this.generateLessonContent(
-      subject,
-      topic,
-      gradeLevel,
-      duration,
-    );
+    const content = this.generateLessonContent(subject, topic, gradeLevel, duration);
 
     return {
       title: `${subject.charAt(0).toUpperCase() + subject.slice(1)}: ${topic}`,
@@ -256,20 +266,33 @@ export class AIService {
   // =====================================================
 
   static async generateAssessment(params: AssessmentParams): Promise<any> {
-    // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log("🤖 Generating assessment with AI...");
-        return await OpenAIProxyService.generateAssessment(params);
+        console.log("📝 Generating assessment with OpenAI...");
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4-turbo",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an expert ECZ-aligned assessment generator. Create curriculum-aligned tests with clear questions, marks, and explanations. Output ONLY valid JSON.",
+            },
+            {
+              role: "user",
+              content: `Generate an assessment for subject: ${params.subject}, topic: ${params.topic}, grade: ${params.gradeLevel}, ${params.questionCount} questions of types: ${params.questionTypes.join(", ")}, difficulty: ${params.difficulty}. Include: title, subject, topic, grade_level, difficulty_level, total_marks, duration_minutes, instructions (string), questions (array with question_number, question_type, question_text, marks, correct_answer, answer_explanation, bloom_taxonomy_level), assessment_type, syllabi_alignment, ecz_compliance, generated_at. Format as JSON.`,
+            },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.3,
+        });
+
+        const content = completion.choices[0]?.message?.content || "{}";
+        return JSON.parse(content);
       } catch (error) {
-        console.warn(
-          "Real AI failed, falling back to local generation:",
-          error,
-        );
+        console.warn("OpenAI failed, falling back to local generation:", error);
       }
     }
 
-    // Fallback to local generation
     console.log("📝 Generating assessment with local AI...");
     return this.generateLocalAssessment(params);
   }
@@ -303,11 +326,7 @@ export class AIService {
       difficulty_level: difficulty,
       total_marks: totalMarks,
       duration_minutes: duration,
-      instructions: this.generateInstructions(
-        duration,
-        totalMarks,
-        questionTypes,
-      ),
+      instructions: this.generateInstructions(duration, totalMarks, questionTypes),
       questions: questions,
       assessment_type:
         totalMarks > 50 ? "exam" : totalMarks > 20 ? "test" : "quiz",
@@ -330,55 +349,27 @@ export class AIService {
 
     let questionNumber = 1;
 
-    // Generate multiple choice questions
     for (let i = 0; i < typeDistribution.multiple_choice; i++) {
       questions.push(
-        this.generateMCQ(
-          subject,
-          topic,
-          gradeLevel,
-          questionNumber++,
-          difficulty,
-        ),
+        this.generateMCQ(subject, topic, gradeLevel, questionNumber++, difficulty),
       );
     }
 
-    // Generate short answer questions
     for (let i = 0; i < typeDistribution.short_answer; i++) {
       questions.push(
-        this.generateShortAnswer(
-          subject,
-          topic,
-          gradeLevel,
-          questionNumber++,
-          difficulty,
-        ),
+        this.generateShortAnswer(subject, topic, gradeLevel, questionNumber++, difficulty),
       );
     }
 
-    // Generate essay questions
     for (let i = 0; i < typeDistribution.essay; i++) {
       questions.push(
-        this.generateEssay(
-          subject,
-          topic,
-          gradeLevel,
-          questionNumber++,
-          difficulty,
-        ),
+        this.generateEssay(subject, topic, gradeLevel, questionNumber++, difficulty),
       );
     }
 
-    // Generate problem solving questions
     for (let i = 0; i < typeDistribution.problem_solving; i++) {
       questions.push(
-        this.generateProblemSolving(
-          subject,
-          topic,
-          gradeLevel,
-          questionNumber++,
-          difficulty,
-        ),
+        this.generateProblemSolving(subject, topic, gradeLevel, questionNumber++, difficulty),
       );
     }
 
@@ -393,7 +384,6 @@ export class AIService {
       problem_solving: 0,
     };
 
-    // Default distribution if no types specified
     if (types.length === 0) {
       distribution.multiple_choice = Math.ceil(total * 0.5);
       distribution.short_answer = Math.ceil(total * 0.3);
@@ -401,7 +391,6 @@ export class AIService {
       return distribution;
     }
 
-    // Distribute evenly among specified types
     const perType = Math.floor(total / types.length);
     const remainder = total % types.length;
 
@@ -524,7 +513,7 @@ export class AIService {
     totalMarks: number,
     questionTypes: string[],
   ): string {
-    const typeDescriptions = {
+    const typeDescriptions: Record<string, string> = {
       "multiple-choice": "multiple choice questions",
       "short-answer": "short answer questions",
       essay: "essay questions",
@@ -532,7 +521,7 @@ export class AIService {
     };
 
     const types = questionTypes
-      .map((t) => typeDescriptions[t as keyof typeof typeDescriptions])
+      .map((t) => typeDescriptions[t as keyof typeof typeDescriptions] || t)
       .join(", ");
 
     return `INSTRUCTIONS:
@@ -553,20 +542,34 @@ export class AIService {
   static async generateEducationalInsights(
     params: EducationalInsightsParams,
   ): Promise<any> {
-    // Try real AI first if enabled
     if (this.useRealAI) {
       try {
-        console.log("🤖 Generating insights with AI...");
-        return await OpenAIProxyService.generateEducationalInsights(params);
+        console.log("📊 Generating insights with OpenAI...");
+        const dataSummary = JSON.stringify(params.data);
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4-turbo",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are an educational data analyst for Zambian schools. Analyze attendance, grades, and student data to generate actionable insights, trends, and recommendations. Output ONLY valid JSON with keys: summary, attendance, performance, recommendations, trends, interventions.",
+            },
+            {
+              role: "user",
+              content: `Analyze this educational data: ${dataSummary}. Class ID: ${params.classId || "N/A"}, Subject: ${params.subject || "N/A"}. Return insights on attendance patterns, performance trends, actionable recommendations, correlations, and targeted interventions. Format as JSON.`,
+            },
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.2,
+        });
+
+        const content = completion.choices[0]?.message?.content || "{}";
+        return JSON.parse(content);
       } catch (error) {
-        console.warn(
-          "Real AI failed, falling back to local generation:",
-          error,
-        );
+        console.warn("OpenAI failed, falling back to local generation:", error);
       }
     }
 
-    // Fallback to local generation
     console.log("📊 Generating insights with local AI...");
     return this.generateLocalInsights(params);
   }
@@ -575,20 +578,14 @@ export class AIService {
     const { data, classId, subject } = params;
     const { attendance = [], grades = [], students = [] } = data;
 
-    const insights = {
+    return {
       summary: this.generateSummaryInsights(attendance, grades, students),
       attendance: this.generateAttendanceInsights(attendance),
       performance: this.generatePerformanceInsights(grades, subject),
-      recommendations: this.generateRecommendations(
-        attendance,
-        grades,
-        students,
-      ),
+      recommendations: this.generateRecommendations(attendance, grades, students),
       trends: this.generateTrendAnalysis(attendance, grades),
       interventions: this.generateInterventions(attendance, grades, students),
     };
-
-    return insights;
   }
 
   private static generateSummaryInsights(
@@ -741,7 +738,6 @@ export class AIService {
   ): string[] {
     const recommendations = [];
 
-    // Attendance-based recommendations
     const attendanceRate =
       attendance.length > 0
         ? (attendance.filter((a) => a.status === "present").length /
@@ -756,7 +752,6 @@ export class AIService {
       recommendations.push("Engage with parents about attendance importance");
     }
 
-    // Performance-based recommendations
     const avgPerformance =
       grades.length > 0
         ? grades.reduce((sum, g) => sum + (g.percentage || 0), 0) /
@@ -768,7 +763,6 @@ export class AIService {
       recommendations.push("Provide additional learning resources");
     }
 
-    // General recommendations
     recommendations.push("Use formative assessment to track progress");
     recommendations.push("Encourage active student participation");
     recommendations.push(
@@ -794,7 +788,6 @@ export class AIService {
   ) {
     const interventions = [];
 
-    // Students needing attention
     const lowAttendance = attendance
       .filter((a) => a.status === "absent")
       .map((a) => a.student_id);
