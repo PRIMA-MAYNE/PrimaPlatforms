@@ -82,9 +82,8 @@ interface MarkingCriteria {
 
 const AssessmentGenerator: React.FC = () => {
   const [isGenerating, setIsGenerating] = React.useState(false);
-  const [currentAssessment, setCurrentAssessment] = React.useState<Assessment | null>(
-    null,
-  );
+  const [currentAssessment, setCurrentAssessment] =
+    React.useState<Assessment | null>(null);
   const [formData, setFormData] = React.useState({
     subject: "",
     topic: "",
@@ -94,7 +93,9 @@ const AssessmentGenerator: React.FC = () => {
     questionTypes: ["multiple-choice", "short-answer"],
   });
 
-  const [savedAssessments, setSavedAssessments] = React.useState<Assessment[]>([]);
+  const [savedAssessments, setSavedAssessments] = React.useState<Assessment[]>(
+    [],
+  );
 
   // Load saved assessments from localStorage
   React.useEffect(() => {

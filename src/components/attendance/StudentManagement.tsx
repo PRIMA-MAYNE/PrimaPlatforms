@@ -253,7 +253,9 @@ export function StudentManagement({
     setIsBulkImport(false);
   };
 
-  const handleExcelImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleExcelImport = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
@@ -263,13 +265,17 @@ export function StudentManagement({
       await workbook.xlsx.load(arrayBuffer);
       const sheet = workbook.worksheets[0];
       const header: string[] = [];
-      sheet.getRow(1).eachCell((cell: any) => header.push(String(cell.value || "").trim()));
+      sheet
+        .getRow(1)
+        .eachCell((cell: any) => header.push(String(cell.value || "").trim()));
       const rows: any[] = [];
       sheet.eachRow((row: any, rowNumber: number) => {
         if (rowNumber === 1) return;
         const obj: any = {};
         row.eachCell((cell: any, colNumber: number) => {
-          obj[header[colNumber - 1] || `col${colNumber}`] = String(cell.value ?? "").trim();
+          obj[header[colNumber - 1] || `col${colNumber}`] = String(
+            cell.value ?? "",
+          ).trim();
         });
         rows.push(obj);
       });
@@ -278,22 +284,32 @@ export function StudentManagement({
         name: row.Name || row.FullName || `Student ${idx + 1}`,
         gender: row.Gender === "Female" ? "Female" : "Male",
         dateOfBirth: row.DateOfBirth || row.DOB || "",
-        admissionNumber: row.StudentID || row.Admission || `ADM${Date.now()}${idx}`,
+        admissionNumber:
+          row.StudentID || row.Admission || `ADM${Date.now()}${idx}`,
         class: selectedClass,
         status: null,
       })) as Student[];
 
       if (imported.length) {
         const updatedClasses = classes.map((cls) =>
-          cls.id === selectedClass ? { ...cls, students: [...cls.students, ...imported] } : cls,
+          cls.id === selectedClass
+            ? { ...cls, students: [...cls.students, ...imported] }
+            : cls,
         );
         onClassUpdate(updatedClasses);
         onStudentAdd([...(currentClass?.students || []), ...imported]);
-        toast({ title: "Students Imported", description: `${imported.length} students imported from Excel` });
+        toast({
+          title: "Students Imported",
+          description: `${imported.length} students imported from Excel`,
+        });
       }
     } catch (e) {
       console.error("Excel import failed", e);
-      toast({ title: "Import Failed", description: "Could not read Excel file", variant: "destructive" });
+      toast({
+        title: "Import Failed",
+        description: "Could not read Excel file",
+        variant: "destructive",
+      });
     } finally {
       setIsBulkImport(false);
     }
@@ -314,7 +330,10 @@ export function StudentManagement({
         const f = (e.target as HTMLInputElement).files?.[0];
         if (!f) return;
         const { data } = await worker.recognize(URL.createObjectURL(f));
-        const lines = data.text.split(/\r?\n/).map((l: string) => l.trim()).filter(Boolean);
+        const lines = data.text
+          .split(/\r?\n/)
+          .map((l: string) => l.trim())
+          .filter(Boolean);
         const imported: Student[] = lines.map((line: string, idx: number) => ({
           id: `ocr_${Date.now()}_${idx}`,
           name: line,
@@ -326,18 +345,27 @@ export function StudentManagement({
         }));
         if (imported.length) {
           const updatedClasses = classes.map((cls) =>
-            cls.id === selectedClass ? { ...cls, students: [...cls.students, ...imported] } : cls,
+            cls.id === selectedClass
+              ? { ...cls, students: [...cls.students, ...imported] }
+              : cls,
           );
           onClassUpdate(updatedClasses);
           onStudentAdd([...(currentClass?.students || []), ...imported]);
-          toast({ title: "OCR Import", description: `${imported.length} lines detected and added as students` });
+          toast({
+            title: "OCR Import",
+            description: `${imported.length} lines detected and added as students`,
+          });
         }
         await worker.terminate();
       };
       input.click();
     } catch (e) {
       console.error("OCR import failed", e);
-      toast({ title: "OCR Failed", description: "Ensure tesseract.js is available", variant: "destructive" });
+      toast({
+        title: "OCR Failed",
+        description: "Ensure tesseract.js is available",
+        variant: "destructive",
+      });
     }
   };
 
@@ -586,7 +614,8 @@ export function StudentManagement({
               <div className="space-y-2">
                 <p className="text-sm font-medium">CSV/Excel Columns:</p>
                 <p className="text-xs text-muted-foreground">
-                  Name, Gender, Date of Birth, Admission Number (headers optional)
+                  Name, Gender, Date of Birth, Admission Number (headers
+                  optional)
                 </p>
                 <Button size="sm" variant="ghost" onClick={downloadTemplate}>
                   <Download className="w-3 h-3 mr-1" />
