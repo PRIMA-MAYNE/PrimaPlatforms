@@ -18,7 +18,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -34,6 +39,10 @@ import {
   FileDown,
   Save,
   Trash2,
+  Sparkles,
+  Brain,
+  Syllabus, // If you have it — else replace with BookOpen
+  BookOpen,
 } from "lucide-react";
 import { AIService } from "@/lib/ai-service";
 import {
@@ -42,6 +51,7 @@ import {
 } from "@/lib/export-utils";
 import { toast } from "@/hooks/use-toast";
 
+// Types remain unchanged
 interface Assessment {
   title: string;
   subject: string;
@@ -97,7 +107,7 @@ const AssessmentGenerator: React.FC = () => {
     [],
   );
 
-  // Load saved assessments from localStorage
+  // Load saved assessments
   React.useEffect(() => {
     const saved = localStorage.getItem("catalyst-assessments");
     if (saved) {
@@ -109,7 +119,7 @@ const AssessmentGenerator: React.FC = () => {
     }
   }, []);
 
-  // Save assessments to localStorage
+  // Save to localStorage
   React.useEffect(() => {
     localStorage.setItem(
       "catalyst-assessments",
@@ -118,12 +128,12 @@ const AssessmentGenerator: React.FC = () => {
   }, [savedAssessments]);
 
   const questionTypeOptions = [
-    { id: "multiple-choice", label: "Multiple Choice Questions" },
-    { id: "short-answer", label: "Short Answer Questions" },
-    { id: "essay", label: "Essay Questions" },
-    { id: "true-false", label: "True/False Questions" },
-    { id: "structured", label: "Structured Questions" },
-    { id: "practical", label: "Practical Questions" },
+    { id: "multiple-choice", label: "Multiple Choice", icon: "A" },
+    { id: "short-answer", label: "Short Answer", icon: "✍️" },
+    { id: "essay", label: "Essay", icon: "📝" },
+    { id: "true-false", label: "True/False", icon: "✅" },
+    { id: "structured", label: "Structured", icon: "📊" },
+    { id: "practical", label: "Practical", icon: "🧪" },
   ];
 
   const handleQuestionTypeChange = (typeId: string, checked: boolean) => {
@@ -136,8 +146,6 @@ const AssessmentGenerator: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    console.log("🔥 Generate button clicked!", formData);
-
     if (!formData.subject || !formData.topic || !formData.gradeLevel) {
       toast({
         title: "Missing Information",
@@ -156,7 +164,6 @@ const AssessmentGenerator: React.FC = () => {
       return;
     }
 
-    console.log("✅ Starting assessment generation...");
     setIsGenerating(true);
 
     try {
@@ -169,18 +176,41 @@ const AssessmentGenerator: React.FC = () => {
         difficulty: formData.difficulty,
       });
 
-      console.log("✅ Assessment generated:", assessment);
-      setCurrentAssessment(assessment);
+      // Normalize assessment to match UI expectations
+      const normalizedAssessment = {
+        ...assessment,
+        gradeLevel: `Grade ${formData.gradeLevel}`,
+        id: Date.now().toString(),
+        questions: (assessment.questions || []).map((q, idx) => ({
+          ...q,
+          id: `q-${idx + 1}`,
+          number: q.question_number || idx + 1,
+          type: q.question_type || "unknown",
+          question: q.question_text || "No question text",
+          answer: q.correct_answer || "No answer provided",
+          explanation: q.answer_explanation || "No explanation provided",
+          marks: q.marks || 1,
+        })),
+        markingScheme: [],
+        generatedAt: new Date().toISOString(),
+        eczCompliance: assessment.ecz_compliance ? "Fully compliant with ECZ standards" : undefined,
+        syllabiSource: assessment.syllabi_alignment || undefined,
+        duration: assessment.duration_minutes || 60,
+        totalMarks: assessment.total_marks || 0,
+      };
+
+      setCurrentAssessment(normalizedAssessment);
 
       toast({
-        title: "Assessment Generated!",
-        description: "Your assessment with intelligent questions is ready",
+        title: "✨ Assessment Generated!",
+        description: "Powered by AI using real ECZ syllabi content",
+        className: "bg-gradient-to-r from-purple-500 to-pink-500 text-white",
       });
     } catch (error) {
       console.error("Generation error:", error);
       toast({
-        title: "Generation Failed",
-        description: "Failed to generate assessment. Please try again.",
+        title: "❌ Generation Failed",
+        description: "Our AI is having trouble right now. Try again in a moment.",
         variant: "destructive",
       });
     } finally {
@@ -201,14 +231,14 @@ const AssessmentGenerator: React.FC = () => {
           prev.map((a, i) => (i === existingIndex ? currentAssessment : a)),
         );
         toast({
-          title: "Assessment Updated",
-          description: "Existing assessment has been updated",
+          title: "✅ Assessment Updated",
+          description: "Your changes have been saved",
         });
       } else {
         setSavedAssessments((prev) => [currentAssessment, ...prev]);
         toast({
-          title: "Assessment Saved",
-          description: "Assessment has been saved to your collection",
+          title: "✅ Assessment Saved",
+          description: "Added to your library",
         });
       }
     }
@@ -219,13 +249,13 @@ const AssessmentGenerator: React.FC = () => {
     try {
       exportAssessmentToPDF(currentAssessment, includeAnswers);
       toast({
-        title: "Download Started",
-        description: `Assessment PDF ${includeAnswers ? "with answers" : ""} download initiated`,
+        title: "📥 PDF Exported",
+        description: includeAnswers ? "With marking scheme" : "Student version",
       });
     } catch (error) {
       toast({
-        title: "Export Failed",
-        description: "Failed to export PDF. Please try again.",
+        title: "❌ Export Failed",
+        description: "Could not generate PDF",
         variant: "destructive",
       });
     }
@@ -236,13 +266,13 @@ const AssessmentGenerator: React.FC = () => {
     try {
       await exportAssessmentToDocx(currentAssessment, includeAnswers);
       toast({
-        title: "Download Started",
-        description: `Assessment DOCX ${includeAnswers ? "with answers" : ""} download initiated`,
+        title: "📥 DOCX Exported",
+        description: includeAnswers ? "With answers included" : "Clean copy",
       });
     } catch (error) {
       toast({
-        title: "Export Failed",
-        description: "Failed to export DOCX. Please try again.",
+        title: "❌ Export Failed",
+        description: "Could not generate Word document",
         variant: "destructive",
       });
     }
@@ -253,7 +283,7 @@ const AssessmentGenerator: React.FC = () => {
     setFormData({
       subject: assessment.subject,
       topic: assessment.topic,
-      gradeLevel: assessment.gradeLevel,
+      gradeLevel: assessment.gradeLevel.replace("Grade ", ""),
       questionCount: assessment.questions.length,
       difficulty: assessment.difficulty,
       questionTypes: [
@@ -265,113 +295,181 @@ const AssessmentGenerator: React.FC = () => {
   const handleDeleteAssessment = (index: number) => {
     setSavedAssessments((prev) => prev.filter((_, i) => i !== index));
     toast({
-      title: "Assessment Deleted",
-      description: "Assessment has been removed",
+      title: "🗑️ Deleted",
+      description: "Assessment removed from your library",
     });
   };
 
+  // Skeleton Loader for Generating State
+  const SkeletonLoader = () => (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-8 bg-muted rounded w-3/4"></div>
+      <div className="h-4 bg-muted rounded w-full"></div>
+      <div className="h-4 bg-muted rounded w-5/6"></div>
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="border rounded-lg p-4 space-y-2">
+            <div className="h-4 bg-muted rounded w-1/4"></div>
+            <div className="h-6 bg-muted rounded"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Assessment Generator
+      <div className="space-y-6">
+        {/* Header - Responsive Stack */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              AI Assessment Generator
             </h1>
-            <p className="text-muted-foreground">
-              Create ECZ-compliant assessments with syllabi-aligned meaningful
-              questions
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Create ECZ-compliant assessments powered by OpenAI — syllabi-aligned, intelligent, and ready to use.
             </p>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              <ClipboardList className="w-4 h-4 mr-2" />
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => document.getElementById("generate")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              <ClipboardList className="h-4 w-4" />
               Saved ({savedAssessments.length})
             </Button>
-            <Button className="bg-warning hover:bg-warning/90 text-warning-foreground">
-              <Plus className="w-4 h-4 mr-2" />
-              New Assessment
+            <Button
+              size="sm"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white gap-1.5"
+              onClick={() => {
+                setCurrentAssessment(null);
+                setFormData({
+                  subject: "",
+                  topic: "",
+                  gradeLevel: "",
+                  questionCount: 10,
+                  difficulty: "medium",
+                  questionTypes: ["multiple-choice", "short-answer"],
+                });
+              }}
+            >
+              <Plus className="h-4 w-4" />
+              New
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="generate" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="generate">Generate Assessment</TabsTrigger>
-            <TabsTrigger value="review">Review & Export</TabsTrigger>
-            <TabsTrigger value="saved">Saved Assessments</TabsTrigger>
+        <Tabs defaultValue="generate" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger
+              value="generate"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate
+            </TabsTrigger>
+            <TabsTrigger
+              value="review"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+              disabled={!currentAssessment}
+            >
+              <Brain className="h-4 w-4 mr-2" />
+              Review
+            </TabsTrigger>
+            <TabsTrigger
+              value="saved"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md transition-all"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Library
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generate" className="space-y-6">
-            {/* Generation Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Target className="w-5 h-5 text-warning" />
-                  <span>Syllabi-Based Assessment Configuration</span>
+          {/* Generate Tab */}
+          <TabsContent value="generate">
+            <Card id="generate" className="border-0 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <Target className="h-5 w-5 text-purple-600" />
+                  Configure Your AI Assessment
                 </CardTitle>
                 <CardDescription>
-                  Configure your assessment parameters for AI generation using
-                  actual ECZ syllabi content
+                  Our AI uses real ECZ syllabi to generate meaningful, curriculum-aligned questions.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Form Grid - Fully Responsive */}
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject *</Label>
+                    <Label htmlFor="subject" className="text-sm font-medium">
+                      Subject <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       value={formData.subject}
                       onValueChange={(value) =>
                         setFormData((prev) => ({ ...prev, subject: value }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select subject" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Biology">Biology</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
-                        <SelectItem value="Civic Education">
-                          Civic Education
-                        </SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
-                        <SelectItem value="History">History</SelectItem>
-                        <SelectItem value="Geography">Geography</SelectItem>
+                        {[
+                          "Mathematics",
+                          "Biology",
+                          "Chemistry",
+                          "Civic Education",
+                          "Physics",
+                          "English",
+                          "History",
+                          "Geography",
+                        ].map((subject) => (
+                          <SelectItem key={subject} value={subject}>
+                            {subject}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="gradeLevel">Grade Level *</Label>
+                    <Label htmlFor="gradeLevel" className="text-sm font-medium">
+                      Grade Level <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       value={formData.gradeLevel}
                       onValueChange={(value) =>
                         setFormData((prev) => ({ ...prev, gradeLevel: value }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select grade" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Grade 10">Grade 10</SelectItem>
-                        <SelectItem value="Grade 11">Grade 11</SelectItem>
-                        <SelectItem value="Grade 12">Grade 12</SelectItem>
+                        {["10", "11", "12"].map((grade) => (
+                          <SelectItem key={grade} value={grade}>
+                            Grade {grade}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="difficulty">Difficulty Level</Label>
+                    <Label htmlFor="difficulty" className="text-sm font-medium">
+                      Difficulty
+                    </Label>
                     <Select
                       value={formData.difficulty}
                       onValueChange={(value: "easy" | "medium" | "hard") =>
                         setFormData((prev) => ({ ...prev, difficulty: value }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -383,12 +481,14 @@ const AssessmentGenerator: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="topic">Assessment Topic *</Label>
+                    <Label htmlFor="topic" className="text-sm font-medium">
+                      Topic <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="topic"
-                      placeholder="Enter the specific topic (e.g., Quadratic Functions, Cell Division, Constitutional Law)"
+                      placeholder="e.g., Quadratic Equations, Photosynthesis, Democracy"
                       value={formData.topic}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -396,14 +496,17 @@ const AssessmentGenerator: React.FC = () => {
                           topic: e.target.value,
                         }))
                       }
+                      className="w-full"
                     />
                     <p className="text-xs text-muted-foreground">
-                      AI will match your topic with relevant syllabi content
+                      Be specific — AI matches your topic to ECZ syllabi content
                     </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="questionCount">Number of Questions</Label>
+                    <Label htmlFor="questionCount" className="text-sm font-medium">
+                      Number of Questions
+                    </Label>
                     <Select
                       value={formData.questionCount.toString()}
                       onValueChange={(value) =>
@@ -413,28 +516,27 @@ const AssessmentGenerator: React.FC = () => {
                         }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="5">5 Questions</SelectItem>
-                        <SelectItem value="10">10 Questions</SelectItem>
-                        <SelectItem value="15">15 Questions</SelectItem>
-                        <SelectItem value="20">20 Questions</SelectItem>
-                        <SelectItem value="25">25 Questions</SelectItem>
-                        <SelectItem value="30">30 Questions</SelectItem>
+                        {[5, 10, 15, 20, 25, 30].map((count) => (
+                          <SelectItem key={count} value={count.toString()}>
+                            {count} Questions
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Question Types</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <Label className="text-sm font-medium">Question Types</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {questionTypeOptions.map((option) => (
                       <div
                         key={option.id}
-                        className="flex items-center space-x-2"
+                        className="flex items-center space-x-2 p-2 rounded-md border hover:bg-muted/50 transition-colors"
                       >
                         <Checkbox
                           id={option.id}
@@ -446,32 +548,32 @@ const AssessmentGenerator: React.FC = () => {
                             )
                           }
                         />
-                        <Label htmlFor={option.id} className="text-sm">
+                        <Label htmlFor={option.id} className="text-sm font-medium cursor-pointer flex items-center gap-1.5">
+                          <span>{option.icon}</span>
                           {option.label}
                         </Label>
                       </div>
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    AI will generate meaningful, non-repeating questions
-                    directly from ECZ syllabi
+                    Mix question types for comprehensive assessment
                   </p>
                 </div>
 
                 <Button
                   onClick={handleGenerate}
                   disabled={isGenerating}
-                  className="w-full bg-warning hover:bg-warning/90 text-warning-foreground text-base h-12"
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating Syllabi-Based Assessment...
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      AI is Generating Your Assessment...
                     </>
                   ) : (
                     <>
-                      <Target className="w-5 h-5 mr-2" />
-                      Generate Assessment from Syllabi
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Generate with AI
                     </>
                   )}
                 </Button>
@@ -479,200 +581,225 @@ const AssessmentGenerator: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="review" className="space-y-6">
-            {currentAssessment ? (
-              <>
-                {/* Assessment Preview */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl">
-                          {currentAssessment.title}
-                        </CardTitle>
-                        <CardDescription className="flex items-center space-x-4 mt-2">
-                          <span>{currentAssessment.subject}</span>
-                          <span>{currentAssessment.gradeLevel}</span>
-                          <span className="flex items-center space-x-1">
-                            <Clock className="w-4 h-4" />
-                            <span>{currentAssessment.duration} minutes</span>
-                          </span>
-                          <span>{currentAssessment.totalMarks} marks</span>
-                        </CardDescription>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" onClick={handleSave}>
-                          <Save className="w-4 h-4 mr-2" />
-                          Save
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownloadPDF(false)}
-                        >
-                          <FileDown className="w-4 h-4 mr-2" />
-                          PDF
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownloadDocx(false)}
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          DOCX
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleDownloadPDF(true)}
-                        >
-                          <FileCheck className="w-4 h-4 mr-2" />
-                          With Answers
-                        </Button>
-                      </div>
+          {/* Review Tab */}
+          <TabsContent value="review">
+            {isGenerating ? (
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Generating Your Assessment...
+                  </CardTitle>
+                  <CardDescription>
+                    Our AI is crafting syllabi-aligned questions just for you. This may take 10-30 seconds.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SkeletonLoader />
+                </CardContent>
+              </Card>
+            ) : currentAssessment ? (
+              <Card className="border-0 shadow-lg">
+                <CardHeader className="pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold">
+                        {currentAssessment.title}
+                      </CardTitle>
+                      <CardDescription className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                        <span className="flex items-center gap-1">
+                          <BookOpen className="h-4 w-4" /> {currentAssessment.subject}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Target className="h-4 w-4" /> {currentAssessment.gradeLevel}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" /> {currentAssessment.duration} min
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <FileCheck className="h-4 w-4" /> {currentAssessment.totalMarks} marks
+                        </span>
+                      </CardDescription>
                     </div>
-                    <div className="flex space-x-2 mt-2">
-                      {currentAssessment.eczCompliance && (
-                        <Badge className="bg-warning/10 text-warning">
-                          ECZ Compliant
-                        </Badge>
-                      )}
-                      {currentAssessment.syllabiSource && (
-                        <Badge className="bg-blue-100 text-blue-800">
-                          Syllabi-Based
-                        </Badge>
-                      )}
-                      <Badge variant="outline">
-                        {currentAssessment.difficulty.charAt(0).toUpperCase() +
-                          currentAssessment.difficulty.slice(1)}{" "}
-                        Level
-                      </Badge>
-                      <Badge variant="secondary">
-                        {currentAssessment.questions.length} Questions
-                      </Badge>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSave}
+                        className="gap-1.5"
+                      >
+                        <Save className="h-4 w-4" /> Save
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadPDF(false)}
+                        className="gap-1.5"
+                      >
+                        <FileDown className="h-4 w-4" /> PDF
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadDocx(false)}
+                        className="gap-1.5"
+                      >
+                        <Download className="h-4 w-4" /> DOCX
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadPDF(true)}
+                        className="gap-1.5"
+                      >
+                        <FileCheck className="h-4 w-4" /> With Answers
+                      </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {/* Syllabi Alignment */}
-                    {currentAssessment.syllabiSource && (
-                      <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
-                        <h4 className="font-medium text-blue-900 mb-1">
-                          Syllabi Alignment
-                        </h4>
-                        <p className="text-sm text-blue-700">
-                          Questions generated from actual ECZ syllabi content
-                          for {currentAssessment.subject}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* ECZ Compliance */}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {currentAssessment.eczCompliance && (
-                      <div className="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-500">
-                        <h4 className="font-medium text-amber-900 mb-1">
-                          ECZ Compliance
-                        </h4>
-                        <p className="text-sm text-amber-700">
-                          {currentAssessment.eczCompliance}
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <CheckCircle className="h-3 w-3 mr-1" /> ECZ Compliant
+                      </Badge>
+                    )}
+                    {currentAssessment.syllabiSource && (
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                        <BookOpen className="h-3 w-3 mr-1" /> Syllabi-Based
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="capitalize">
+                      {currentAssessment.difficulty} Difficulty
+                    </Badge>
+                    <Badge variant="outline">
+                      {currentAssessment.questions.length} Questions
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* AI Generation Notice */}
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Brain className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-medium text-purple-900 mb-1">AI-Generated Content</h4>
+                        <p className="text-sm text-purple-700">
+                          This assessment was generated using OpenAI, aligned with ECZ syllabi and curriculum standards.
                         </p>
                       </div>
-                    )}
-
-                    {/* Instructions */}
-                    <div>
-                      <h3 className="font-semibold mb-2">Instructions</h3>
-                      <p className="text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                        {currentAssessment.instructions}
-                      </p>
                     </div>
+                  </div>
 
-                    <Separator />
+                  {/* Instructions */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5" /> Instructions
+                    </h3>
+                    <div className="bg-muted/40 p-4 rounded-lg">
+                      <p className="leading-relaxed">{currentAssessment.instructions}</p>
+                    </div>
+                  </div>
 
-                    {/* Questions */}
-                    <div>
-                      <h3 className="font-semibold mb-4">Questions</h3>
-                      <div className="space-y-6">
-                        {currentAssessment.questions.map((question) => (
-                          <div
-                            key={question.id}
-                            className="border rounded-lg p-4"
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <h4 className="font-medium">
-                                Question {question.number}
-                              </h4>
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {question.type}
+                  <Separator />
+
+                  {/* Questions */}
+                  <div className="space-y-6">
+                    <h3 className="font-semibold text-lg border-b pb-2 flex items-center gap-2">
+                      <FileCheck className="h-5 w-5" /> Questions ({currentAssessment.questions.length})
+                    </h3>
+                    <div className="space-y-6">
+                      {currentAssessment.questions.map((question) => (
+                        <div
+                          key={question.id}
+                          className="border rounded-xl p-5 bg-background hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                            <h4 className="font-medium text-lg">
+                              Question {question.number}
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {question.type.replace("-", " ")}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                {question.marks} marks
+                              </Badge>
+                              {question.syllabiAlignment && (
+                                <Badge className="text-xs bg-blue-100 text-blue-800">
+                                  Syllabus: {question.syllabiAlignment}
                                 </Badge>
-                                <Badge variant="secondary" className="text-xs">
-                                  {question.marks} marks
-                                </Badge>
-                                {question.syllabiAlignment && (
-                                  <Badge className="text-xs bg-blue-100 text-blue-800">
-                                    Syllabi-aligned
-                                  </Badge>
-                                )}
-                              </div>
+                              )}
                             </div>
+                          </div>
 
-                            <p className="mb-3 leading-relaxed">
-                              {question.question}
-                            </p>
+                          <p className="mb-4 leading-relaxed text-foreground">
+                            {question.question}
+                          </p>
 
-                            {question.options && (
-                              <div className="ml-4 space-y-1 mb-3">
-                                {question.options.map((option, index) => (
-                                  <div key={index} className="text-sm">
-                                    {String.fromCharCode(65 + index)}. {option}
-                                  </div>
-                                ))}
+                          {question.options && (
+                            <div className="ml-4 mb-4 space-y-2">
+                              {question.options.map((option, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-2 p-2 rounded bg-muted/50"
+                                >
+                                  <span className="font-medium w-6 h-6 rounded-full bg-background flex items-center justify-center text-xs border">
+                                    {String.fromCharCode(65 + index)}
+                                  </span>
+                                  <span>{option}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="mt-4 pt-4 border-t bg-muted/30 p-4 rounded-lg">
+                            <div className="grid gap-2 text-sm">
+                              <div>
+                                <strong className="text-foreground">Answer:</strong>{" "}
+                                <span className="text-muted-foreground">{question.answer}</span>
                               </div>
-                            )}
-
-                            <div className="bg-muted/50 p-3 rounded text-sm">
-                              <div className="mb-2">
-                                <strong>Answer:</strong> {question.answer}
-                              </div>
-                              <div className="mb-2">
-                                <strong>Explanation:</strong>{" "}
-                                {question.explanation}
+                              <div>
+                                <strong className="text-foreground">Explanation:</strong>{" "}
+                                <span className="text-muted-foreground">{question.explanation}</span>
                               </div>
                               {question.eczCriteria && (
-                                <div className="mb-2">
-                                  <strong>ECZ Criteria:</strong>{" "}
-                                  {question.eczCriteria}
-                                </div>
-                              )}
-                              {question.syllabiAlignment && (
                                 <div>
-                                  <strong>Syllabi Alignment:</strong>{" "}
-                                  {question.syllabiAlignment}
+                                  <strong className="text-foreground">ECZ Criteria:</strong>{" "}
+                                  <span className="text-muted-foreground">{question.eczCriteria}</span>
                                 </div>
                               )}
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <Separator />
-
-                    <div className="text-xs text-muted-foreground">
-                      Generated on:{" "}
-                      {new Date(currentAssessment.generatedAt).toLocaleString()}
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
+                  <div className="text-xs text-muted-foreground text-right pt-4 border-t">
+                    Generated on {new Date(currentAssessment.generatedAt).toLocaleString()}
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              <Card className="text-center py-16">
-                <CardContent>
-                  <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No Assessment Generated
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Generate an assessment to review and export it here.
+              <Card className="border-0 shadow-lg text-center py-16">
+                <CardContent className="space-y-4">
+                  <div className="mx-auto w-20 h-20 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
+                    <Sparkles className="h-10 w-10 text-purple-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold">No Assessment Yet</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Click “Generate with AI” to create your first intelligent, syllabi-aligned assessment.
                   </p>
-                  <Button variant="outline">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const tab = document.querySelector('[data-state="active"]');
+                      if (tab?.getAttribute("value") !== "generate") {
+                        const event = new Event("click", { bubbles: true });
+                        document.querySelector('[value="generate"]')?.dispatchEvent(event);
+                      }
+                    }}
+                    className="mt-4"
+                  >
                     Generate Your First Assessment
                   </Button>
                 </CardContent>
@@ -680,93 +807,93 @@ const AssessmentGenerator: React.FC = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="saved" className="space-y-6">
+          {/* Saved Tab */}
+          <TabsContent value="saved">
             {savedAssessments.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {savedAssessments.map((assessment, index) => (
                   <Card
                     key={index}
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    className="border-0 shadow-md hover:shadow-lg transition-shadow cursor-pointer group"
+                    onClick={() => handleLoadAssessment(assessment)}
                   >
-                    <CardHeader>
-                      <CardTitle className="text-lg">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg font-semibold line-clamp-2">
                         {assessment.title}
                       </CardTitle>
-                      <CardDescription>
-                        {assessment.gradeLevel} • {assessment.questions.length}{" "}
-                        questions • {assessment.totalMarks} marks
+                      <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        <span>{assessment.gradeLevel}</span>
+                        <span>{assessment.questions.length} Qs</span>
+                        <span>{assessment.totalMarks} marks</span>
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Badge variant="outline" className="text-xs">
-                            {assessment.difficulty}
+                    <CardContent className="space-y-3">
+                      <div className="flex flex-wrap gap-1.5">
+                        {assessment.eczCompliance && (
+                          <Badge className="text-xs bg-green-100 text-green-800">
+                            ECZ
                           </Badge>
-                          {assessment.eczCompliance && (
-                            <Badge className="text-xs bg-warning/10 text-warning">
-                              ECZ Compliant
-                            </Badge>
-                          )}
-                          {assessment.syllabiSource && (
-                            <Badge className="text-xs bg-blue-100 text-blue-800">
-                              Syllabi-Based
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {assessment.subject} • {assessment.duration} minutes
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Generated on{" "}
-                          {new Date(
-                            assessment.generatedAt,
-                          ).toLocaleDateString()}
-                        </p>
-                        <div className="flex space-x-2 pt-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleLoadAssessment(assessment)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setCurrentAssessment(assessment);
-                              handleDownloadPDF(false);
-                            }}
-                          >
-                            <Download className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDeleteAssessment(index)}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
+                        )}
+                        {assessment.syllabiSource && (
+                          <Badge className="text-xs bg-blue-100 text-blue-800">
+                            Syllabus
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {assessment.difficulty}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(assessment.generatedAt).toLocaleDateString()}
+                      </p>
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentAssessment(assessment);
+                            handleDownloadPDF(false);
+                          }}
+                          className="flex-1"
+                        >
+                          <Download className="h-3 w-3 mr-1" /> Export
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAssessment(index);
+                          }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             ) : (
-              <Card className="text-center py-16">
-                <CardContent>
-                  <ClipboardList className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
-                    No Saved Assessments
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    Your generated assessments will appear here once you start
-                    creating them.
+              <Card className="border-0 shadow-lg text-center py-16">
+                <CardContent className="space-y-4">
+                  <div className="mx-auto w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center">
+                    <ClipboardList className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Your Assessment Library</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    All your saved assessments will appear here. Start creating to build your collection.
                   </p>
-                  <Button variant="outline">
-                    Generate Your First Assessment
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const event = new Event("click", { bubbles: true });
+                      document.querySelector('[value="generate"]')?.dispatchEvent(event);
+                    }}
+                    className="mt-4"
+                  >
+                    Create Your First Assessment
                   </Button>
                 </CardContent>
               </Card>
