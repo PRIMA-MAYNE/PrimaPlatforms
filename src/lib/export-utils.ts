@@ -71,66 +71,75 @@ export function exportLessonPlanToPDF(lessonPlan: any) {
     }
   };
 
-  // Title
-  addText(lessonPlan.title, 16, true);
-  yPosition += 5;
+  // Title block
+  pdf.setFontSize(18);
+  pdf.setFont(undefined, "bold");
+  pdf.text(plan.title, margin, yPosition);
+  yPosition += 10;
+  pdf.setDrawColor(220);
+  pdf.line(margin, yPosition, pageWidth - margin, yPosition);
+  yPosition += 15;
 
   // Header information
-  addText(`Subject: ${lessonPlan.subject}`, 12, true);
-  addText(`Grade Level: ${lessonPlan.gradeLevel}`, 12, true);
-  addText(`Duration: ${lessonPlan.duration} minutes`, 12, true);
-  addText(`Topic: ${lessonPlan.topic}`, 12, true);
+  addText(`Subject: ${plan.subject}`, 12, true);
+  addText(`Grade Level: ${plan.gradeLevel}`, 12, true);
+  addText(`Duration: ${plan.duration} minutes`, 12, true);
+  addText(`Topic: ${plan.topic}`, 12, true);
   yPosition += 10;
 
+  // Section helper
+  const section = (label: string) => {
+    pdf.setFontSize(13);
+    pdf.setFont(undefined, "bold");
+    pdf.setTextColor(29, 78, 216);
+    pdf.text(label, margin, yPosition);
+    pdf.setTextColor(0, 0, 0);
+    yPosition += 8;
+  };
+
   // Learning Objectives
-  addText("LEARNING OBJECTIVES", 14, true);
-  lessonPlan.objectives.forEach((objective: string, index: number) => {
+  section("LEARNING OBJECTIVES");
+  plan.objectives.forEach((objective: string, index: number) => {
     addText(`${index + 1}. ${objective}`);
   });
   yPosition += 10;
 
   // Required Materials
-  addText("REQUIRED MATERIALS", 14, true);
-  lessonPlan.materials.forEach((material: string) => {
+  section("REQUIRED MATERIALS");
+  plan.materials.forEach((material: string) => {
     addText(`• ${material}`);
   });
   yPosition += 10;
 
   // Introduction
-  addText("INTRODUCTION", 14, true);
-  addText(lessonPlan.introduction);
+  section("INTRODUCTION");
+  addText(plan.introduction);
   yPosition += 10;
 
   // Lesson Development
-  addText("LESSON DEVELOPMENT", 14, true);
-  addText(lessonPlan.lessonDevelopment);
+  section("LESSON DEVELOPMENT");
+  addText(plan.lessonDevelopment);
   yPosition += 10;
 
   // Activities
-  addText("ACTIVITIES", 14, true);
-  lessonPlan.activities.forEach((activity: string, index: number) => {
+  section("ACTIVITIES");
+  plan.activities.forEach((activity: string, index: number) => {
     addText(`${index + 1}. ${activity}`);
   });
   yPosition += 10;
 
   // Assessment
-  addText("ASSESSMENT", 14, true);
-  addText(lessonPlan.assessment);
+  section("ASSESSMENT");
+  addText(plan.assessment);
   yPosition += 10;
 
   // Conclusion
-  addText("CONCLUSION", 14, true);
-  addText(lessonPlan.conclusion);
+  section("CONCLUSION");
+  addText(plan.conclusion);
   yPosition += 10;
 
-  // Footer
-  addText(
-    `Generated on: ${new Date(lessonPlan.generatedAt).toLocaleDateString()}`,
-    8,
-  );
-
   // Save the PDF
-  pdf.save(`${lessonPlan.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+  pdf.save(`${plan.title.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
 }
 
 // Export lesson plans to DOCX
