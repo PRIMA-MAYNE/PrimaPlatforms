@@ -152,7 +152,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
         children: [
           new Paragraph({
             children: [
-              new TextRun({ text: lessonPlan.title, bold: true, size: 32 }),
+              new TextRun({ text: plan.title, bold: true, size: 32 }),
             ],
             heading: HeadingLevel.TITLE,
             alignment: AlignmentType.CENTER,
@@ -161,25 +161,25 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
           new Paragraph({
             children: [
               new TextRun({ text: "Subject: ", bold: true }),
-              new TextRun({ text: lessonPlan.subject }),
+              new TextRun({ text: plan.subject }),
             ],
           }),
           new Paragraph({
             children: [
               new TextRun({ text: "Grade Level: ", bold: true }),
-              new TextRun({ text: lessonPlan.gradeLevel }),
+              new TextRun({ text: String(plan.gradeLevel) }),
             ],
           }),
           new Paragraph({
             children: [
               new TextRun({ text: "Duration: ", bold: true }),
-              new TextRun({ text: `${lessonPlan.duration} minutes` }),
+              new TextRun({ text: `${plan.duration} minutes` }),
             ],
           }),
           new Paragraph({
             children: [
               new TextRun({ text: "Topic: ", bold: true }),
-              new TextRun({ text: lessonPlan.topic }),
+              new TextRun({ text: plan.topic }),
             ],
           }),
           new Paragraph({ text: "" }),
@@ -193,7 +193,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          ...lessonPlan.objectives.map(
+          ...plan.objectives.map(
             (objective: string, index: number) =>
               new Paragraph({ text: `${index + 1}. ${objective}` }),
           ),
@@ -204,7 +204,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          ...lessonPlan.materials.map(
+          ...plan.materials.map(
             (material: string) => new Paragraph({ text: `• ${material}` }),
           ),
           new Paragraph({ text: "" }),
@@ -214,7 +214,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          new Paragraph({ text: lessonPlan.introduction }),
+          new Paragraph({ text: plan.introduction }),
           new Paragraph({ text: "" }),
           new Paragraph({
             children: [
@@ -222,7 +222,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          new Paragraph({ text: lessonPlan.lessonDevelopment }),
+          new Paragraph({ text: plan.lessonDevelopment }),
           new Paragraph({ text: "" }),
           new Paragraph({
             children: [
@@ -230,7 +230,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          ...lessonPlan.activities.map(
+          ...plan.activities.map(
             (activity: string, index: number) =>
               new Paragraph({ text: `${index + 1}. ${activity}` }),
           ),
@@ -241,7 +241,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          new Paragraph({ text: lessonPlan.assessment }),
+          new Paragraph({ text: plan.assessment }),
           new Paragraph({ text: "" }),
           new Paragraph({
             children: [
@@ -249,13 +249,13 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
             ],
             heading: HeadingLevel.HEADING_1,
           }),
-          new Paragraph({ text: lessonPlan.conclusion }),
+          new Paragraph({ text: plan.conclusion }),
           new Paragraph({ text: "" }),
           new Paragraph({
             children: [
               new TextRun({ text: "Generated on: ", italic: true }),
               new TextRun({
-                text: new Date(lessonPlan.generatedAt).toLocaleDateString(),
+                text: new Date(plan.generatedAt).toLocaleDateString(),
                 italic: true,
               }),
             ],
@@ -270,7 +270,7 @@ export async function exportLessonPlanToDocx(lessonPlan: any) {
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   });
-  saveAs(blob, `${lessonPlan.title.replace(/[^a-zA-Z0-9]/g, "_")}.docx`);
+  saveAs(blob, `${plan.title.replace(/[^a-zA-Z0-9]/g, "_")}.docx`);
 }
 
 // Export assessments to PDF
