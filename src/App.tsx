@@ -36,67 +36,69 @@ const App = () => (
               <Toaster />
               <Sonner />
               <BrowserRouter>
-              <Routes>
-                {/* Public routes */}
-                <Route path="/" element={<Landing />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/verify-email" element={<EmailVerification />} />
+                <React.Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/verify-email" element={<EmailVerification />} />
 
-                {/* Protected routes */}
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/attendance"
-                  element={
-                    <ProtectedRoute>
-                      <AttendanceTracker />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/lesson-planning"
-                  element={
-                    <ProtectedRoute>
-                      <LessonPlanning />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/assessment"
-                  element={
-                    <ProtectedRoute>
-                      <AssessmentGenerator />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/performance"
-                  element={
-                    <ProtectedRoute>
-                      <PerformanceTracker />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/analytics"
-                  element={
-                    <ProtectedRoute>
-                      <Analytics />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* Protected routes */}
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Index />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/attendance"
+                      element={
+                        <ProtectedRoute>
+                          <AttendanceTracker />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/lesson-planning"
+                      element={
+                        <ProtectedRoute>
+                          <LessonPlanning />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/assessment"
+                      element={
+                        <ProtectedRoute>
+                          <AssessmentGenerator />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/performance"
+                      element={
+                        <ProtectedRoute>
+                          <PerformanceTracker />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/analytics"
+                      element={
+                        <ProtectedRoute>
+                          <Analytics />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 404 route */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+                    {/* 404 route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </React.Suspense>
+              </BrowserRouter>
             </AuthErrorBoundary>
           </AuthProvider>
         </TooltipProvider>
