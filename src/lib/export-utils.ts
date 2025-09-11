@@ -44,13 +44,15 @@ function addHeader(pdf: jsPDF, title: string) {
 
 // Export lesson plans to PDF
 export function exportLessonPlanToPDF(lessonPlan: any) {
-  const pdf = new jsPDF();
-  const margin = 20;
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 40;
   const pageWidth = pdf.internal.pageSize.getWidth();
-  let yPosition = margin;
+  let yPosition = margin + 20;
+  const plan = normalizeLessonPlan(lessonPlan);
+  addHeader(pdf, "Lesson Plan");
 
   // Helper function to add text with line breaks
-  const addText = (text: string, fontSize = 10, isBold = false) => {
+  const addText = (text: string, fontSize = 11, isBold = false) => {
     pdf.setFontSize(fontSize);
     if (isBold) {
       pdf.setFont(undefined, "bold");
