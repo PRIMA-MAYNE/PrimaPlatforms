@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import ErrorBoundary from "@/components/ui/error-boundary";
 import AuthErrorBoundary from "@/components/auth/AuthErrorBoundary";
+import * as React from "react";
 
 // Public pages (code-split)
 const Landing = React.lazy(() => import("./pages/Landing"));
