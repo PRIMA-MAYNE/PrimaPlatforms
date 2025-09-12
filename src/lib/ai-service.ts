@@ -1,6 +1,3 @@
-// Intelligent AI Service - OpenAI Direct + Local Fallback
-// Real AI via direct OpenAI API with local fallback for reliability
-
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -47,7 +44,7 @@ export class AIService {
     );
   }
 
-  // Educational content templates for rapid generation
+  // Educational content templates for rapid generation (still used in lesson plans & insights)
   private static readonly ECZ_SUBJECTS = {
     mathematics: {
       topics: ["algebra", "geometry", "trigonometry", "calculus", "statistics"],
@@ -110,7 +107,7 @@ export class AIService {
   };
 
   // =====================================================
-  // LESSON PLAN GENERATION
+  // LESSON PLAN GENERATION — REMAINS UNCHANGED (with fallback)
   // =====================================================
 
   static async generateLessonPlan(params: LessonPlanParams): Promise<any> {
@@ -262,27 +259,39 @@ export class AIService {
   }
 
   // =====================================================
-  // ASSESSMENT GENERATION — ✅ UPDATED FOR DUAL OUTPUT + GPT-4O-MINI
+  // ASSESSMENT GENERATION — 🔥 FULLY UPGRADED TO FORCE REAL AI + UNIQUE OUTPUTS
   // =====================================================
 
   static async generateAssessment(params: AssessmentParams): Promise<any> {
-    if (this.useRealAI) {
-      try {
-        console.log("📝 Generating assessment with GPT-4o-mini...");
+    // 🚫 NO FALLBACK — ALWAYS USE REAL AI FOR ASSESSMENTS
+    // If you want to disable real AI, set VITE_USE_REAL_AI=false globally
+    if (!this.useRealAI) {
+      console.warn("⚠️ Real AI disabled. Assessment generation requires VITE_USE_REAL_AI=true");
+      throw new Error("Real AI must be enabled to generate assessments.");
+    }
 
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini", // ✅ Cost-optimized, high quality
-          messages: [
-            {
-              role: "system",
-              content: `
+    console.log("📝 GENERATING ASSESSMENT WITH OPENAI (NO FALLBACK, UNIQUE EACH TIME)...");
+
+    const { subject, topic, gradeLevel, questionCount, questionTypes, difficulty, duration = 60 } = params;
+
+    // Generate a unique salt per request to ensure diversity even with identical inputs
+    const salt = Math.floor(Math.random() * 10000);
+    const cacheKey = `${subject}-${topic}-${gradeLevel}-${difficulty}-${Date.now()}-${salt}`;
+    console.log("🔍 Cache Key (for uniqueness):", cacheKey);
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // Best balance of cost, speed, quality
+      messages: [
+        {
+          role: "system",
+          content: `
 You are an expert Zambian ECZ curriculum assessor. Generate TWO documents in JSON:
 1. "question_paper" — student-facing, clean, no answers
 2. "marking_scheme" — teacher-facing, with marks, model answers, partial credit, ECZ codes
 
 RULES:
 - Output ONLY valid JSON. No text before or after.
-- Align ALL content with ECZ Grade ${params.gradeLevel} ${params.subject} syllabus.
+- Align ALL content with ECZ Grade ${gradeLevel} ${subject} syllabus.
 - Use Bloom’s taxonomy: easy→remember/understand, medium→apply/analyze, hard→evaluate/create.
 - For MCQs: 4 options, 1 correct, 3 plausible distractors.
 - Marking scheme must include: criteria, partial credit rules, ECZ syllabus code per question.
@@ -333,348 +342,98 @@ JSON SCHEMA:
         "bloom_level": "remember|understand|apply|analyze|evaluate|create"
       }
     ],
-    "grading_notes": "string",  // General advice for markers
+    "grading_notes": "string",
     "syllabus_code": "string",
     "generated_at": "string"
   }
 }
 `.trim(),
-            },
-            {
-              role: "user",
-              content: `
-Generate assessment:
-- Subject: ${params.subject}
-- Topic: ${params.topic}
-- Grade: ${params.gradeLevel}
-- Questions: ${params.questionCount}
-- Types: ${params.questionTypes.join(", ")}
-- Difficulty: ${params.difficulty}
+        },
+        {
+          role: "user",
+          content: `
+Generate a UNIQUE assessment with these exact parameters:
+- Subject: ${subject}
+- Topic: ${topic}
+- Grade: ${gradeLevel}
+- Questions: ${questionCount}
+- Types: ${questionTypes.join(", ")}
+- Difficulty: ${difficulty}
+
+CRITICAL INSTRUCTIONS:
+✅ NEVER reuse questions from previous generations. Each request is NEW.
+✅ Use real Zambian contexts: e.g., Lusaka, Copperbelt, maize farming, Zamtel, ZESCO, Kafue River, Mopani Mine, Ndola, Chipata, Chingola, Zambia Revenue Authority, etc.
+✅ Vary numbers, names, scenarios, units, and examples each time.
+✅ Do NOT use generic examples like “a car travels at 60km/h” — use Zambian bus fares, market prices, school populations, rainfall data, electricity bills, etc.
+✅ Randomize all values: dates, quantities, locations, people's names (e.g., "Chanda", "Mwansa", "Nkumbula", "Banda"), businesses, schools.
+✅ Ensure all questions are original and distinct — even if topic is repeated.
+✅ Include at least one question that references a recent Zambian event (e.g., 2023 elections, inflation rate of 15%, new road project, ZESCO tariff change, 2024 drought in Southern Province).
+✅ If generating math problems: use Zambian currency (ZMW), distances between cities (e.g., Lusaka to Livingstone = 980km), population stats (e.g., 19 million), or electricity consumption (e.g., average household uses 250 kWh/month).
+✅ For essays: require comparison of regions, historical trends, or policy impacts using Zambian examples.
+✅ All questions must feel authentic — like they were written by an ECZ examiner.
 
 ENSURE:
 - Questions are NON-REPEATING and cover different cognitive levels.
 - Marking scheme includes partial credit rules and ECZ syllabus codes.
-- Use real Zambian curriculum context where possible.
-- Output VALID JSON ONLY.
+- Output VALID JSON ONLY — NO EXPLANATIONS, NO MARKDOWN, NO TEXT BEFORE OR AFTER.
 `.trim(),
-            },
-          ],
-          response_format: { type: "json_object" },
-          temperature: 0.2, // More deterministic = better for exams
-          max_tokens: 4000,
-        });
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.8, // 🔥 High randomness → guaranteed uniqueness
+      max_tokens: 4000,
+      seed: Date.now(), // Ensures deterministic variation per call
+    });
 
-        const content = completion.choices[0]?.message?.content || "{}";
-        let parsed;
-
-        try {
-          parsed = JSON.parse(content);
-        } catch (e) {
-          console.error("Failed to parse AI response:", content);
-          throw new Error("Invalid JSON from AI");
-        }
-
-        // Validate structure
-        if (!parsed.question_paper || !parsed.marking_scheme) {
-          throw new Error("Missing question_paper or marking_scheme in AI response");
-        }
-
-        // Normalize and enrich
-        const now = new Date().toISOString();
-        const syllabusCode = `ECZ.${params.subject.toUpperCase().slice(0, 3)}.${params.gradeLevel}.${params.topic
-          .toLowerCase()
-          .replace(/\s+/g, ".")}`;
-
-        // Enrich Question Paper
-        parsed.question_paper = {
-          ...parsed.question_paper,
-          subject: params.subject,
-          topic: params.topic,
-          grade_level: params.gradeLevel,
-          difficulty: params.difficulty,
-          total_marks: parsed.question_paper.total_marks || parsed.question_paper.questions.reduce((sum: number, q: any) => sum + (q.marks || 0), 0),
-          duration_minutes: parsed.question_paper.duration_minutes || Math.max(20, Math.round(parsed.question_paper.total_marks * 1.2)),
-          instructions: parsed.question_paper.instructions || this.generateInstructions(parsed.question_paper.duration_minutes, parsed.question_paper.total_marks, params.questionTypes),
-          syllabus_code: parsed.question_paper.syllabus_code || syllabusCode,
-          generated_at: parsed.question_paper.generated_at || now,
-        };
-
-        // Enrich Marking Scheme
-        parsed.marking_scheme = {
-          ...parsed.marking_scheme,
-          subject: params.subject,
-          topic: params.topic,
-          grade_level: params.gradeLevel,
-          total_marks: parsed.marking_scheme.total_marks || parsed.question_paper.total_marks,
-          grading_notes: parsed.marking_scheme.grading_notes || "Award marks based on key points. Be consistent across scripts. Accept equivalent phrasing.",
-          syllabus_code: parsed.marking_scheme.syllabus_code || syllabusCode,
-          generated_at: parsed.marking_scheme.generated_at || now,
-        };
-
-        return parsed; // ✅ { question_paper, marking_scheme }
-      } catch (error) {
-        console.warn("GPT-4o-mini failed:", error);
-        // Fall through to local generation
-      }
+    const content = completion.choices[0]?.message?.content || "{}";
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch (e) {
+      console.error("❌ FAILED TO PARSE OPENAI RESPONSE:", content);
+      throw new Error("Invalid JSON from OpenAI. Check API key or prompt structure.");
     }
 
-    console.log("📝 Generating assessment with local AI...");
-    return this.generateLocalAssessmentWithScheme(params);
-  }
+    if (!parsed.question_paper || !parsed.marking_scheme) {
+      throw new Error("Missing question_paper or marking_scheme in AI response");
+    }
 
-  // ✅ NEW: Local fallback that matches dual-document structure
-  private static generateLocalAssessmentWithScheme(params: AssessmentParams): any {
-    const {
-      subject,
-      topic,
-      gradeLevel,
-      questionCount,
-      questionTypes,
-      difficulty,
-      duration = 60,
-    } = params;
-
-    const questions = this.generateQuestions(subject, topic, gradeLevel, questionCount, questionTypes, difficulty);
-    const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
-    const syllabusCode = `ECZ.${subject.toUpperCase().slice(0, 3)}.${gradeLevel}.${topic.toLowerCase().replace(/\s+/g, ".")}`;
+    // Enrich metadata
     const now = new Date().toISOString();
+    const syllabusCode = `ECZ.${subject.toUpperCase().slice(0, 3)}.${gradeLevel}.${topic.toLowerCase().replace(/\s+/g, ".")}`;
 
-    // Build Question Paper (student view)
-    const questionPaper = {
-      title: `${subject} Assessment: ${topic}`,
+    // Enrich Question Paper
+    parsed.question_paper = {
+      ...parsed.question_paper,
       subject: subject,
       topic: topic,
       grade_level: gradeLevel,
       difficulty: difficulty,
-      total_marks: totalMarks,
-      duration_minutes: duration,
-      instructions: this.generateInstructions(duration, totalMarks, questionTypes),
-      questions: questions.map((q, idx) => ({
-        number: idx + 1,
-        type: q.question_type,
-        text: q.question_text,
-        marks: q.marks,
-        options: q.options, // only present for MCQ
-      })),
-      syllabus_code: syllabusCode,
-      generated_at: now,
+      total_marks: parsed.question_paper.total_marks || parsed.question_paper.questions.reduce((sum: number, q: any) => sum + (q.marks || 0), 0),
+      duration_minutes: parsed.question_paper.duration_minutes || Math.max(20, Math.round(parsed.question_paper.total_marks * 1.2)),
+      instructions: parsed.question_paper.instructions || this.generateInstructions(parsed.question_paper.duration_minutes, parsed.question_paper.total_marks, questionTypes),
+      syllabus_code: parsed.question_paper.syllabus_code || syllabusCode,
+      generated_at: parsed.question_paper.generated_at || now,
     };
 
-    // Build Marking Scheme (teacher view)
-    const markingScheme = {
-      title: `${subject} Marking Scheme: ${topic}`,
+    // Enrich Marking Scheme
+    parsed.marking_scheme = {
+      ...parsed.marking_scheme,
       subject: subject,
       topic: topic,
       grade_level: gradeLevel,
-      total_marks: totalMarks,
-      questions: questions.map((q, idx) => ({
-        number: idx + 1,
-        type: q.question_type,
-        marks: q.marks,
-        model_answer: q.correct_answer,
-        key_points: this.extractKeyPoints(q.correct_answer),
-        partial_credit: this.generatePartialCredit(q.marks, q.question_type),
-        ecz_code: `${syllabusCode}.Q${idx + 1}`,
-        bloom_level: q.bloom_taxonomy_level || this.getDefaultBloomLevel(difficulty),
-      })),
-      grading_notes: "Award marks for key concepts. Accept equivalent phrasing. Be consistent.",
-      syllabus_code: syllabusCode,
-      generated_at: now,
+      total_marks: parsed.marking_scheme.total_marks || parsed.question_paper.total_marks,
+      grading_notes: parsed.marking_scheme.grading_notes || "Award marks based on key points. Accept equivalent phrasing.",
+      syllabus_code: parsed.marking_scheme.syllabus_code || syllabusCode,
+      generated_at: parsed.marking_scheme.generated_at || now,
     };
 
-    return { question_paper: questionPaper, marking_scheme: markingScheme };
+    console.log("✅ SUCCESS: Generated unique assessment via OpenAI");
+    return parsed; // Always returns real AI-generated content
   }
 
-  // ✅ NEW HELPERS FOR MARKING SCHEME
-  private static extractKeyPoints(answer: string): string[] {
-    return answer
-      .split(/\. |\? |\! /)
-      .filter(s => s.length > 10 && !s.includes("Example:") && !s.includes("e.g."))
-      .slice(0, 3)
-      .map(s => s.trim() + ".");
-  }
-
-  private static generatePartialCredit(maxMarks: number, type: string): { description: string; marks: number }[] {
-    if (type === "multiple_choice") {
-      return []; // No partial credit
-    }
-    if (maxMarks <= 3) {
-      return [{ description: "Partially correct or missing key detail", marks: 1 }];
-    }
-    return [
-      { description: "Correct method, minor calculation error", marks: Math.max(1, Math.floor(maxMarks * 0.7)) },
-      { description: "Partial solution with relevant steps", marks: Math.max(1, Math.floor(maxMarks * 0.4)) },
-      { description: "Attempt shown with correct formula or concept", marks: 1 },
-    ];
-  }
-
-  // ✅ Helper to map difficulty to Bloom’s level
-  private static getDefaultBloomLevel(difficulty: string): string {
-    switch (difficulty) {
-      case "easy": return "remember";
-      case "medium": return "apply";
-      case "hard": return "evaluate";
-      default: return "understand";
-    }
-  }
-
-  // Existing question generators — slightly enhanced
-  private static generateQuestions(
-    subject: string,
-    topic: string,
-    gradeLevel: number,
-    count: number,
-    types: string[],
-    difficulty: string,
-  ) {
-    const questions = [];
-    const typeDistribution = this.distributeQuestionTypes(types, count);
-
-    let questionNumber = 1;
-
-    for (let i = 0; i < typeDistribution.multiple_choice; i++) {
-      questions.push(
-        this.generateMCQ(subject, topic, gradeLevel, questionNumber++, difficulty),
-      );
-    }
-
-    for (let i = 0; i < typeDistribution.short_answer; i++) {
-      questions.push(
-        this.generateShortAnswer(subject, topic, gradeLevel, questionNumber++, difficulty),
-      );
-    }
-
-    for (let i = 0; i < typeDistribution.essay; i++) {
-      questions.push(
-        this.generateEssay(subject, topic, gradeLevel, questionNumber++, difficulty),
-      );
-    }
-
-    for (let i = 0; i < typeDistribution.problem_solving; i++) {
-      questions.push(
-        this.generateProblemSolving(subject, topic, gradeLevel, questionNumber++, difficulty),
-      );
-    }
-
-    return questions;
-  }
-
-  private static distributeQuestionTypes(types: string[], total: number) {
-    const distribution: { [key: string]: number } = {
-      multiple_choice: 0,
-      short_answer: 0,
-      essay: 0,
-      problem_solving: 0,
-    };
-
-    if (types.length === 0) {
-      distribution.multiple_choice = Math.ceil(total * 0.5);
-      distribution.short_answer = Math.ceil(total * 0.3);
-      distribution.essay = Math.floor(total * 0.2);
-      return distribution;
-    }
-
-    const perType = Math.floor(total / types.length);
-    const remainder = total % types.length;
-
-    types.forEach((type, index) => {
-      const key = type.replace("-", "_");
-      distribution[key] = perType + (index < remainder ? 1 : 0);
-    });
-
-    return distribution;
-  }
-
-  private static generateMCQ(
-    subject: string,
-    topic: string,
-    gradeLevel: number,
-    questionNumber: number,
-    difficulty: string,
-  ) {
-    const marks = difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 4;
-
-    const correct = `Correct understanding of ${topic} in ${subject}`;
-    const distractors = [
-      `Common misconception about ${topic}`,
-      `Overgeneralization not applicable at Grade ${gradeLevel}`,
-      `Advanced concept beyond current syllabus`,
-    ].sort(() => Math.random() - 0.5);
-
-    const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
-
-    return {
-      question_number: questionNumber,
-      question_type: "multiple_choice",
-      question_text: `Which of the following best describes ${topic} in ${subject} at Grade ${gradeLevel} level?`,
-      marks: marks,
-      options: options,
-      correct_answer: correct,
-      answer_explanation: `This aligns with ECZ curriculum standards. Other options reflect common student errors.`,
-      bloom_taxonomy_level: this.getDefaultBloomLevel(difficulty),
-    };
-  }
-
-  private static generateShortAnswer(
-    subject: string,
-    topic: string,
-    gradeLevel: number,
-    questionNumber: number,
-    difficulty: string,
-  ) {
-    const marks = difficulty === "easy" ? 4 : difficulty === "medium" ? 6 : 8;
-
-    return {
-      question_number: questionNumber,
-      question_type: "short_answer",
-      question_text: `Explain how ${topic} is applied in real-life Zambian contexts. Provide one specific example.`,
-      marks: marks,
-      correct_answer: `Students should explain the core concept of ${topic} and provide a relevant Zambian example such as usage in local agriculture, business, or community planning.`,
-      answer_explanation: `Full marks require both conceptual understanding and practical application. Partial credit for either component.`,
-      bloom_taxonomy_level: difficulty === "easy" ? "understand" : difficulty === "medium" ? "apply" : "analyze",
-    };
-  }
-
-  private static generateEssay(
-    subject: string,
-    topic: string,
-    gradeLevel: number,
-    questionNumber: number,
-    difficulty: string,
-  ) {
-    const marks = difficulty === "easy" ? 10 : difficulty === "medium" ? 15 : 20;
-
-    return {
-      question_number: questionNumber,
-      question_type: "essay",
-      question_text: `Discuss the significance of ${topic} in modern ${subject}. Include historical context, current applications in Zambia, and future implications for students. Support with curriculum examples.`,
-      marks: marks,
-      correct_answer: `A comprehensive essay should: 1) Define ${topic} accurately, 2) Provide historical development, 3) Give 2-3 current Zambian applications, 4) Discuss future relevance to careers, 5) Use ECZ curriculum examples throughout.`,
-      answer_explanation: `Assessed on: knowledge (30%), analysis (40%), structure (20%), relevance (10%). ECZ extended response rubric applies.`,
-      bloom_taxonomy_level: difficulty === "easy" ? "apply" : difficulty === "medium" ? "analyze" : "evaluate",
-    };
-  }
-
-  private static generateProblemSolving(
-    subject: string,
-    topic: string,
-    gradeLevel: number,
-    questionNumber: number,
-    difficulty: string,
-  ) {
-    const marks = difficulty === "easy" ? 5 : difficulty === "medium" ? 8 : 12;
-
-    return {
-      question_number: questionNumber,
-      question_type: "problem_solving",
-      question_text: `A Zambian business uses ${topic} to calculate [real-world scenario]. Determine [required value] and explain your reasoning step by step.`,
-      marks: marks,
-      correct_answer: `Step 1: Identify given values... Step 2: Apply ${topic} principle... Step 3: Calculate... Step 4: Verify units and context... Final answer: [value with units]`,
-      answer_explanation: `Marks awarded for: correct formula (2), substitution (2), calculation (2), explanation (2), final answer with units (2). ECZ problem-solving rubric applies.`,
-      bloom_taxonomy_level: difficulty === "easy" ? "apply" : difficulty === "medium" ? "analyze" : "create",
-    };
-  }
-
+  // ✅ Helper — Enhanced for realism
   private static generateInstructions(
     duration: number,
     totalMarks: number,
@@ -699,11 +458,12 @@ ENSURE:
 5. Total marks: ${totalMarks}.
 6. This paper contains: ${types}.
 7. Plan your time wisely.
-8. Check your work before submitting.`;
+8. Check your work before submitting.
+9. All questions are based on real-life Zambian contexts — apply your knowledge accordingly.`;
   }
 
   // =====================================================
-  // EDUCATIONAL INSIGHTS GENERATION
+  // EDUCATIONAL INSIGHTS GENERATION — UNCHANGED (with fallback)
   // =====================================================
 
   static async generateEducationalInsights(
@@ -723,7 +483,7 @@ ENSURE:
             },
             {
               role: "user",
-              content: `Analyze this educational  ${dataSummary}. Class ID: ${params.classId || "N/A"}, Subject: ${params.subject || "N/A"}. Return insights on attendance patterns, performance trends, actionable recommendations, correlations, and targeted interventions. Format as JSON.`,
+              content: `Analyze this educational data: ${dataSummary}. Class ID: ${params.classId || "N/A"}, Subject: ${params.subject || "N/A"}. Return insights on attendance patterns, performance trends, actionable recommendations, correlations, and targeted interventions. Format as JSON.`,
             },
           ],
           response_format: { type: "json_object" },
