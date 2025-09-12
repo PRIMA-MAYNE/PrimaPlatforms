@@ -33,6 +33,7 @@ import {
   Plus,
   RefreshCw,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentManagement } from "@/components/attendance/StudentManagement";
@@ -121,8 +122,16 @@ const AttendanceTracker: React.FC = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [syncStatus, setSyncStatus] = React.useState<"idle" | "syncing" | "success" | "error">("idle");
 
-  // Load saved data from localStorage (already handled in state initialization)
-  
+  // Ref to prevent state updates after unmount
+  const isMountedRef = React.useRef(true);
+
+  // Memoized term options for scalability
+  const TERMS = [
+    { value: "Term 1", label: "Term 1" },
+    { value: "Term 2", label: "Term 2" },
+    { value: "Term 3", label: "Term 3" },
+  ];
+
   // Save data to localStorage with debounced writes
   React.useEffect(() => {
     const saveClasses = () => {
@@ -132,7 +141,7 @@ const AttendanceTracker: React.FC = () => {
         console.error("Failed to save classes to localStorage:", error);
       }
     };
-    
+
     const timer = setTimeout(saveClasses, 500);
     return () => clearTimeout(timer);
   }, [classes]);
@@ -150,13 +159,10 @@ const AttendanceTracker: React.FC = () => {
     return () => clearTimeout(timer);
   }, [attendanceRecords]);
 
-  // Update students when class selection changes or date changes
+  // Update students when class or date changes — with safety
   React.useEffect(() => {
     const updateStudentsWithAttendance = async () => {
-      if (!selectedClass) {
-        setStudents([]);
-        return;
-      }
+      if (!selectedClass || !isMountedRef.current) return;
 
       setIsLoading(true);
       setSyncStatus("syncing");
@@ -174,18 +180,20 @@ const AttendanceTracker: React.FC = () => {
           status: getTodayAttendanceStatus(student.id, currentDate),
         }));
 
-        // Fetch cloud data and merge
+        // Fetch cloud data — authoritative source
         const cloudData = await fetchAttendanceForDate(selectedClass, currentDate);
-        
+
+        if (!isMountedRef.current) return;
+
+        // Merge: Cloud data overrides local if present; else keep local
         if (cloudData.size > 0) {
           studentsWithStatus = studentsWithStatus.map((s) => ({
             ...s,
             status: cloudData.get(s.id) ?? s.status,
           }));
-          
           setSyncStatus("success");
         } else {
-          setSyncStatus("idle");
+          setSyncStatus("idle"); // No cloud data, use local
         }
 
         setStudents(studentsWithStatus);
@@ -198,11 +206,17 @@ const AttendanceTracker: React.FC = () => {
           variant: "destructive",
         });
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     };
 
     updateStudentsWithAttendance();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [selectedClass, classes, currentDate]);
 
   const getTodayAttendanceStatus = (
@@ -223,84 +237,82 @@ const AttendanceTracker: React.FC = () => {
     );
     const dayOfWeek = dateObj.getDay();
 
-    // Convert to school week (1-8 for 40 days) and day (1-5 for Mon-Fri)
     const schoolWeek = Math.min(8, Math.ceil(weekNumber / 5));
-    const schoolDay = dayOfWeek === 0 ? 5 : dayOfWeek === 6 ? 5 : dayOfWeek; // Weekend maps to Friday
+    const schoolDay = dayOfWeek === 0 || dayOfWeek === 6 ? 5 : dayOfWeek; // Sat/Sun → Friday
 
     return { week: schoolWeek, day: schoolDay };
   };
 
   const updateAttendanceStatus = React.useCallback(
     async (studentId: string, status: AttendanceStatus) => {
-      // Update local state immediately for perceived performance
+      // Optimistic update
       setStudents((prev) =>
         prev.map((student) =>
           student.id === studentId ? { ...student, status } : student,
         ),
       );
 
-      // Create or update attendance record
-      if (status) {
-        const { week, day } = getCurrentWeekAndDay(currentDate);
+      if (!status) return;
 
-        const existingRecordIndex = attendanceRecords.findIndex(
-          (r) => r.studentId === studentId && r.date === currentDate,
-        );
+      const { week, day } = getCurrentWeekAndDay(currentDate);
 
-        const record: AttendanceRecord = {
-          id:
-            existingRecordIndex >= 0
-              ? attendanceRecords[existingRecordIndex].id
-              : `att_${Date.now()}_${studentId}`,
-          studentId,
-          date: currentDate,
-          status,
-          week,
-          day,
-          term: currentTerm,
-        };
+      const existingRecordIndex = attendanceRecords.findIndex(
+        (r) => r.studentId === studentId && r.date === currentDate,
+      );
 
-        // Optimistic update of local records
-        setAttendanceRecords((prev) => {
-          if (existingRecordIndex >= 0) {
-            return prev.map((r, i) => (i === existingRecordIndex ? record : r));
-          } else {
-            return [...prev, record];
-          }
-        });
+      const record: AttendanceRecord = {
+        id:
+          existingRecordIndex >= 0
+            ? attendanceRecords[existingRecordIndex].id
+            : `att_${Date.now()}_${studentId}`,
+        studentId,
+        date: currentDate,
+        status,
+        week,
+        day,
+        term: currentTerm,
+      };
 
-        // Best-effort cloud sync with retry logic
-        if (selectedClass) {
-          upsertAttendance({
+      // Optimistic update of local records
+      setAttendanceRecords((prev) => {
+        if (existingRecordIndex >= 0) {
+          return prev.map((r, i) => (i === existingRecordIndex ? record : r));
+        } else {
+          return [...prev, record];
+        }
+      });
+
+      // Sync to server — use async/await for clarity
+      if (selectedClass) {
+        try {
+          await upsertAttendance({
             student_id: studentId,
             class_id: selectedClass,
             date: currentDate,
             status: status as any,
-          })
-            .then(() => {
-              setSyncStatus("success");
-              toast({
-                title: "Attendance Updated",
-                description: "Successfully synced with server",
-                variant: "default",
-              });
-            })
-            .catch((error) => {
-              console.error("Failed to sync attendance:", error);
-              setSyncStatus("error");
-              toast({
-                title: "Sync Failed",
-                description: "Attendance updated locally but failed to sync with server",
-                variant: "destructive",
-              });
-            });
+          });
+          setSyncStatus("success");
+          toast({
+            title: "Attendance Updated",
+            description: "Successfully synced with server",
+            variant: "default",
+          });
+        } catch (error) {
+          console.error("Failed to sync attendance:", error);
+          setSyncStatus("error");
+          toast({
+            title: "Sync Failed",
+            description: "Attendance updated locally but failed to sync with server",
+            variant: "destructive",
+          });
         }
       }
     },
     [attendanceRecords, currentDate, currentTerm, selectedClass]
   );
 
-  const getAttendanceStats = () => {
+  // Memoized stats for performance
+  const stats = React.useMemo(() => {
     const total = students.length;
     const present = students.filter((s) => s.status === "present").length;
     const absent = students.filter((s) => s.status === "absent").length;
@@ -309,9 +321,9 @@ const AttendanceTracker: React.FC = () => {
     const pending = students.filter((s) => s.status === null).length;
 
     return { total, present, absent, late, sick, pending };
-  };
+  }, [students]);
 
-  const getTermStats = () => {
+  const termStats = React.useMemo(() => {
     const termRecords = attendanceRecords.filter((r) => r.term === currentTerm);
     const studentIds = new Set(termRecords.map((r) => r.studentId));
 
@@ -336,12 +348,18 @@ const AttendanceTracker: React.FC = () => {
     });
 
     return stats.sort((a, b) => b.percentage - a.percentage);
-  };
+  }, [attendanceRecords, currentTerm, students]);
+
+  const filteredStudents = React.useMemo(() =>
+    students.filter((student) =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    ),
+  [students, searchTerm]);
 
   const handleClassUpdate = (updatedClasses: Class[]) => {
     setClasses(updatedClasses);
     if (selectedClass && !updatedClasses.some(c => c.id === selectedClass)) {
-      setSelectedClass("");
+      setSelectedClass(updatedClasses[0]?.id || "");
     }
   };
 
@@ -359,17 +377,25 @@ const AttendanceTracker: React.FC = () => {
       return;
     }
 
-    const currentClass = classes.find((c) => c.id === selectedClass);
-    exportDayAttendanceToExcel(
-      students,
-      currentDate,
-      currentClass?.name || "Unknown Class",
-    );
-
-    toast({
-      title: "Export Successful",
-      description: "Daily attendance exported to Excel",
-    });
+    try {
+      const currentClass = classes.find((c) => c.id === selectedClass);
+      exportDayAttendanceToExcel(
+        students,
+        currentDate,
+        currentClass?.name || "Unknown Class",
+      );
+      toast({
+        title: "Export Successful",
+        description: "Daily attendance exported to Excel",
+      });
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate Excel file. Try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleExport40DayRegister = () => {
@@ -382,27 +408,31 @@ const AttendanceTracker: React.FC = () => {
       return;
     }
 
-    const currentClass = classes.find((c) => c.id === selectedClass);
-    const classAttendance = attendanceRecords.filter((r) =>
-      students.some((s) => s.id === r.studentId),
-    );
+    try {
+      const currentClass = classes.find((c) => c.id === selectedClass);
+      const classAttendance = attendanceRecords.filter((r) =>
+        students.some((s) => s.id === r.studentId),
+      );
 
-    exportAttendanceToExcel(
-      students,
-      classAttendance,
-      currentClass?.name || "Unknown Class",
-    );
+      exportAttendanceToExcel(
+        students,
+        classAttendance,
+        currentClass?.name || "Unknown Class",
+      );
 
-    toast({
-      title: "Export Successful",
-      description: "40-day attendance register exported to Excel",
-    });
+      toast({
+        title: "Export Successful",
+        description: "40-day attendance register exported to Excel",
+      });
+    } catch (error) {
+      console.error("Export failed:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate Excel file. Try again.",
+        variant: "destructive",
+      });
+    }
   };
-
-  const stats = getAttendanceStats();
-  const filteredStudents = students.filter((student) =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
 
   const getStatusIcon = (status: AttendanceStatus) => {
     switch (status) {
@@ -440,40 +470,51 @@ const AttendanceTracker: React.FC = () => {
     setSyncStatus("idle");
   };
 
+  // Validate date input format
+  const isValidDate = (str: string): boolean => {
+    const date = new Date(str);
+    return !isNaN(date.getTime()) && date.toISOString().split('T')[0] === str;
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 px-4 pb-12">
         {/* Header */}
-        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
+        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl truncate">
               Attendance Tracker
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-1 max-w-md truncate">
               Track student attendance and generate comprehensive 40-day registers
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2">
+
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportDailyAttendance}
+              className="flex-1 sm:flex-none min-w-[120px]"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Export Today
+              <Download className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">Export Today</span>
+              <span className="sm:hidden">Today</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport40DayRegister}
+              className="flex-1 sm:flex-none min-w-[120px]"
             >
-              <FileSpreadsheet className="w-4 h-4 mr-2" />
-              40-Day Register
+              <FileSpreadsheet className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">40-Day Register</span>
+              <span className="sm:hidden">Register</span>
             </Button>
             <Button
               variant={rollCallActive ? "destructive" : "default"}
               onClick={() => setRollCallActive(!rollCallActive)}
-              className="min-w-[140px]"
+              className="flex-1 sm:flex-none min-w-[140px]"
             >
               {rollCallActive ? "End Roll Call" : "Start Roll Call"}
             </Button>
@@ -482,10 +523,11 @@ const AttendanceTracker: React.FC = () => {
               size="sm"
               onClick={resetSyncStatus}
               disabled={syncStatus !== "error"}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 min-w-[100px] px-2"
             >
               <RefreshCw className="w-4 h-4" />
-              Retry Sync
+              <span className="hidden sm:inline">Retry Sync</span>
+              <span className="sm:hidden">Retry</span>
             </Button>
           </div>
         </div>
@@ -499,17 +541,18 @@ const AttendanceTracker: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              {/* Class Selector */}
               <div className="space-y-2">
-                <Label htmlFor="class-select">Select Class</Label>
-                <Select 
-                  value={selectedClass} 
+                <Label htmlFor="class-select">Class</Label>
+                <Select
+                  value={selectedClass}
                   onValueChange={(value) => {
                     setSelectedClass(value);
                     setSyncStatus("idle");
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Choose a class" />
                   </SelectTrigger>
                   <SelectContent>
@@ -518,49 +561,58 @@ const AttendanceTracker: React.FC = () => {
                     ) : (
                       classes.map((cls) => (
                         <SelectItem key={cls.id} value={cls.id}>
-                          {cls.name} ({cls.students.length} students)
+                          {cls.name} ({cls.students.length})
                         </SelectItem>
                       ))
                     )}
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              {/* Date Selector */}
               <div className="space-y-2">
                 <Label htmlFor="date-select">Date</Label>
                 <Input
                   type="date"
                   value={currentDate}
                   onChange={(e) => {
-                    setCurrentDate(e.target.value);
-                    setSyncStatus("idle");
+                    const val = e.target.value;
+                    if (isValidDate(val)) {
+                      setCurrentDate(val);
+                      setSyncStatus("idle");
+                    }
                   }}
                   max={new Date().toISOString().split("T")[0]}
+                  className="h-10"
                 />
               </div>
-              
+
+              {/* Term Selector */}
               <div className="space-y-2">
                 <Label htmlFor="term-select">Term</Label>
-                <Select 
-                  value={currentTerm} 
+                <Select
+                  value={currentTerm}
                   onValueChange={(value) => {
                     setCurrentTerm(value);
                     setSyncStatus("idle");
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Term 1">Term 1</SelectItem>
-                    <SelectItem value="Term 2">Term 2</SelectItem>
-                    <SelectItem value="Term 3">Term 3</SelectItem>
+                    {TERMS.map((term) => (
+                      <SelectItem key={term.value} value={term.value}>
+                        {term.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-              
-              <div className="flex items-end">
-                <div className="flex items-center gap-1 text-sm">
+
+              {/* Sync Status Indicator */}
+              <div className="flex items-end justify-end">
+                <div className="flex items-center gap-1 text-xs">
                   {syncStatus === "syncing" && (
                     <>
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
@@ -576,7 +628,7 @@ const AttendanceTracker: React.FC = () => {
                   {syncStatus === "error" && (
                     <>
                       <AlertTriangle className="w-4 h-4 text-red-500" />
-                      <span className="text-red-600">Sync Failed</span>
+                      <span className="text-red-600">Failed</span>
                     </>
                   )}
                   {syncStatus === "idle" && (
@@ -596,79 +648,99 @@ const AttendanceTracker: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Main Tabs */}
         <Tabs defaultValue="roll-call" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="roll-call">Roll Call</TabsTrigger>
-            <TabsTrigger value="photo">Photo</TabsTrigger>
-            <TabsTrigger value="voice">Voice</TabsTrigger>
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="term-stats">Term Stats</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsList className="grid grid-cols-6 gap-1 overflow-x-auto scrollbar-hide md:overflow-visible">
+            <TabsTrigger value="roll-call" className="text-xs md:text-sm">
+              Roll Call
+            </TabsTrigger>
+            <TabsTrigger value="photo" className="text-xs md:text-sm">
+              Photo
+            </TabsTrigger>
+            <TabsTrigger value="voice" className="text-xs md:text-sm">
+              Voice
+            </TabsTrigger>
+            <TabsTrigger value="summary" className="text-xs md:text-sm">
+              Summary
+            </TabsTrigger>
+            <TabsTrigger value="term-stats" className="text-xs md:text-sm">
+              Term Stats
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs md:text-sm">
+              Reports
+            </TabsTrigger>
           </TabsList>
 
+          {/* Roll Call Tab */}
           <TabsContent value="roll-call" className="space-y-6">
-            {/* Live Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {/* Live Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <StatsCard
-                title="Total Students"
+                title="Total"
                 value={stats.total}
                 icon={Users}
-                className="text-center"
+                className="text-center h-24"
               />
               <StatsCard
                 title="Present"
                 value={stats.present}
                 icon={CheckCircle}
-                className="text-center"
+                className="text-center h-24"
               />
               <StatsCard
                 title="Absent"
                 value={stats.absent}
                 icon={XCircle}
-                className="text-center"
+                className="text-center h-24"
               />
               <StatsCard
                 title="Late"
                 value={stats.late}
                 icon={Clock}
-                className="text-center"
+                className="text-center h-24"
               />
               <StatsCard
                 title="Sick"
                 value={stats.sick}
                 icon={Thermometer}
-                className="text-center"
+                className="text-center h-24"
               />
             </div>
 
             {/* Search */}
-            <div className="max-w-md">
+            <div className="max-w-md mx-auto">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search students by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-10"
                 />
               </div>
             </div>
 
-            {/* Student Roll Call */}
+            {/* Student List */}
             <Card>
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between">
                   Student Roll Call
                   {stats.pending > 0 && (
-                    <Badge variant="outline">{stats.pending} pending</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {stats.pending} pending
+                    </Badge>
                   )}
                 </CardTitle>
                 <CardDescription>
                   Mark attendance for each student. Changes are automatically saved.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                {filteredStudents.length === 0 ? (
+              <CardContent className="p-0">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : filteredStudents.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-semibold mb-2">
@@ -676,31 +748,33 @@ const AttendanceTracker: React.FC = () => {
                         ? "No Students in Class"
                         : "No Students Found"}
                     </h3>
-                    <p className="text-muted-foreground mb-4">
+                    <p className="text-muted-foreground mb-4 text-sm">
                       {students.length === 0
                         ? "Add students to your class to start taking attendance."
                         : "Try adjusting your search term."}
                     </p>
                     {students.length === 0 && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => document.getElementById('student-management-tab')?.click()}
+                        className="mt-2"
                       >
                         Add Students Now
                       </Button>
                     )}
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="divide-y divide-border max-h-[50vh] overflow-y-auto">
                     {filteredStudents.map((student) => (
                       <div
                         key={student.id}
                         className={cn(
-                          "flex items-center justify-between p-4 rounded-lg border transition-all duration-200 hover:shadow-md",
+                          "flex items-center justify-between p-3 sm:p-4 hover:bg-accent transition-colors",
                           getStatusColor(student.status),
                         )}
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
                           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-catalyst-100">
                             <span className="text-sm font-medium text-catalyst-700">
                               {student.name
@@ -709,15 +783,15 @@ const AttendanceTracker: React.FC = () => {
                                 .join("")}
                             </span>
                           </div>
-                          <div>
-                            <p className="font-medium">{student.name}</p>
-                            <p className="text-sm text-muted-foreground">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm truncate">{student.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
                               {student.admissionNumber} • {student.gender}
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                           {getStatusIcon(student.status)}
                           <div className="flex space-x-1">
                             <Button
@@ -726,13 +800,13 @@ const AttendanceTracker: React.FC = () => {
                                   ? "default"
                                   : "outline"
                               }
-                              size="sm"
+                              size="xs"
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "present")
                               }
-                              className="text-xs px-3 min-w-[60px]"
+                              className="px-2 h-7 min-w-[50px] text-[10px]"
                             >
-                              Present
+                              P
                             </Button>
                             <Button
                               variant={
@@ -740,13 +814,13 @@ const AttendanceTracker: React.FC = () => {
                                   ? "destructive"
                                   : "outline"
                               }
-                              size="sm"
+                              size="xs"
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "absent")
                               }
-                              className="text-xs px-3 min-w-[60px]"
+                              className="px-2 h-7 min-w-[50px] text-[10px]"
                             >
-                              Absent
+                              A
                             </Button>
                             <Button
                               variant={
@@ -754,13 +828,13 @@ const AttendanceTracker: React.FC = () => {
                                   ? "secondary"
                                   : "outline"
                               }
-                              size="sm"
+                              size="xs"
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "late")
                               }
-                              className="text-xs px-3 min-w-[60px]"
+                              className="px-2 h-7 min-w-[50px] text-[10px]"
                             >
-                              Late
+                              L
                             </Button>
                             <Button
                               variant={
@@ -768,13 +842,13 @@ const AttendanceTracker: React.FC = () => {
                                   ? "secondary"
                                   : "outline"
                               }
-                              size="sm"
+                              size="xs"
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "sick")
                               }
-                              className="text-xs px-3 min-w-[60px]"
+                              className="px-2 h-7 min-w-[50px] text-[10px]"
                             >
-                              Sick
+                              S
                             </Button>
                           </div>
                         </div>
@@ -786,11 +860,14 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Photo Tab */}
           <TabsContent value="photo" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Photo Roll Call</CardTitle>
-                <CardDescription>Upload a class photo, detect faces, and assign names. Manual boxes supported.</CardDescription>
+                <CardDescription>
+                  Upload a class photo, detect faces, and assign names. Manual boxes supported.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ImageRollCall students={students} onMarkPresent={(id) => updateAttendanceStatus(id, "present")} />
@@ -798,11 +875,14 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Voice Tab */}
           <TabsContent value="voice" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Voice Roll Call</CardTitle>
-                <CardDescription>Use your voice to select a student and mark their status.</CardDescription>
+                <CardDescription>
+                  Use your voice to select a student and mark their status.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <VoiceRollCall students={students} onMarkStatus={updateAttendanceStatus} />
@@ -810,6 +890,7 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Summary Tab */}
           <TabsContent value="summary" className="space-y-6">
             <Card>
               <CardHeader>
@@ -822,7 +903,7 @@ const AttendanceTracker: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg">Overall Statistics</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Attendance Rate:</span>
                         <span className="font-medium text-success">
@@ -857,7 +938,7 @@ const AttendanceTracker: React.FC = () => {
 
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg">Gender Breakdown</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Boys Present:</span>
                         <span className="font-medium">
@@ -921,6 +1002,7 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Term Stats Tab */}
           <TabsContent value="term-stats" className="space-y-6">
             <Card>
               <CardHeader>
@@ -930,14 +1012,14 @@ const AttendanceTracker: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {getTermStats().length === 0 ? (
+                {termStats.length === 0 ? (
                   <div className="text-center py-8">
                     <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
                       No attendance data recorded for this term yet.
                     </p>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => document.getElementById('roll-call-tab')?.click()}
                       className="mt-4"
                     >
@@ -945,13 +1027,13 @@ const AttendanceTracker: React.FC = () => {
                     </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                    {getTermStats().map((stat) => (
+                  <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+                    {termStats.map((stat) => (
                       <div
                         key={stat.studentId}
-                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors text-sm"
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
                             <span className="text-xs font-medium">
                               {stat.studentName
@@ -960,11 +1042,11 @@ const AttendanceTracker: React.FC = () => {
                                 .join("")}
                             </span>
                           </div>
-                          <span className="font-medium">{stat.studentName}</span>
+                          <span className="font-medium truncate">{stat.studentName}</span>
                         </div>
-                        <div className="flex items-center space-x-4">
-                          <span className="text-sm text-muted-foreground">
-                            {stat.present}/{stat.total} days
+                        <div className="flex items-center space-x-2">
+                          <span className="text-muted-foreground">
+                            {stat.present}/{stat.total}
                           </span>
                           <Badge
                             variant={
@@ -974,7 +1056,7 @@ const AttendanceTracker: React.FC = () => {
                                   ? "secondary"
                                   : "destructive"
                             }
-                            className="text-xs"
+                            className="text-xs px-2 py-1"
                           >
                             {stat.percentage}%
                           </Badge>
@@ -987,6 +1069,7 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-6">
             <Card>
               <CardHeader>
@@ -999,7 +1082,7 @@ const AttendanceTracker: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     variant="outline"
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 text-sm"
                     onClick={handleExportDailyAttendance}
                   >
                     <Download className="w-6 h-6" />
@@ -1007,23 +1090,21 @@ const AttendanceTracker: React.FC = () => {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex-col space-y-2"
+                    className="h-20 flex-col space-y-2 text-sm"
                     onClick={handleExport40DayRegister}
                   >
                     <FileSpreadsheet className="w-6 h-6" />
                     <span>Export 40-Day Register</span>
                   </Button>
                 </div>
-                <div className="text-sm text-muted-foreground space-y-2">
+                <div className="text-xs text-muted-foreground space-y-1 pt-2">
                   <p>
-                    <strong>Daily Attendance:</strong> Current day's attendance
-                    with timestamps, suitable for daily logs
+                    <strong>Daily Attendance:</strong> Current day's attendance with timestamps, suitable for daily logs
                   </p>
                   <p>
-                    <strong>40-Day Register:</strong> Complete 8-week register
-                    with 5 days per week format, formatted for official school records
+                    <strong>40-Day Register:</strong> Complete 8-week register with 5 days per week format, formatted for official school records
                   </p>
-                  <p className="text-xs italic">
+                  <p className="italic">
                     All exports include student ID, name, class, and attendance status.
                   </p>
                 </div>
