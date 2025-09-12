@@ -21,7 +21,7 @@
     "setup:auth": "node scripts/configure-auth.mjs",
     "setup:templates": "node scripts/configure-auth.mjs --templates",
     "setup:all": "npm run setup:database && npm run setup:auth",
-    "postinstall": "echo '\n🎓 Catalyst Setup Complete!\n  Run: npm run setup:all\n  Then: npm run dev\n'"
+    "postinstall": "echo '\\n🎓 Catalyst Setup Complete!\\n  Run: npm run setup:all\\n  Then: npm run dev\\n'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -83,7 +83,11 @@
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^6.0.1",
     "vaul": "^0.9.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    // 🔥 NEW DEPENDENCIES FOR AI ATTENDANCE SYSTEM
+    "@mediapipe/face_detection": "^0.4.1637945382",
+    "@mediapipe/face_recognition": "^0.2.1637945382",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
