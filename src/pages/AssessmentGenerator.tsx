@@ -708,7 +708,7 @@ const AssessmentGenerator: React.FC = () => {
                       <div>
                         <h4 className="font-medium text-purple-900 mb-1">AI-Generated Content</h4>
                         <p className="text-sm text-purple-700">
-                          This assessment was generated using GPT-4o-mini, aligned with ECZ syllabi and curriculum standards.
+                          This assessment was generated using AI, aligned with ECZ syllabi and curriculum standards.
                         </p>
                       </div>
                     </div>
