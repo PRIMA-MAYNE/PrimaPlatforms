@@ -31,6 +31,8 @@ import {
   Search,
   FileSpreadsheet,
   Plus,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentManagement } from "@/components/attendance/StudentManagement";
@@ -73,85 +75,135 @@ interface AttendanceRecord {
 type AttendanceStatus = "present" | "absent" | "late" | "sick" | null;
 
 const AttendanceTracker: React.FC = () => {
-  // State management
-  const [classes, setClasses] = React.useState<Class[]>([
-    {
-      id: "demo-class",
-      name: "Grade 10A - Mathematics",
-      grade: "Grade 10",
-      students: [],
-    },
-  ]);
+  // State management with optimized initial state
+  const [classes, setClasses] = React.useState<Class[]>(() => {
+    const saved = localStorage.getItem("catalyst-classes");
+    try {
+      return saved ? JSON.parse(saved) : [
+        {
+          id: "demo-class",
+          name: "Grade 10A - Mathematics",
+          grade: "Grade 10",
+          students: [],
+        },
+      ];
+    } catch (error) {
+      console.error("Error loading classes from localStorage:", error);
+      return [
+        {
+          id: "demo-class",
+          name: "Grade 10A - Mathematics",
+          grade: "Grade 10",
+          students: [],
+        },
+      ];
+    }
+  });
+
+  const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecord[]>(() => {
+    const saved = localStorage.getItem("catalyst-attendance");
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error("Error loading attendance from localStorage:", error);
+      return [];
+    }
+  });
+
   const [selectedClass, setSelectedClass] = React.useState<string>("");
   const [students, setStudents] = React.useState<Student[]>([]);
-  const [attendanceRecords, setAttendanceRecords] = React.useState<
-    AttendanceRecord[]
-  >([]);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [rollCallActive, setRollCallActive] = React.useState(false);
   const [currentDate, setCurrentDate] = React.useState(
     new Date().toISOString().split("T")[0],
   );
   const [currentTerm, setCurrentTerm] = React.useState("Term 1");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [syncStatus, setSyncStatus] = React.useState<"idle" | "syncing" | "success" | "error">("idle");
 
-  // Load saved data from localStorage
+  // Load saved data from localStorage (already handled in state initialization)
+  
+  // Save data to localStorage with debounced writes
   React.useEffect(() => {
-    const savedClasses = localStorage.getItem("catalyst-classes");
-    const savedAttendance = localStorage.getItem("catalyst-attendance");
-
-    if (savedClasses) {
+    const saveClasses = () => {
       try {
-        const parsedClasses = JSON.parse(savedClasses);
-        setClasses(parsedClasses);
+        localStorage.setItem("catalyst-classes", JSON.stringify(classes));
       } catch (error) {
-        console.error("Error loading classes:", error);
+        console.error("Failed to save classes to localStorage:", error);
       }
-    }
-
-    if (savedAttendance) {
-      try {
-        const parsedAttendance = JSON.parse(savedAttendance);
-        setAttendanceRecords(parsedAttendance);
-      } catch (error) {
-        console.error("Error loading attendance:", error);
-      }
-    }
-  }, []);
-
-  // Save data to localStorage
-  React.useEffect(() => {
-    localStorage.setItem("catalyst-classes", JSON.stringify(classes));
+    };
+    
+    const timer = setTimeout(saveClasses, 500);
+    return () => clearTimeout(timer);
   }, [classes]);
 
   React.useEffect(() => {
-    localStorage.setItem(
-      "catalyst-attendance",
-      JSON.stringify(attendanceRecords),
-    );
+    const saveAttendance = () => {
+      try {
+        localStorage.setItem("catalyst-attendance", JSON.stringify(attendanceRecords));
+      } catch (error) {
+        console.error("Failed to save attendance to localStorage:", error);
+      }
+    };
+
+    const timer = setTimeout(saveAttendance, 500);
+    return () => clearTimeout(timer);
   }, [attendanceRecords]);
 
-  // Update students when class selection changes and merge with cloud
+  // Update students when class selection changes or date changes
   React.useEffect(() => {
-    (async () => {
-      if (!selectedClass) return;
-      const currentClass = classes.find((c) => c.id === selectedClass);
-      if (!currentClass) return;
-      // local base
-      let studentsWithStatus = currentClass.students.map((student) => ({
-        ...student,
-        status: getTodayAttendanceStatus(student.id, currentDate),
-      }));
-      // merge with cloud if available
-      const cloud = await fetchAttendanceForDate(selectedClass, currentDate);
-      if (cloud.size) {
-        studentsWithStatus = studentsWithStatus.map((s) => ({
-          ...s,
-          status: cloud.get(s.id) ?? s.status,
-        }));
+    const updateStudentsWithAttendance = async () => {
+      if (!selectedClass) {
+        setStudents([]);
+        return;
       }
-      setStudents(studentsWithStatus);
-    })();
-  }, [selectedClass, classes, currentDate, attendanceRecords]);
+
+      setIsLoading(true);
+      setSyncStatus("syncing");
+
+      try {
+        const currentClass = classes.find((c) => c.id === selectedClass);
+        if (!currentClass) {
+          setStudents([]);
+          return;
+        }
+
+        // Start with local base data
+        let studentsWithStatus = currentClass.students.map((student) => ({
+          ...student,
+          status: getTodayAttendanceStatus(student.id, currentDate),
+        }));
+
+        // Fetch cloud data and merge
+        const cloudData = await fetchAttendanceForDate(selectedClass, currentDate);
+        
+        if (cloudData.size > 0) {
+          studentsWithStatus = studentsWithStatus.map((s) => ({
+            ...s,
+            status: cloudData.get(s.id) ?? s.status,
+          }));
+          
+          setSyncStatus("success");
+        } else {
+          setSyncStatus("idle");
+        }
+
+        setStudents(studentsWithStatus);
+      } catch (error) {
+        console.error("Error fetching attendance from server:", error);
+        setSyncStatus("error");
+        toast({
+          title: "Sync Failed",
+          description: "Could not sync attendance with server. Using local data.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    updateStudentsWithAttendance();
+  }, [selectedClass, classes, currentDate]);
 
   const getTodayAttendanceStatus = (
     studentId: string,
@@ -178,57 +230,75 @@ const AttendanceTracker: React.FC = () => {
     return { week: schoolWeek, day: schoolDay };
   };
 
-  const updateAttendanceStatus = (
-    studentId: string,
-    status: AttendanceStatus,
-  ) => {
-    // Update student status
-    setStudents((prev) =>
-      prev.map((student) =>
-        student.id === studentId ? { ...student, status } : student,
-      ),
-    );
-
-    // Update/create attendance record
-    if (status) {
-      const { week, day } = getCurrentWeekAndDay(currentDate);
-
-      const existingRecordIndex = attendanceRecords.findIndex(
-        (r) => r.studentId === studentId && r.date === currentDate,
+  const updateAttendanceStatus = React.useCallback(
+    async (studentId: string, status: AttendanceStatus) => {
+      // Update local state immediately for perceived performance
+      setStudents((prev) =>
+        prev.map((student) =>
+          student.id === studentId ? { ...student, status } : student,
+        ),
       );
 
-      const record: AttendanceRecord = {
-        id:
-          existingRecordIndex >= 0
-            ? attendanceRecords[existingRecordIndex].id
-            : `att_${Date.now()}_${studentId}`,
-        studentId,
-        date: currentDate,
-        status,
-        week,
-        day,
-        term: currentTerm,
-      };
+      // Create or update attendance record
+      if (status) {
+        const { week, day } = getCurrentWeekAndDay(currentDate);
 
-      if (existingRecordIndex >= 0) {
-        setAttendanceRecords((prev) =>
-          prev.map((r, i) => (i === existingRecordIndex ? record : r)),
+        const existingRecordIndex = attendanceRecords.findIndex(
+          (r) => r.studentId === studentId && r.date === currentDate,
         );
-      } else {
-        setAttendanceRecords((prev) => [...prev, record]);
-      }
 
-      // Best-effort cloud sync
-      if (selectedClass) {
-        upsertAttendance({
-          student_id: studentId,
-          class_id: selectedClass,
+        const record: AttendanceRecord = {
+          id:
+            existingRecordIndex >= 0
+              ? attendanceRecords[existingRecordIndex].id
+              : `att_${Date.now()}_${studentId}`,
+          studentId,
           date: currentDate,
-          status: (status as any),
+          status,
+          week,
+          day,
+          term: currentTerm,
+        };
+
+        // Optimistic update of local records
+        setAttendanceRecords((prev) => {
+          if (existingRecordIndex >= 0) {
+            return prev.map((r, i) => (i === existingRecordIndex ? record : r));
+          } else {
+            return [...prev, record];
+          }
         });
+
+        // Best-effort cloud sync with retry logic
+        if (selectedClass) {
+          upsertAttendance({
+            student_id: studentId,
+            class_id: selectedClass,
+            date: currentDate,
+            status: status as any,
+          })
+            .then(() => {
+              setSyncStatus("success");
+              toast({
+                title: "Attendance Updated",
+                description: "Successfully synced with server",
+                variant: "default",
+              });
+            })
+            .catch((error) => {
+              console.error("Failed to sync attendance:", error);
+              setSyncStatus("error");
+              toast({
+                title: "Sync Failed",
+                description: "Attendance updated locally but failed to sync with server",
+                variant: "destructive",
+              });
+            });
+        }
       }
-    }
-  };
+    },
+    [attendanceRecords, currentDate, currentTerm, selectedClass]
+  );
 
   const getAttendanceStats = () => {
     const total = students.length;
@@ -270,6 +340,9 @@ const AttendanceTracker: React.FC = () => {
 
   const handleClassUpdate = (updatedClasses: Class[]) => {
     setClasses(updatedClasses);
+    if (selectedClass && !updatedClasses.some(c => c.id === selectedClass)) {
+      setSelectedClass("");
+    }
   };
 
   const handleStudentAdd = (updatedStudents: Student[]) => {
@@ -363,6 +436,10 @@ const AttendanceTracker: React.FC = () => {
     }
   };
 
+  const resetSyncStatus = () => {
+    setSyncStatus("idle");
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -373,11 +450,10 @@ const AttendanceTracker: React.FC = () => {
               Attendance Tracker
             </h1>
             <p className="text-muted-foreground">
-              Track student attendance and generate comprehensive 40-day
-              registers
+              Track student attendance and generate comprehensive 40-day registers
             </p>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -397,8 +473,19 @@ const AttendanceTracker: React.FC = () => {
             <Button
               variant={rollCallActive ? "destructive" : "default"}
               onClick={() => setRollCallActive(!rollCallActive)}
+              className="min-w-[140px]"
             >
               {rollCallActive ? "End Roll Call" : "Start Roll Call"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetSyncStatus}
+              disabled={syncStatus !== "error"}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Retry Sync
             </Button>
           </div>
         </div>
@@ -412,33 +499,55 @@ const AttendanceTracker: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="class-select">Select Class</Label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                <Select 
+                  value={selectedClass} 
+                  onValueChange={(value) => {
+                    setSelectedClass(value);
+                    setSyncStatus("idle");
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a class" />
                   </SelectTrigger>
                   <SelectContent>
-                    {classes.map((cls) => (
-                      <SelectItem key={cls.id} value={cls.id}>
-                        {cls.name} ({cls.students.length} students)
-                      </SelectItem>
-                    ))}
+                    {classes.length === 0 ? (
+                      <SelectItem value="" disabled>No classes available</SelectItem>
+                    ) : (
+                      classes.map((cls) => (
+                        <SelectItem key={cls.id} value={cls.id}>
+                          {cls.name} ({cls.students.length} students)
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="date-select">Date</Label>
                 <Input
                   type="date"
                   value={currentDate}
-                  onChange={(e) => setCurrentDate(e.target.value)}
+                  onChange={(e) => {
+                    setCurrentDate(e.target.value);
+                    setSyncStatus("idle");
+                  }}
+                  max={new Date().toISOString().split("T")[0]}
                 />
               </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="term-select">Term</Label>
-                <Select value={currentTerm} onValueChange={setCurrentTerm}>
+                <Select 
+                  value={currentTerm} 
+                  onValueChange={(value) => {
+                    setCurrentTerm(value);
+                    setSyncStatus("idle");
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -448,6 +557,32 @@ const AttendanceTracker: React.FC = () => {
                     <SelectItem value="Term 3">Term 3</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              <div className="flex items-end">
+                <div className="flex items-center gap-1 text-sm">
+                  {syncStatus === "syncing" && (
+                    <>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="text-muted-foreground">Syncing...</span>
+                    </>
+                  )}
+                  {syncStatus === "success" && (
+                    <>
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <span className="text-green-600">Synced</span>
+                    </>
+                  )}
+                  {syncStatus === "error" && (
+                    <>
+                      <AlertTriangle className="w-4 h-4 text-red-500" />
+                      <span className="text-red-600">Sync Failed</span>
+                    </>
+                  )}
+                  {syncStatus === "idle" && (
+                    <span className="text-muted-foreground">Ready</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -466,9 +601,9 @@ const AttendanceTracker: React.FC = () => {
             <TabsTrigger value="roll-call">Roll Call</TabsTrigger>
             <TabsTrigger value="photo">Photo</TabsTrigger>
             <TabsTrigger value="voice">Voice</TabsTrigger>
-            <TabsTrigger value="summary">Daily Summary</TabsTrigger>
-            <TabsTrigger value="term-stats">Term Statistics</TabsTrigger>
-            <TabsTrigger value="reports">Reports & Export</TabsTrigger>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
+            <TabsTrigger value="term-stats">Term Stats</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="roll-call" className="space-y-6">
@@ -511,7 +646,7 @@ const AttendanceTracker: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search students..."
+                  placeholder="Search students by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -529,8 +664,7 @@ const AttendanceTracker: React.FC = () => {
                   )}
                 </CardTitle>
                 <CardDescription>
-                  Mark attendance for each student. Changes are automatically
-                  saved.
+                  Mark attendance for each student. Changes are automatically saved.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -547,6 +681,14 @@ const AttendanceTracker: React.FC = () => {
                         ? "Add students to your class to start taking attendance."
                         : "Try adjusting your search term."}
                     </p>
+                    {students.length === 0 && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => document.getElementById('student-management-tab')?.click()}
+                      >
+                        Add Students Now
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -554,7 +696,7 @@ const AttendanceTracker: React.FC = () => {
                       <div
                         key={student.id}
                         className={cn(
-                          "flex items-center justify-between p-4 rounded-lg border transition-colors",
+                          "flex items-center justify-between p-4 rounded-lg border transition-all duration-200 hover:shadow-md",
                           getStatusColor(student.status),
                         )}
                       >
@@ -588,7 +730,7 @@ const AttendanceTracker: React.FC = () => {
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "present")
                               }
-                              className="text-xs"
+                              className="text-xs px-3 min-w-[60px]"
                             >
                               Present
                             </Button>
@@ -602,7 +744,7 @@ const AttendanceTracker: React.FC = () => {
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "absent")
                               }
-                              className="text-xs"
+                              className="text-xs px-3 min-w-[60px]"
                             >
                               Absent
                             </Button>
@@ -616,7 +758,7 @@ const AttendanceTracker: React.FC = () => {
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "late")
                               }
-                              className="text-xs"
+                              className="text-xs px-3 min-w-[60px]"
                             >
                               Late
                             </Button>
@@ -630,7 +772,7 @@ const AttendanceTracker: React.FC = () => {
                               onClick={() =>
                                 updateAttendanceStatus(student.id, "sick")
                               }
-                              className="text-xs"
+                              className="text-xs px-3 min-w-[60px]"
                             >
                               Sick
                             </Button>
@@ -651,7 +793,7 @@ const AttendanceTracker: React.FC = () => {
                 <CardDescription>Upload a class photo, detect faces, and assign names. Manual boxes supported.</CardDescription>
               </CardHeader>
               <CardContent>
-                <ImageRollCall students={students} onMarkPresent={(id)=>updateAttendanceStatus(id, "present")} />
+                <ImageRollCall students={students} onMarkPresent={(id) => updateAttendanceStatus(id, "present")} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -679,10 +821,10 @@ const AttendanceTracker: React.FC = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    <h3 className="font-semibold">Overall Statistics</h3>
+                    <h3 className="font-semibold text-lg">Overall Statistics</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Attendance Rate:</span>
+                        <span className="text-muted-foreground">Attendance Rate:</span>
                         <span className="font-medium text-success">
                           {stats.total > 0
                             ? Math.round((stats.present / stats.total) * 100)
@@ -691,29 +833,33 @@ const AttendanceTracker: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Total Present:</span>
+                        <span className="text-muted-foreground">Total Present:</span>
                         <span className="font-medium">{stats.present}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Total Absent:</span>
+                        <span className="text-muted-foreground">Total Absent:</span>
                         <span className="font-medium">{stats.absent}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Late Arrivals:</span>
+                        <span className="text-muted-foreground">Late Arrivals:</span>
                         <span className="font-medium">{stats.late}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Sick Students:</span>
+                        <span className="text-muted-foreground">Sick Students:</span>
                         <span className="font-medium">{stats.sick}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Pending:</span>
+                        <span className="font-medium">{stats.pending}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold">Gender Breakdown</h3>
+                    <h3 className="font-semibold text-lg">Gender Breakdown</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Boys Present:</span>
+                        <span className="text-muted-foreground">Boys Present:</span>
                         <span className="font-medium">
                           {
                             students.filter(
@@ -724,7 +870,7 @@ const AttendanceTracker: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Girls Present:</span>
+                        <span className="text-muted-foreground">Girls Present:</span>
                         <span className="font-medium">
                           {
                             students.filter(
@@ -735,7 +881,7 @@ const AttendanceTracker: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Boys Absent:</span>
+                        <span className="text-muted-foreground">Boys Absent:</span>
                         <span className="font-medium">
                           {
                             students.filter(
@@ -746,7 +892,7 @@ const AttendanceTracker: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Girls Absent:</span>
+                        <span className="text-muted-foreground">Girls Absent:</span>
                         <span className="font-medium">
                           {
                             students.filter(
@@ -754,6 +900,18 @@ const AttendanceTracker: React.FC = () => {
                                 s.gender === "Female" && s.status === "absent",
                             ).length
                           }
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Boys:</span>
+                        <span className="font-medium">
+                          {students.filter(s => s.gender === "Male").length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Total Girls:</span>
+                        <span className="font-medium">
+                          {students.filter(s => s.gender === "Female").length}
                         </span>
                       </div>
                     </div>
@@ -778,15 +936,32 @@ const AttendanceTracker: React.FC = () => {
                     <p className="text-muted-foreground">
                       No attendance data recorded for this term yet.
                     </p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById('roll-call-tab')?.click()}
+                      className="mt-4"
+                    >
+                      Go to Roll Call
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
                     {getTermStats().map((stat) => (
                       <div
                         key={stat.studentId}
-                        className="flex items-center justify-between p-3 border rounded-lg"
+                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
                       >
-                        <span className="font-medium">{stat.studentName}</span>
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
+                            <span className="text-xs font-medium">
+                              {stat.studentName
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </span>
+                          </div>
+                          <span className="font-medium">{stat.studentName}</span>
+                        </div>
                         <div className="flex items-center space-x-4">
                           <span className="text-sm text-muted-foreground">
                             {stat.present}/{stat.total} days
@@ -799,6 +974,7 @@ const AttendanceTracker: React.FC = () => {
                                   ? "secondary"
                                   : "destructive"
                             }
+                            className="text-xs"
                           >
                             {stat.percentage}%
                           </Badge>
@@ -838,14 +1014,17 @@ const AttendanceTracker: React.FC = () => {
                     <span>Export 40-Day Register</span>
                   </Button>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground space-y-2">
                   <p>
                     <strong>Daily Attendance:</strong> Current day's attendance
-                    with timestamps
+                    with timestamps, suitable for daily logs
                   </p>
                   <p>
                     <strong>40-Day Register:</strong> Complete 8-week register
-                    with 5 days per week format suitable for school records
+                    with 5 days per week format, formatted for official school records
+                  </p>
+                  <p className="text-xs italic">
+                    All exports include student ID, name, class, and attendance status.
                   </p>
                 </div>
               </CardContent>
