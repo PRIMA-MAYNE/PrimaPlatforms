@@ -59,7 +59,7 @@ interface Student {
   admissionNumber: string;
   class: string;
   status: "present" | "absent" | "late" | "sick" | null;
-  imageId?: string; // Encrypted base64 of captured photo
+  imageId?: string; // Encrypted base64 of photo
   faceEmbedding?: number[]; // 128-dim array from MediaPipe
 }
 
@@ -479,7 +479,6 @@ const AttendanceTracker: React.FC = () => {
   React.useEffect(() => {
     const loadMediaPipe = async () => {
       try {
-        // Dynamically import only when needed
         await import('@mediapipe/face_detection');
         await import('@mediapipe/face_recognition');
         setMediaPipeReady(true);
