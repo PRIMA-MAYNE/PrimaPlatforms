@@ -1,152 +1,151 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Clash+Display:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  /**
-   * Catalyst Design System
-   * Tailwind CSS theme with modern educational focus
-   * Colors expressed as HSL values for consistency with tailwind.config.ts
-   */
-  :root {
-    /* Base colors */
-    --background: 0 0% 100%;
-    --foreground: 210 11% 15%;
+/* ————————————————————————
+   ✅ 1. SOFT ETHICAL COLOR SYSTEM — EMOTIONAL HSL
+   Replacing clinical grays with warm, breathing pastels.
+   All values derived from: cream (#fdfaf5), soft purple (#9d88e6), soft blue (#7ea4e8)
+   ———————————————————————— */
 
-    /* Card colors */
-    --card: 0 0% 100%;
-    --card-foreground: 210 11% 15%;
+:root {
+  /* BASE LAYER — The Canvas */
+  --background: 25 10% 98%; /* Cream White — warm, not sterile */
+  --foreground: 230 10% 15%; /* Deep Charcoal Purple — human, readable, calm */
+  --card: 25 10% 99%; /* Softer cream — like old paper */
+  --card-foreground: 230 10% 15%;
+  --popover: 25 10% 98%;
+  --popover-foreground: 230 10% 15%;
 
-    /* Popover colors */
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
+  /* PRIMARY — Your Soul Color */
+  --primary: 270 35% 60%; /* Soft Purple — #9d88e6 → hsl(270, 35%, 60%) */
+  --primary-foreground: 25 10% 98%;
 
-    /* Primary brand colors - Deep Blue */
-    --primary: 219 85% 35%;
-    --primary-foreground: 0 0% 100%;
+  /* SECONDARY — Your Companion */
+  --secondary: 210 70% 70%; /* Soft Sky Blue — #7ea4e8 → hsl(210, 70%, 70%) */
+  --secondary-foreground: 25 10% 98%;
 
-    /* Secondary colors - Clean gray */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 210 11% 15%;
+  /* Muted — Whispering Texture */
+  --muted: 270 15% 96%; /* Lavender Mist — barely-there color */
+  --muted-foreground: 230 10% 40%;
 
-    /* Muted colors */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 14% 50%;
+  /* ACCENT — Magic Glows */
+  --accent: 270 30% 94%; /* Almost-white lavender — for hover states */
+  --accent-foreground: 230 10% 15%;
 
-    /* Accent colors */
-    --accent: 210 40% 96%;
-    --accent-foreground: 210 11% 15%;
+  /* BORDER — Invisible Separation */
+  --border: hsla(270, 20%, 92%, 0.3); /* Transparent veil — no harsh lines */
 
-    /* Destructive colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+  /* INPUT & RING — Gentle Feedback */
+  --input: hsla(270, 20%, 92%, 0.4);
+  --ring: hsla(210, 70%, 70%, 0.3); /* Soft blue glow — never intrusive */
 
-    /* Border and input colors */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 219 85% 50%;
+  /* DESTRUCTIVE — Warning That Feels Safe */
+  --destructive: 0 80% 60%; /* Warm Coral — feels like a sigh, not a scream */
+  --destructive-foreground: 25 10% 98%;
 
-    /* Border radius */
-    --radius: 8px;
+  /* SUCCESS — Calm Victory */
+  --success: 142 76% 36%;
+  --success-foreground: 25 10% 98%;
 
-    /* Catalyst brand colors - Deep Blue gradient */
-    --catalyst-50: 214 100% 97%;
-    --catalyst-100: 214 95% 92%;
-    --catalyst-200: 215 96% 85%;
-    --catalyst-300: 216 94% 74%;
-    --catalyst-400: 217 91% 60%;
-    --catalyst-500: 219 85% 50%;
-    --catalyst-600: 221 78% 42%;
-    --catalyst-700: 223 71% 35%;
-    --catalyst-800: 224 64% 28%;
-    --catalyst-900: 226 57% 22%;
+  /* WARNING — Invitation, Not Alarm */
+  --warning: 38 92% 50%; /* Peach-Gold — invites curiosity */
+  --warning-foreground: 25 10% 98%;
 
-    /* Success colors - Green */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+  /* INFO — Quiet Insight */
+  --info: 210 70% 70%; /* Same as secondary — harmony */
+  --info-foreground: 25 10% 98%;
 
-    /* Warning colors - Amber */
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+  /* RADIUS — Organic Curves */
+  --radius: 16px; /* Rounded like a pebble */
+  --radius-lg: 24px; /* Like a folded page */
+  --radius-xl: 32px; /* Dreamy pill shape */
 
-    /* Info colors - Cyan */
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
+  /* CATALYST BRAND — Now Poetic */
+  --catalyst-50: hsl(270, 20%, 98%);
+  --catalyst-100: hsl(270, 20%, 96%);
+  --catalyst-200: hsl(270, 20%, 93%);
+  --catalyst-300: hsl(270, 25%, 90%);
+  --catalyst-400: hsl(270, 30%, 85%);
+  --catalyst-500: hsl(270, 35%, 60%); /* Your signature soft purple */
+  --catalyst-600: hsl(270, 35%, 55%);
+  --catalyst-700: hsl(270, 35%, 50%);
+  --catalyst-800: hsl(230, 15%, 35%); /* Deep charcoal — soulful anchor */
+  --catalyst-900: hsl(230, 10%, 15%); /* Your foreground — quiet strength */
 
-    /* Sidebar colors */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 11% 15%;
-    --sidebar-primary: 219 85% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96%;
-    --sidebar-accent-foreground: 210 11% 15%;
-    --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 330 81% 60%;
-  }
+  /* SIDEBAR — A Floating Light */
+  --sidebar-background: hsla(25, 10%, 98%, 0.95); /* Cream with transparency */
+  --sidebar-foreground: 230 10% 15%;
+  --sidebar-primary: hsl(270, 35%, 60%);
+  --sidebar-primary-foreground: 25 10% 98%;
+  --sidebar-accent: hsl(210, 70%, 70%);
+  --sidebar-accent-foreground: 25 10% 98%;
+  --sidebar-border: hsla(270, 20%, 92%, 0.2);
+  --sidebar-ring: hsla(210, 70%, 70%, 0.2);
 
-  .dark {
-    /* Dark mode colors */
-    --background: 222 84% 5%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 84% 5%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 84% 5%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 330 81% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 219 85% 50%;
-
-    /* Dark catalyst colors - Deep Blue theme */
-    --catalyst-50: 226 57% 22%;
-    --catalyst-100: 224 64% 28%;
-    --catalyst-200: 223 71% 35%;
-    --catalyst-300: 221 78% 42%;
-    --catalyst-400: 219 85% 50%;
-    --catalyst-500: 217 91% 60%;
-    --catalyst-600: 216 94% 74%;
-    --catalyst-700: 215 96% 85%;
-    --catalyst-800: 214 95% 92%;
-    --catalyst-900: 214 100% 97%;
-
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
-
-    /* Dark sidebar */
-    --sidebar-background: 222 84% 5%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 219 85% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 330 81% 60%;
-  }
+  /* SHADOWS — Depth Without Weight */
+  --shadow-sm: 0 1px 4px hsla(270, 35%, 60%, 0.06);
+  --shadow: 0 4px 16px hsla(270, 35%, 60%, 0.08), 0 1px 6px hsla(210, 70%, 70%, 0.04);
+  --shadow-md: 0 8px 24px hsla(270, 35%, 60%, 0.1), 0 2px 8px hsla(210, 70%, 70%, 0.06);
+  --shadow-lg: 0 16px 48px hsla(270, 35%, 60%, 0.12), 0 4px 16px hsla(210, 70%, 70%, 0.08);
+  --shadow-xl: 0 24px 64px hsla(270, 35%, 60%, 0.14), 0 6px 24px hsla(210, 70%, 70%, 0.1);
+  --shadow-glow: 0 0 30px hsla(210, 70%, 70%, 0.15);
+  --shadow-floating: 0 12px 40px hsla(270, 35%, 60%, 0.15), 0 0 50px hsla(210, 70%, 70%, 0.05);
 }
+
+.dark {
+  /* DARK MODE — Still Warm. Still Human. */
+  --background: 230 10% 15%;
+  --foreground: 25 10% 98%;
+  --card: 230 10% 18%;
+  --card-foreground: 25 10% 98%;
+  --popover: 230 10% 18%;
+  --popover-foreground: 25 10% 98%;
+
+  --primary: hsl(270, 35%, 60%);
+  --primary-foreground: 25 10% 98%;
+
+  --secondary: hsl(210, 70%, 70%);
+  --secondary-foreground: 25 10% 98%;
+
+  --muted: 230 10% 25%;
+  --muted-foreground: 230 10% 60%;
+
+  --accent: 230 10% 28%;
+  --accent-foreground: 25 10% 98%;
+
+  --border: hsla(270, 20%, 92%, 0.1);
+  --input: hsla(270, 20%, 92%, 0.1);
+  --ring: hsla(210, 70%, 70%, 0.2);
+
+  --destructive: hsl(0, 80%, 60%);
+  --destructive-foreground: 25 10% 98%;
+
+  --success: hsl(142, 76%, 36%);
+  --warning: hsl(38, 92%, 50%);
+  --info: hsl(210, 70%, 70%);
+
+  --sidebar-background: hsla(230, 10%, 18%, 0.95);
+  --sidebar-primary: hsl(270, 35%, 60%);
+  --sidebar-accent: hsl(210, 70%, 70%);
+  --sidebar-border: hsla(270, 20%, 92%, 0.1);
+  --sidebar-ring: hsla(210, 70%, 70%, 0.15);
+
+  --shadow-sm: 0 1px 4px hsla(270, 35%, 60%, 0.08);
+  --shadow: 0 4px 16px hsla(270, 35%, 60%, 0.1), 0 1px 6px hsla(210, 70%, 70%, 0.06);
+  --shadow-md: 0 8px 24px hsla(270, 35%, 60%, 0.14), 0 2px 8px hsla(210, 70%, 70%, 0.08);
+  --shadow-lg: 0 16px 48px hsla(270, 35%, 60%, 0.18), 0 4px 16px hsla(210, 70%, 70%, 0.1);
+  --shadow-xl: 0 24px 64px hsla(270, 35%, 60%, 0.2), 0 6px 24px hsla(210, 70%, 70%, 0.12);
+  --shadow-glow: 0 0 30px hsla(210, 70%, 70%, 0.2);
+  --shadow-floating: 0 12px 40px hsla(270, 35%, 60%, 0.2), 0 0 50px hsla(210, 70%, 70%, 0.1);
+}
+
+/* ————————————————————————
+   ✅ 2. TYPOGRAPHY — WRITTEN BY HAND, NOT CODE
+   Use Clash Display for headlines (elegant, modern serif)
+   Inter for body (clean, neutral, deeply readable)
+   ———————————————————————— */
 
 @layer base {
   * {
@@ -155,9 +154,10 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "liga" 1, "clig" 1;
+    line-height: 1.7;
+    letter-spacing: -0.005em;
+    font-variation-settings: "wght" 400;
   }
 
   h1,
@@ -166,28 +166,419 @@
   h4,
   h5,
   h6 {
-    @apply font-semibold text-foreground;
+    @apply font-display text-foreground tracking-tight;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 6vw, 4rem);
+  }
+  h2 {
+    font-size: clamp(1.75rem, 5vw, 3rem);
+  }
+  h3 {
+    font-size: clamp(1.5rem, 4.5vw, 2.25rem);
+  }
+  h4 {
+    font-size: clamp(1.3rem, 4vw, 1.875rem);
+  }
+
+  p,
+  li,
+  span,
+  label {
+    font-size: 1rem;
+    line-height: 1.7;
+    font-weight: 400;
+    font-family: "Inter", sans-serif;
+  }
+
+  code,
+  pre,
+  .mono {
+    font-family: "Fira Code", "Source Code Pro", monospace;
+    font-variation-settings: "wght" 400;
+    letter-spacing: 0.02em;
+    background: hsla(270, 30%, 94%, 0.3);
+    padding: 0.2em 0.4em;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* Add subtle contrast to links */
+  a {
+    @apply text-primary underline-offset-4 hover:underline;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: hsl(270, 35%, 50%);
+  }
+}
+
+/* ————————————————————————
+   ✅ 3. ANIMATIONS — BREATHING, FLOATING, GLOWING
+   No jank. No snap. Just gentle life.
+   ———————————————————————— */
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.97; }
+  50% { opacity: 0.99; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 16px hsla(210, 70%, 70%, 0.15); }
+  50% { box-shadow: 0 0 32px hsla(210, 70%, 70%, 0.25); }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
   }
 }
 
 @layer components {
-  .catalyst-gradient {
-    @apply bg-gradient-to-br from-catalyst-600 to-catalyst-800;
+  .animate-breathe {
+    animation: breathe 3s ease-in-out infinite;
   }
 
-  .catalyst-glass {
-    @apply bg-white/10 backdrop-blur-sm border border-white/20;
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
   }
 
-  .stat-card {
-    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow;
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-ripple {
+    animation: ripple 1s ease-out;
+  }
+
+  .cursor-pointer:hover {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="%239d88e6" opacity="0.3"/></svg>') 12 12, auto;
+  }
+}
+
+/* ————————————————————————
+   ✅ 4. SHADOWS — LAYERED LIGHT, NOT DEPTH
+   No black. No harshness. Only ethereal glow.
+   ———————————————————————— */
+
+.shadow-card {
+  @apply shadow;
+}
+
+.shadow-hover {
+  @apply hover:shadow-lg transition-shadow duration-500;
+}
+
+.shadow-glow {
+  @apply shadow-glow;
+}
+
+.shadow-floating {
+  @apply shadow-floating;
+}
+
+/* ————————————————————————
+   ✅ 5. BORDER RADIUS — ORGANIC CURVES
+   No sharp corners. Everything flows like silk.
+   ———————————————————————— */
+
+.rounded-base {
+  border-radius: var(--radius);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.rounded-xl {
+  border-radius: var(--radius-xl);
+}
+
+.rounded-pill {
+  border-radius: 9999px;
+}
+
+/* ————————————————————————
+   ✅ 6. GRADIENTS — AMBIENT, NOT BOLD
+   Subtle blends that feel like light through linen.
+   ———————————————————————— */
+
+.bg-gradient-purple-blue {
+  background: linear-gradient(135deg, hsl(270, 35%, 60%) 0%, hsl(210, 70%, 70%) 100%);
+}
+
+.bg-gradient-cream-lavender {
+  background: linear-gradient(180deg, hsl(25, 10%, 98%) 0%, hsl(270, 15%, 96%) 100%);
+}
+
+.bg-gradient-fade-purple {
+  background: radial-gradient(circle at 20% 30%, hsl(270, 35%, 60%) 0%, transparent 60%);
+}
+
+.bg-gradient-fade-blue {
+  background: radial-gradient(circle at 80% 70%, hsl(210, 70%, 70%) 0%, transparent 60%);
+}
+
+/* ————————————————————————
+   ✅ 7. TRANSPARENCY & BACKDROP — GLASS MORPHISM WITH HEART
+   Not corporate glass. Emotional glass.
+   ———————————————————————— */
+
+.glass {
+  @apply backdrop-blur-xl bg-background/80 border border-border/30;
+}
+
+.glass-light {
+  @apply backdrop-blur-md bg-white/80 border border-border/20;
+}
+
+.glass-dark {
+  @apply backdrop-blur-md bg-black/40 border border-border/20;
+}
+
+/* ————————————————————————
+   ✅ 8. SPACING — RHYTHM, NOT GRID
+   Emotionally calibrated gaps.
+   ———————————————————————— */
+
+.space-y-0\.5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.125rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.125rem * var(--tw-space-y-reverse));
+}
+
+.space-y-1\.5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.375rem * var(--tw-space-y-reverse));
+}
+
+.space-y-2\.5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.625rem * var(--tw-space-y-reverse));
+}
+
+/* ————————————————————————
+   ✅ 9. COMPONENTS — POETRY IN HTML
+   ———————————————————————— */
+
+@layer components {
+  .card {
+    @apply bg-card rounded-xl p-6 shadow-card border border-border/20;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .card:hover {
+    @apply shadow-floating scale-[1.01];
+    transform: translateZ(0);
   }
 
   .module-card {
-    @apply bg-card border border-border rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer;
+    @apply card cursor-pointer hover:shadow-xl transition-all duration-500;
+    border: 1px solid hsla(270, 35%, 60%, 0.08);
   }
 
   .module-card:hover {
-    @apply border-catalyst-300 shadow-catalyst-500/10;
+    border-color: hsla(270, 35%, 60%, 0.2);
+    box-shadow: var(--shadow-floating);
+  }
+
+  .stat-card {
+    @apply card border-none bg-gradient-to-br from-cream-lavender to-transparent;
+    backdrop-filter: blur(8px);
+    border: 1px solid hsla(270, 15%, 96%, 0.3);
+  }
+
+  .button {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 border-0 shadow-sm;
+    font-family: "Clash Display", sans-serif;
+    letter-spacing: -0.01em;
+    text-transform: none;
+    background: hsl(270, 35%, 60%);
+    color: hsl(25, 10%, 98%);
+    box-shadow: 0 4px 16px hsla(270, 35%, 60%, 0.2);
+  }
+
+  .button:hover {
+    background: hsl(270, 35%, 55%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsla(270, 35%, 60%, 0.3);
+  }
+
+  .button:active {
+    transform: translateY(0);
+  }
+
+  .button-outline {
+    @apply bg-transparent text-primary border-2 border-primary;
+    color: hsl(270, 35%, 60%);
+  }
+
+  .button-outline:hover {
+    background: hsla(270, 35%, 60%, 0.08);
+  }
+
+  .badge {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+    background: hsla(270, 35%, 60%, 0.1);
+    color: hsl(270, 35%, 60%);
+    border: 1px solid hsla(270, 35%, 60%, 0.15);
+  }
+
+  .container {
+    max-width: 1280px;
+  }
+
+  /* Sidebar — Floating Sanctuary */
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-50 w-64 bg-sidebar-background border-r border-sidebar-border backdrop-blur-lg;
+    box-shadow: var(--shadow-floating);
+    transition: transform 0.4s ease;
+  }
+
+  .sidebar-content {
+    @apply h-full flex flex-col p-6 space-y-8;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-300;
+    color: var(--sidebar-foreground);
+  }
+
+  .sidebar-link:hover {
+    background: hsla(270, 35%, 60%, 0.08);
+    border-left: 3px solid hsl(270, 35%, 60%);
+  }
+
+  .sidebar-link.active {
+    background: hsla(270, 35%, 60%, 0.12);
+    border-left: 3px solid hsl(270, 35%, 60%);
+    color: hsl(270, 35%, 60%);
+    font-weight: 600;
+  }
+
+  /* Glass Header */
+  .header {
+    @apply sticky top-0 z-40 backdrop-blur-lg bg-background/80 border-b border-border/20;
+    box-shadow: var(--shadow);
+  }
+
+  /* Hero Section — Sacred Space */
+  .hero {
+    @apply min-h-screen flex flex-col justify-center items-center text-center p-8 relative overflow-hidden;
+    background: var(--bg-gradient-cream-lavender);
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -10%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: var(--bg-gradient-fade-purple);
+    border-radius: 50%;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: var(--bg-gradient-fade-blue);
+    border-radius: 50%;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  /* Micro-interaction: Floating Elements */
+  .floating {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  /* Fade-in on scroll */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fade-in 0.8s ease-out forwards;
+  }
+
+  @keyframes fade-in {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ————————————————————————
+   ✅ 10. RESPONSIVENESS — MOBILE-FIRST, BUT WARM
+   No cramped phones. No alienating desktops.
+   ———————————————————————— */
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .hero h1 {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
+
+  .hero p {
+    font-size: 1.1rem;
+    max-width: 90%;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
