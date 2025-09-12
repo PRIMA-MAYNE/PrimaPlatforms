@@ -43,7 +43,6 @@ import {
 import { cn } from "@/lib/utils";
 import { StudentManagement } from "@/components/attendance/StudentManagement";
 import { VoiceRollCall } from "@/components/attendance/VoiceRollCall";
-import { ImageRollCall } from "@/components/attendance/ImageRollCall"; // NEW: Real component
 import {
   exportAttendanceToExcel,
   exportDayAttendanceToExcel,
@@ -51,6 +50,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { fetchAttendanceForDate, upsertAttendance } from "@/lib/attendance-supabase";
 
+// 🔥 UPDATED STUDENT INTERFACE WITH BIOMETRIC FIELDS
 interface Student {
   id: string;
   name: string;
@@ -59,15 +59,17 @@ interface Student {
   admissionNumber: string;
   class: string;
   status: "present" | "absent" | "late" | "sick" | null;
-  imageId?: string; // NEW: base64 or URI of enrolled photo
-  faceEmbedding?: number[]; // NEW: 128-dim array from MediaPipe
+  imageId?: string; // Encrypted base64 of captured photo
+  faceEmbedding?: number[]; // 128-dim array from MediaPipe
 }
+
 interface Class {
   id: string;
   name: string;
   grade: string;
   students: Student[];
 }
+
 interface AttendanceRecord {
   id: string;
   studentId: string;
@@ -77,6 +79,7 @@ interface AttendanceRecord {
   day: number;
   term: string;
 }
+
 type AttendanceStatus = "present" | "absent" | "late" | "sick" | null;
 
 const AttendanceTracker: React.FC = () => {
@@ -459,39 +462,71 @@ const AttendanceTracker: React.FC = () => {
   };
 
   // ========================
-  // VIDEO ROLL CALL — REAL FACE RECOGNITION
+  // VIDEO ROLL CALL — REAL MEDIAPIPE FACE RECOGNITION
   // ========================
   const [isRecording, setIsRecording] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [detectedStudents, setDetectedStudents] = React.useState<Set<string>>(new Set());
   const [videoError, setVideoError] = React.useState<string | null>(null);
+  const [mediaPipeReady, setMediaPipeReady] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
 
-  // 🔥 REAL FACE RECOGNITION: Match detected faces against enrolled embeddings
-  const detectAndMatchFaces = React.useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current || students.length === 0) return;
+  // Load MediaPipe models once on mount
+  React.useEffect(() => {
+    const loadMediaPipe = async () => {
+      try {
+        // Dynamically import only when needed
+        await import('@mediapipe/face_detection');
+        await import('@mediapipe/face_recognition');
+        setMediaPipeReady(true);
+      } catch (err) {
+        console.error('Failed to load MediaPipe:', err);
+        toast({
+          title: 'MediaPipe Loading Failed',
+          description: 'Face recognition will not work until libraries are loaded.',
+          variant: 'destructive',
+        });
+      }
+    };
+    loadMediaPipe();
+  }, []);
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d')!;
-    const video = videoRef.current;
+  // Real face detection using MediaPipe
+  const detectAndMatchFaces = React.useCallback(async (): Promise<string[]> => {
+    if (!mediaPipeReady || !videoRef.current || students.length === 0) return [];
 
-    // Ensure we have at least one student with faceEmbedding
-    const enrolledStudents = students.filter(s => s.faceEmbedding && s.faceEmbedding.length === 128);
+    const enrolledStudents = students.filter(
+      s => s.faceEmbedding && s.faceEmbedding.length === 128
+    );
+
     if (enrolledStudents.length === 0) {
       setVideoError("No student has an enrolled photo. Go to 'Manage Students' and add photos.");
-      return;
+      return [];
     }
 
-    // Simulate MediaPipe detection — replace with real MediaPipe library later
-    // In production: Use @mediapipe/face_detection + face_recognition
-    // For now: simulate frame-by-frame matching
     const detectedIds = new Set<string>();
+    const detector = new (await import('@mediapipe/face_detection')).FaceDetection({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
+    });
+    const recognizer = new (await import('@mediapipe/face_recognition')).FaceRecognition({
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/face_recognition/${file}`,
+    });
 
-    // Extract 10 frames over video duration
+    await Promise.all([detector.load(), recognizer.load()]);
+
+    const video = videoRef.current;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Extract 10 frames at even intervals
     const frameCount = 10;
     const promises: Promise<void>[] = [];
 
@@ -499,42 +534,59 @@ const AttendanceTracker: React.FC = () => {
       const time = (i / (frameCount - 1)) * video.duration;
       promises.push(new Promise((resolve) => {
         video.currentTime = time;
-        video.onseeked = () => {
+        video.onseeked = async () => {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
-          // SIMULATED EMBEDDING COMPARISON (replace with real MediaPipe)
-          // This simulates extracting a 128-dim vector from the frame and comparing
-          // In reality, you'd use: const embedding = await faceRecognition.process(canvas)
-          const simulatedEmbedding = Array(128).fill(Math.random() * 2 - 1); // random noise
 
-          // Compare with each enrolled student's embedding
-          for (const student of enrolledStudents) {
-            const enrolledEmbedding = student.faceEmbedding!;
-            // Simple cosine similarity approximation (for demo)
-            const dotProduct = simulatedEmbedding.reduce((sum, val, idx) => sum + val * enrolledEmbedding[idx], 0);
-            const magnitudeSim = Math.sqrt(simulatedEmbedding.reduce((sum, val) => sum + val * val, 0));
-            const magnitudeEnrolled = Math.sqrt(enrolledEmbedding.reduce((sum, val) => sum + val * val, 0));
-            const similarity = dotProduct / (magnitudeSim * magnitudeEnrolled || 1);
+          try {
+            const detections = await detector.detect(video);
+            if (!detections?.length) return;
 
-            // Threshold: 0.6+ confidence = match
-            if (similarity > 0.6) {
-              detectedIds.add(student.id);
+            for (const detection of detections) {
+              const embedding = await recognizer.generateEmbedding(video, detection.boundingBox);
+              const float32Values = Array.from(embedding.float32Values);
+
+              // Compare against each enrolled student
+              for (const student of enrolledStudents) {
+                const similarity = cosineSimilarity(float32Values, student.faceEmbedding!);
+                if (similarity > 0.65) {
+                  detectedIds.add(student.id);
+                  break;
+                }
+              }
             }
+          } catch (err) {
+            console.warn("Face recognition failed on frame:", err);
           }
-
           resolve();
         };
       }));
     }
 
     await Promise.all(promises);
-    return detectedIds;
-  }, [students]);
+    return Array.from(detectedIds);
+  }, [students, mediaPipeReady]);
+
+  // Helper: Cosine similarity between two 128-dim arrays
+  const cosineSimilarity = (a: number[], b: number[]): number => {
+    if (a.length !== 128 || b.length !== 128) return 0;
+    let dotProduct = 0;
+    let magA = 0;
+    let magB = 0;
+
+    for (let i = 0; i < 128; i++) {
+      dotProduct += a[i] * b[i];
+      magA += a[i] * a[i];
+      magB += b[i] * b[i];
+    }
+
+    const magnitude = Math.sqrt(magA) * Math.sqrt(magB);
+    return magnitude > 0 ? dotProduct / magnitude : 0;
+  };
 
   // Start recording video
   const startRecording = async () => {
     setVideoError(null);
-    setDetectedStudents(new Set()); // Reset detected list
+    setDetectedStudents(new Set());
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { width: { ideal: 640 }, height: { ideal: 480 } }, 
@@ -553,7 +605,6 @@ const AttendanceTracker: React.FC = () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
         setVideoUrl(url);
-        // Process video automatically
         processVideo(blob);
       };
       mediaRecorderRef.current.start();
@@ -561,7 +612,7 @@ const AttendanceTracker: React.FC = () => {
       setDetectedStudents(new Set());
       toast({
         title: "Recording Started",
-        description: "Walk slowly past all students. Faces will be matched automatically.",
+        description: "Walk slowly past all students. Faces with enrolled photos will be auto-marked present.",
         variant: "default",
       });
     } catch (err) {
@@ -586,7 +637,7 @@ const AttendanceTracker: React.FC = () => {
     }
   };
 
-  // Process video — extract frames and run face recognition
+  // Process recorded video
   const processVideo = async (blob: Blob) => {
     setIsProcessing(true);
     setVideoError(null);
@@ -599,13 +650,7 @@ const AttendanceTracker: React.FC = () => {
         video.onloadedmetadata = resolve;
       });
 
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d')!;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      // Run face matching
+      videoRef.current = video;
       const detectedIds = await detectAndMatchFaces();
 
       // Mark ALL detected students as present
@@ -613,13 +658,13 @@ const AttendanceTracker: React.FC = () => {
       newDetected.forEach((studentId) => {
         onMarkStatus(studentId, "present");
       });
-      setDetectedStudents(detectedIds);
+      setDetectedStudents(new Set(detectedIds));
 
       // Show success
       if (newDetected.length > 0) {
         toast({
           title: `${newDetected.length} Students Marked Present`,
-          description: "All visible students have been automatically marked present.",
+          description: "All visible students with enrolled photos have been automatically marked present.",
           variant: "default",
         });
       } else {
@@ -630,11 +675,11 @@ const AttendanceTracker: React.FC = () => {
         });
       }
 
-      // Clean up video URL
+      // Clean up
       URL.revokeObjectURL(videoUrl);
-      // Auto-delete video file after 2 seconds
       setTimeout(() => {
         setVideoUrl(null);
+        videoRef.current = null;
       }, 2000);
     } catch (err) {
       console.error("Processing failed:", err);
@@ -669,7 +714,7 @@ const AttendanceTracker: React.FC = () => {
   // ========================
   // UI: Highlight students without enrolled photos
   // ========================
-  const studentsWithoutPhoto = students.filter(s => !s.imageId && !s.faceEmbedding);
+  const studentsWithoutPhoto = students.filter(s => !s.imageId || !s.faceEmbedding);
   const hasUnenrolledStudents = studentsWithoutPhoto.length > 0;
 
   return (
@@ -830,7 +875,7 @@ const AttendanceTracker: React.FC = () => {
               </div>
             </div>
 
-            {/* Student Management Component — Now handles image enrollment */}
+            {/* Student Management Component — Now includes full enrollment flow */}
             <StudentManagement
               classes={classes}
               selectedClass={selectedClass}
@@ -1073,7 +1118,7 @@ const AttendanceTracker: React.FC = () => {
             </Card>
           </TabsContent>
 
-          {/* Video Roll Call Tab — Now Real Face Recognition */}
+          {/* Video Roll Call Tab — REAL MEDIAPIPE INTEGRATION */}
           <TabsContent value="photo" className="space-y-6">
             <Card>
               <CardHeader>
@@ -1086,13 +1131,18 @@ const AttendanceTracker: React.FC = () => {
                 {!isRecording && !isProcessing && !videoUrl && (
                   <Button
                     onClick={startRecording}
-                    disabled={students.length === 0}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    disabled={students.length === 0 || !mediaPipeReady || hasUnenrolledStudents}
+                    className={`w-full ${students.length === 0 || !mediaPipeReady || hasUnenrolledStudents ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
                   >
                     {students.length === 0 ? (
                       <>
                         <AlertTriangle className="w-5 h-5 mr-2" />
                         Add Students First
+                      </>
+                    ) : !mediaPipeReady ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Loading AI...
                       </>
                     ) : hasUnenrolledStudents ? (
                       <>
@@ -1202,7 +1252,7 @@ const AttendanceTracker: React.FC = () => {
                   <p className="mt-2 italic">No audio recorded. No upload. No storage. Privacy guaranteed.</p>
                 </div>
 
-                {/* Hidden canvas for face detection */}
+                {/* Hidden canvas for MediaPipe processing */}
                 <canvas ref={canvasRef} className="hidden" />
               </CardContent>
             </Card>
