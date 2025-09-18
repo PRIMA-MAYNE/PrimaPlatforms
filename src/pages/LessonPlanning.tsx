@@ -34,6 +34,10 @@ import {
   CheckCircle,
   FileDown,
   Save,
+  AlertCircle,
+  HelpCircle,
+  Check,
+  X,
 } from "lucide-react";
 import { AIService } from "@/lib/ai-service";
 import {
@@ -72,15 +76,22 @@ const LessonPlanning: React.FC = () => {
   });
 
   const [savedPlans, setSavedPlans] = React.useState<LessonPlan[]>([]);
+  const [activeTab, setActiveTab] = React.useState<"generate" | "review" | "saved">("generate");
 
   // Load saved plans from localStorage
   React.useEffect(() => {
     const saved = localStorage.getItem("catalyst-lesson-plans");
     if (saved) {
       try {
-        setSavedPlans(JSON.parse(saved));
+        const parsedPlans = JSON.parse(saved);
+        // Validate and clean saved plans
+        const validPlans = parsedPlans.filter((plan: any) => 
+          plan.title && plan.subject && plan.topic && plan.gradeLevel
+        );
+        setSavedPlans(validPlans);
       } catch (error) {
         console.error("Error loading saved plans:", error);
+        localStorage.removeItem("catalyst-lesson-plans");
       }
     }
   }, []);
@@ -111,27 +122,80 @@ const LessonPlanning: React.FC = () => {
         .filter((obj) => obj.trim())
         .map((obj) => obj.trim());
 
+      // Determine education level (primary/secondary) based on grade
+      const grade = parseInt(formData.gradeLevel);
+      const educationLevel = grade <= 7 ? 'primary' : 'secondary';
+
       const plan = await AIService.generateLessonPlan({
         subject: formData.subject,
         topic: formData.topic,
-        gradeLevel: parseInt(formData.gradeLevel),
+        gradeLevel: grade,
+        educationLevel,
         duration: formData.duration,
         objectives: objectives.length > 0 ? objectives : undefined,
       });
 
       console.log("✅ Lesson plan generated:", plan);
-      setCurrentPlan(plan);
+      
+      // Ensure plan has all required fields
+      const validatedPlan: LessonPlan = {
+        ...plan,
+        title: plan.title || `${formData.subject} - ${formData.topic} Lesson Plan`,
+        gradeLevel: formData.gradeLevel,
+        isAiGenerated: true,
+        generatedAt: new Date().toISOString()
+      };
+      
+      setCurrentPlan(validatedPlan);
+      setActiveTab("review"); // Auto-switch to review tab after generation
 
       toast({
-        title: "Lesson Plan Generated!",
-        description: "Your ECZ-aligned lesson plan is ready for review",
+        title: "ECZ-Aligned Lesson Plan Generated!",
+        description: "Your plan follows Zambia's 2023 competence-based curriculum standards",
+        variant: "success",
       });
     } catch (error) {
       console.error("Generation error:", error);
+      
+      // Fallback plan with Zambian curriculum standards
+      const fallbackPlan: LessonPlan = {
+        title: `Zambia Curriculum Fallback Plan for ${formData.topic}`,
+        subject: formData.subject,
+        topic: formData.topic,
+        gradeLevel: formData.gradeLevel,
+        duration: formData.duration,
+        objectives: [
+          "Students will develop critical thinking skills through problem-solving activities relevant to Zambian contexts",
+          "Students will apply knowledge to real-world scenarios in their community",
+          "Students will demonstrate understanding of core competencies in the subject area"
+        ],
+        materials: ["Whiteboard and markers", "Local materials for hands-on activities", "Student worksheets"],
+        introduction: "This lesson introduces the topic using real-life examples from Zambian culture and environment.",
+        lessonDevelopment: "Students will engage in collaborative group work using locally available resources.",
+        activities: [
+          "Group discussion on community-related examples",
+          "Hands-on activity using local materials",
+          "Problem-solving exercise with Zambian context"
+        ],
+        assessment: "Students will complete a short quiz and practical task aligned with ECZ standards",
+        conclusion: "Review key concepts and discuss how they apply to everyday life in Zambia",
+        eczAlignment: "Aligned with Zambia Education Curriculum Framework (ZECF) 2023, focusing on competence-based learning outcomes for " + formData.subject + " at Grade " + formData.gradeLevel,
+        isAiGenerated: false,
+        generatedAt: new Date().toISOString(),
+      };
+
+      setCurrentPlan(fallbackPlan);
+      setActiveTab("review"); // Auto-switch to review tab for fallback
       toast({
-        title: "Generation Failed",
-        description: "Failed to generate lesson plan. Please try again.",
+        title: "AI Service Unavailable",
+        description: "Using standard Zambian curriculum template",
         variant: "destructive",
+        action: (
+          <Button variant="outline" size="sm" onClick={() => toast.dismiss()}>
+            <Check className="w-3 h-3 mr-1" />
+            Dismiss
+          </Button>
+        ),
       });
     } finally {
       setIsGenerating(false);
@@ -139,27 +203,28 @@ const LessonPlanning: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (currentPlan) {
-      const existingIndex = savedPlans.findIndex(
-        (p) =>
-          p.title === currentPlan.title && p.subject === currentPlan.subject,
-      );
+    if (!currentPlan) return;
+    
+    const existingIndex = savedPlans.findIndex(
+      (p) => p.title === currentPlan.title && p.subject === currentPlan.subject
+    );
 
-      if (existingIndex >= 0) {
-        setSavedPlans((prev) =>
-          prev.map((p, i) => (i === existingIndex ? currentPlan : p)),
-        );
-        toast({
-          title: "Lesson Plan Updated",
-          description: "Existing plan has been updated",
-        });
-      } else {
-        setSavedPlans((prev) => [currentPlan, ...prev]);
-        toast({
-          title: "Lesson Plan Saved",
-          description: "Plan has been saved to your collection",
-        });
-      }
+    if (existingIndex >= 0) {
+      setSavedPlans((prev) =>
+        prev.map((p, i) => (i === existingIndex ? currentPlan : p))
+      );
+      toast({
+        title: "Lesson Plan Updated",
+        description: "Existing plan has been updated",
+        variant: "default",
+      });
+    } else {
+      setSavedPlans((prev) => [currentPlan, ...prev]);
+      toast({
+        title: "Lesson Plan Saved",
+        description: "Plan has been saved to your collection",
+        variant: "default",
+      });
     }
   };
 
@@ -170,6 +235,7 @@ const LessonPlanning: React.FC = () => {
       toast({
         title: "Download Started",
         description: "Lesson plan PDF download initiated",
+        variant: "default",
       });
     } catch (error) {
       toast({
@@ -187,6 +253,7 @@ const LessonPlanning: React.FC = () => {
       toast({
         title: "Download Started",
         description: "Lesson plan DOCX download initiated",
+        variant: "default",
       });
     } catch (error) {
       toast({
@@ -206,6 +273,7 @@ const LessonPlanning: React.FC = () => {
       duration: plan.duration,
       objectives: plan.objectives.join("\n"),
     });
+    setActiveTab("review");
   };
 
   const handleDeletePlan = (index: number) => {
@@ -213,6 +281,7 @@ const LessonPlanning: React.FC = () => {
     toast({
       title: "Plan Deleted",
       description: "Lesson plan has been removed",
+      variant: "destructive",
     });
   };
 
@@ -226,26 +295,43 @@ const LessonPlanning: React.FC = () => {
               AI Lesson Planning
             </h1>
             <p className="text-muted-foreground">
-              Generate ECZ-aligned lesson plans with AI assistance
+              Generate ECZ-aligned lesson plans for Zambian primary and secondary schools
             </p>
+            <div className="flex items-center space-x-2 mt-2">
+              <HelpCircle className="w-4 h-4 text-catalyst-500" />
+              <span className="text-sm text-muted-foreground">
+                Designed for Zambia's 2023 Competence-Based Curriculum
+              </span>
+            </div>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setActiveTab("saved")}
+            >
               <FileText className="w-4 h-4 mr-2" />
               Saved Plans ({savedPlans.length})
             </Button>
-            <Button className="catalyst-gradient">
+            <Button 
+              className="catalyst-gradient" 
+              size="sm"
+              onClick={() => {
+                setActiveTab("generate");
+                setCurrentPlan(null);
+              }}
+            >
               <Plus className="w-4 h-4 mr-2" />
               New Plan
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="generate" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="generate">Generate Plan</TabsTrigger>
-            <TabsTrigger value="review">Review & Export</TabsTrigger>
-            <TabsTrigger value="saved">Saved Plans</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid grid-cols-3 w-full gap-2">
+            <TabsTrigger value="generate" className="flex-1">Generate Plan</TabsTrigger>
+            <TabsTrigger value="review" className="flex-1">Review & Export</TabsTrigger>
+            <TabsTrigger value="saved" className="flex-1">Saved Plans</TabsTrigger>
           </TabsList>
 
           <TabsContent value="generate" className="space-y-6">
@@ -257,12 +343,10 @@ const LessonPlanning: React.FC = () => {
                   <span>Generate ECZ-Aligned Lesson Plan</span>
                 </CardTitle>
                 <CardDescription>
-                  Provide the details below and our AI will create a
-                  comprehensive lesson plan aligned with ECZ curriculum
-                  standards
+                  Provide details following Zambia's 2023 competence-based curriculum framework
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className={`space-y-6 ${isGenerating ? 'opacity-50 pointer-events-none' : ''}`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject *</Label>
@@ -312,7 +396,7 @@ const LessonPlanning: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 12 }, (_, i) => (
-                          <SelectItem key={i + 1} value={`Grade ${i + 1}`}>
+                          <SelectItem key={i + 1} value={`${i + 1}`}>
                             Grade {i + 1}
                           </SelectItem>
                         ))}
@@ -363,11 +447,12 @@ const LessonPlanning: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="objectives">
-                    Learning Objectives (Optional)
+                    Learning Objectives (Competency-Based)
                   </Label>
                   <Textarea
                     id="objectives"
-                    placeholder="Enter specific learning objectives, one per line. Leave blank for AI to generate ECZ-aligned objectives."
+                    placeholder="Enter competency-based objectives, one per line. Example: 'Students will analyze historical events using local Zambian examples' 
+Leave blank for AI to generate ECZ-aligned objectives based on Zambia's 2023 curriculum"
                     value={formData.objectives}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -377,29 +462,33 @@ const LessonPlanning: React.FC = () => {
                     }
                     rows={3}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    AI will generate objectives aligned with ECZ curriculum
-                    standards if left blank
-                  </p>
+                  <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-1">
+                    <HelpCircle className="w-3 h-3" />
+                    <span>
+                      Objectives should focus on skills, knowledge, and attitudes as per Zambian competence-based curriculum standards
+                    </span>
+                  </div>
                 </div>
 
-                <Button
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                  className="w-full catalyst-gradient text-base h-12"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Generating ECZ-Aligned Lesson Plan...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      Generate Lesson Plan
-                    </>
-                  )}
-                </Button>
+                <div className="pt-4">
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                    className="w-full catalyst-gradient text-base h-12"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Generating ECZ-Aligned Lesson Plan...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Generate Lesson Plan
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -410,27 +499,29 @@ const LessonPlanning: React.FC = () => {
                 {/* Lesson Plan Preview */}
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div>
-                        <CardTitle className="text-xl">
-                          {currentPlan.title}
-                        </CardTitle>
-                        <CardDescription className="flex items-center space-x-4 mt-2">
+                        <CardTitle className="text-xl">{currentPlan.title}</CardTitle>
+                        <CardDescription className="flex flex-wrap items-center gap-2 mt-2">
                           <span className="flex items-center space-x-1">
                             <BookOpen className="w-4 h-4" />
                             <span>{currentPlan.subject}</span>
                           </span>
                           <span className="flex items-center space-x-1">
                             <Users className="w-4 h-4" />
-                            <span>{currentPlan.gradeLevel}</span>
+                            <span>Grade {currentPlan.gradeLevel}</span>
                           </span>
                           <span className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
                             <span>{currentPlan.duration} minutes</span>
                           </span>
+                          <span className="flex items-center space-x-1">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span>ECZ Aligned</span>
+                          </span>
                         </CardDescription>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-wrap gap-2">
                         <Button variant="outline" onClick={handleSave}>
                           <Save className="w-4 h-4 mr-2" />
                           Save Plan
@@ -445,15 +536,21 @@ const LessonPlanning: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-                    <div className="flex space-x-2 mt-2">
-                      {currentPlan.isAiGenerated && (
-                        <Badge className="w-fit bg-catalyst-100 text-catalyst-700">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                      {currentPlan.isAiGenerated ? (
+                        <Badge className="bg-catalyst-100 text-catalyst-700">
                           <Sparkles className="w-3 h-3 mr-1" />
                           AI Generated
                         </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="flex items-center">
+                          <AlertCircle className="w-3 h-3 mr-1" />
+                          Fallback Template
+                        </Badge>
                       )}
                       {currentPlan.eczAlignment && (
-                        <Badge variant="outline" className="w-fit">
+                        <Badge variant="secondary" className="flex items-center">
+                          <Check className="w-3 h-3 mr-1" />
                           ECZ Aligned
                         </Badge>
                       )}
@@ -462,13 +559,20 @@ const LessonPlanning: React.FC = () => {
                   <CardContent className="space-y-6">
                     {/* ECZ Alignment */}
                     {currentPlan.eczAlignment && (
-                      <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
-                        <h4 className="font-medium text-blue-900 mb-1">
-                          ECZ Curriculum Alignment
-                        </h4>
-                        <p className="text-sm text-blue-700">
-                          {currentPlan.eczAlignment}
-                        </p>
+                      <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <div className="flex items-start">
+                          <div className="mt-1 mr-2">
+                            <CheckCircle className="w-5 h-5 text-blue-500" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-blue-900 mb-1">
+                              ECZ Curriculum Alignment
+                            </h4>
+                            <p className="text-sm text-blue-700">
+                              {currentPlan.eczAlignment}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -478,13 +582,13 @@ const LessonPlanning: React.FC = () => {
                         <Target className="w-4 h-4 mr-2 text-catalyst-600" />
                         Learning Objectives
                       </h3>
-                      <ul className="space-y-1">
+                      <ul className="space-y-1 pl-4">
                         {currentPlan.objectives.map((objective, index) => (
                           <li
                             key={index}
                             className="flex items-start space-x-2"
                           >
-                            <span className="text-catalyst-600 font-medium">
+                            <span className="text-catalyst-600 font-medium mt-1">
                               {index + 1}.
                             </span>
                             <span>{objective}</span>
@@ -519,34 +623,37 @@ const LessonPlanning: React.FC = () => {
 
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium mb-2 text-catalyst-700">
+                          <h4 className="font-medium mb-2 text-catalyst-700 flex items-center">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2" />
                             Introduction
                           </h4>
-                          <p className="text-muted-foreground leading-relaxed">
+                          <p className="text-muted-foreground leading-relaxed pl-4">
                             {currentPlan.introduction}
                           </p>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-2 text-catalyst-700">
+                          <h4 className="font-medium mb-2 text-catalyst-700 flex items-center">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2" />
                             Lesson Development
                           </h4>
-                          <p className="text-muted-foreground leading-relaxed">
+                          <p className="text-muted-foreground leading-relaxed pl-4">
                             {currentPlan.lessonDevelopment}
                           </p>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-2 text-catalyst-700">
+                          <h4 className="font-medium mb-2 text-catalyst-700 flex items-center">
+                            <span className="w-2 h-2 bg-purple-500 rounded-full mr-2" />
                             Learning Activities
                           </h4>
-                          <ul className="space-y-1">
+                          <ul className="space-y-1 pl-6">
                             {currentPlan.activities.map((activity, index) => (
                               <li
                                 key={index}
                                 className="flex items-start space-x-2"
                               >
-                                <span className="text-catalyst-600 font-medium">
+                                <span className="text-catalyst-600 font-medium mt-1">
                                   {index + 1}.
                                 </span>
                                 <span className="text-muted-foreground">
@@ -558,19 +665,21 @@ const LessonPlanning: React.FC = () => {
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-2 text-catalyst-700">
+                          <h4 className="font-medium mb-2 text-catalyst-700 flex items-center">
+                            <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2" />
                             Assessment
                           </h4>
-                          <p className="text-muted-foreground leading-relaxed">
+                          <p className="text-muted-foreground leading-relaxed pl-4">
                             {currentPlan.assessment}
                           </p>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-2 text-catalyst-700">
+                          <h4 className="font-medium mb-2 text-catalyst-700 flex items-center">
+                            <span className="w-2 h-2 bg-red-500 rounded-full mr-2" />
                             Conclusion
                           </h4>
-                          <p className="text-muted-foreground leading-relaxed">
+                          <p className="text-muted-foreground leading-relaxed pl-4">
                             {currentPlan.conclusion}
                           </p>
                         </div>
@@ -579,9 +688,15 @@ const LessonPlanning: React.FC = () => {
 
                     <Separator />
 
-                    <div className="text-xs text-muted-foreground">
-                      Generated on:{" "}
-                      {new Date(currentPlan.generatedAt).toLocaleString()}
+                    <div className="text-xs text-muted-foreground flex items-center justify-between">
+                      <div>
+                        Generated on:{" "}
+                        {new Date(currentPlan.generatedAt).toLocaleString()}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-catalyst-500">Zambia Curriculum</span>
+                        <CheckCircle className="w-3 h-3 text-green-500" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -597,7 +712,12 @@ const LessonPlanning: React.FC = () => {
                     Generate a lesson plan in the "Generate Plan" tab to review
                     and export it here.
                   </p>
-                  <Button variant="outline">Generate Your First Plan</Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setActiveTab("generate")}
+                  >
+                    Generate Your First Plan
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -611,24 +731,31 @@ const LessonPlanning: React.FC = () => {
                     key={index}
                     className="cursor-pointer hover:shadow-lg transition-shadow"
                   >
-                    <CardHeader>
+                    <CardHeader className="pb-2">
                       <CardTitle className="text-lg">{plan.title}</CardTitle>
-                      <CardDescription>
-                        {plan.gradeLevel} • {plan.duration} minutes
+                      <CardDescription className="flex flex-wrap items-center gap-2">
+                        <span>Grade {plan.gradeLevel} • {plan.duration} min</span>
+                        <Badge variant="outline" className="text-xs">
+                          {plan.subject}
+                        </Badge>
+                        {plan.eczAlignment && (
+                          <Badge variant="secondary" className="text-xs">
+                            ECZ Aligned
+                          </Badge>
+                        )}
+                        {plan.isAiGenerated ? (
+                          <Badge variant="secondary" className="text-xs">
+                            AI Generated
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive" className="text-xs">
+                            Fallback
+                          </Badge>
+                        )}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-2">
                       <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Badge variant="outline" className="text-xs">
-                            {plan.subject}
-                          </Badge>
-                          {plan.eczAlignment && (
-                            <Badge variant="secondary" className="text-xs">
-                              ECZ Aligned
-                            </Badge>
-                          )}
-                        </div>
                         <p className="text-sm text-muted-foreground">
                           {plan.objectives.length} objectives
                         </p>
@@ -659,7 +786,7 @@ const LessonPlanning: React.FC = () => {
                             variant="ghost"
                             onClick={() => handleDeletePlan(index)}
                           >
-                            ×
+                            <X className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
@@ -676,7 +803,12 @@ const LessonPlanning: React.FC = () => {
                     Your saved lesson plans will appear here once you start
                     generating and saving them.
                   </p>
-                  <Button variant="outline">Generate Your First Plan</Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setActiveTab("generate")}
+                  >
+                    Generate Your First Plan
+                  </Button>
                 </CardContent>
               </Card>
             )}
