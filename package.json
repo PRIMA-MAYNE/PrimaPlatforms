@@ -85,7 +85,6 @@
     "vaul": "^0.9.3",
     "zod": "^3.23.8",
     "@mediapipe/face_detection": "^0.4.1637945382",
-    "@mediapipe/face_recognition": "^0.2.1637945382",
     "jszip": "^3.10.1"
   },
   "devDependencies": {
