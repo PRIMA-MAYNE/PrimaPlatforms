@@ -18,27 +18,25 @@ export default {
       },
     },
 
-    // ✅ 1. NEW COLOR SYSTEM — Soft Ethereal Palette (Your Vision)
     extend: {
       colors: {
         // ———— BACKGROUND & TEXTURE ————
-        background: "#fdfaf5", // Cream White — warm, breathing canvas
-        foreground: "#3a324a", // Deep Charcoal Purple — soft, readable, calming
-        border: "hsl(270 3% 91%)", // Near-white gray — barely-there separation
-        card: "#fefefe", // Pure cream with micro texture illusion
-        popover: "#fdfaf5", // Same as background — seamless layers
-        muted: "#f5f0ff", // Light lavender mist — for subtle accents
-        accent: "#9d88e6", // Signature Soft Purple — used sparingly for magic
-        "accent-foreground": "#1a152e", // Deep indigo — for text on purple
+        background: "#fdfaf5",
+        foreground: "#3a324a",
+        border: "hsl(270 3% 91%)",
+        card: "#fefefe",
+        popover: "#fdfaf5",
+        muted: "#f5f0ff",
+        accent: "#9d88e6",
+        "accent-foreground": "#1a152e",
 
         // ———— PRIMARY & SECONDARY ————
-        primary: "#7ea4e8", // Soft Sky Blue — the emotional anchor
-        "primary-foreground": "#1a152e", // Deep charcoal — perfect contrast
-        secondary: "#9d88e6", // Soft Purple — now the *secondary* tone for harmony
+        primary: "#7ea4e8",
+        "primary-foreground": "#1a152e",
+        secondary: "#9d88e6",
         "secondary-foreground": "#1a152e",
 
         // ———— NEUTRAL PALETTE ————
-        // Created from your palette — no grays. Only warmth.
         "neutral-50": "#fdfaf5",
         "neutral-100": "#fcf6f0",
         "neutral-200": "#f8f0e8",
@@ -47,22 +45,22 @@ export default {
         "neutral-500": "#d9c3be",
         "neutral-600": "#c7b1ad",
         "neutral-700": "#b29c97",
-        "neutral-800": "#9d88e6", // Reuse soft purple as deep neutral
+        "neutral-800": "#9d88e6",
         "neutral-900": "#3a324a",
 
         // ———— STATE COLORS ————
-        destructive: "#e87a7a", // Warm coral — feels like a gentle warning, not alarm
+        destructive: "#e87a7a",
         "destructive-foreground": "#1a152e",
-        success: "#8fd4a8", // Soft mint — calm victory
+        success: "#8fd4a8",
         "success-foreground": "#1a152e",
-        warning: "#f7c285", // Peach-gold — inviting caution
+        warning: "#f7c285",
         "warning-foreground": "#1a152e",
-        info: "#a3c9f0", // Pale sky-blue — soothing insight
+        info: "#a3c9f0",
         "info-foreground": "#1a152e",
 
-        // ———— SIDEBAR ———— REIMAGINED AS A GLOWING LAYER
+        // ———— SIDEBAR ————
         sidebar: {
-          DEFAULT: "rgba(253, 250, 245, 0.92)", // Cream base with transparency
+          DEFAULT: "rgba(253, 250, 245, 0.92)",
           foreground: "#3a324a",
           primary: "#9d88e6",
           "primary-foreground": "#1a152e",
@@ -72,53 +70,40 @@ export default {
           ring: "rgba(126, 164, 232, 0.15)",
         },
 
-        // ———— CATALYST BRANDING ———— ELEVATED TO POETRY
+        // ———— CATALYST BRANDING ————
         catalyst: {
-          50: "#fdfaf5", // Cream
+          50: "#fdfaf5",
           100: "#fbf4f0",
           200: "#f5e9e6",
           300: "#ebe0db",
           400: "#e0d1cc",
           500: "#d4c1bd",
           600: "#c1b0ac",
-          700: "#a99aa4", // Muted purple-gray
-          800: "#9d88e6", // Your signature soft purple
-          900: "#3a324a", // Deep soulful charcoal
+          700: "#a99aa4",
+          800: "#9d88e6",
+          900: "#3a324a",
         },
+
+        // ✅ NEW: Add missing color for `from-cream-lavender`
+        "cream-lavender": "#f5f0ff", // matches your `muted` color
       },
 
-      // ✅ 2. TYPOGRAPHY — Humanist, Warm, Breathable
       fontFamily: {
-        sans: [
-          "Clash Display",
-          "Inter",
-          "system-ui",
-          "sans-serif",
-        ], // Clash Display = modern humanist serif (free on Google Fonts)
-        display: [
-          "Cormorant Garamond",
-          "Georgia",
-          "serif",
-        ], // Elegant serif for headlines — feels like ink on paper
-        mono: [
-          "Fira Code",
-          "Menlo",
-          "monospace",
-        ], // Rounded monospace for code blocks — friendly, not robotic
+        sans: ["Clash Display", "Inter", "system-ui", "sans-serif"],
+        display: ["Cormorant Garamond", "Georgia", "serif"],
+        mono: ["Fira Code", "Menlo", "monospace"],
       },
 
-      // ✅ 3. BORDER RADIUS — Organic Curves, Not Boxes
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xl: "1.5rem", // Gentle pill shape
-        "2xl": "2rem", // For cards — like a softly folded page
-        "3xl": "2.5rem", // Hero containers, modals — dreamy curves
-        full: "9999px", // For badges, icons — always rounded
+        xl: "1.5rem",
+        "2xl": "2rem",
+        "3xl": "2.5rem",
+        full: "9999px",
       },
 
-      // ✅ 4. SPACING — Emotional Rhythm, Not Grid Rigidity
       spacing: {
         0.5: "0.125rem",
         1.5: "0.375rem",
@@ -138,7 +123,6 @@ export default {
         15.5: "3.875rem",
       },
 
-      // ✅ 5. BOX SHADOWS — Depth Without Aggression
       boxShadow: {
         sm: "0 1px 3px rgba(157, 136, 230, 0.08)",
         DEFAULT: "0 4px 12px rgba(157, 136, 230, 0.07), 0 1px 4px rgba(126, 164, 232, 0.05)",
@@ -150,7 +134,6 @@ export default {
         "card-hover": "0 10px 30px rgba(157, 136, 230, 0.12), 0 0 40px rgba(126, 164, 232, 0.06)",
       },
 
-      // ✅ 6. ANIMATIONS — Slow, Dreamy, Intentional
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -196,13 +179,12 @@ export default {
         "ripple": "ripple 1.2s ease-out",
       },
 
-      // ✅ 7. TRANSITIONS — SLOW, SOFT, HUMAN
       transitionProperty: {
         default: "background-color, border-color, color, fill, stroke, opacity, box-shadow, transform",
         "all-slow": "all 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
       },
       transitionTimingFunction: {
-        "soft-ease": "cubic-bezier(0.16, 1, 0.3, 1)", // Like breathing
+        "soft-ease": "cubic-bezier(0.16, 1, 0.3, 1)",
         "ease-in-slow": "cubic-bezier(0.42, 0, 0.58, 1)",
         "ease-out-slow": "cubic-bezier(0.33, 0, 0.67, 1)",
       },
@@ -215,19 +197,17 @@ export default {
         "faster": "150ms",
       },
 
-      // ✅ 8. RESPONSIVENESS — MOBILE-FIRST, BUT WITH HEART
       screens: {
-        xs: "320px", // Tiny phones
+        xs: "320px",
         sm: "640px",
         md: "768px",
         lg: "1024px",
         xl: "1280px",
         "2xl": "1400px",
-        "3xl": "1600px", // For ultra-wide creative spaces
-        "4xl": "1920px", // Ultra-HD luxury screens
+        "3xl": "1600px",
+        "4xl": "1920px",
       },
 
-      // ✅ 9. LINE HEIGHT & LETTER SPACING — Typography as Breathing Space
       lineHeight: {
         tight: "1.2",
         snug: "1.3",
@@ -244,7 +224,6 @@ export default {
         widest: "0.05em",
       },
 
-      // ✅ 10. GRADIENTS — Ambient, Ethereal, Layered
       backgroundImage: {
         "gradient-purple-blue": "linear-gradient(135deg, #9d88e6 0%, #7ea4e8 100%)",
         "gradient-cream-lavender": "linear-gradient(180deg, #fdfaf5 0%, #f5f0ff 100%)",
