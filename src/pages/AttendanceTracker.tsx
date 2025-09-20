@@ -1,3 +1,5 @@
+// src/components/AttendanceTracker.tsx
+
 import * as React from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatsCard } from "@/components/ui/stats-card";
@@ -50,6 +52,15 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { fetchAttendanceForDate, upsertAttendance } from "@/lib/attendance-supabase";
 
+// 🔥 REAL FACE RECOGNITION IMPORTS
+import {
+  initializeFaceApi,
+  matchLiveFrame,
+  getOrGenerateEmbedding,
+  resetFaceApi,
+  clearEmbeddingCache,
+} from "@/lib/face-api";
+
 // 🔥 UPDATED STUDENT INTERFACE WITH BIOMETRIC FIELDS
 interface Student {
   id: string;
@@ -60,7 +71,7 @@ interface Student {
   class: string;
   status: "present" | "absent" | "late" | "sick" | null;
   imageId?: string; // Encrypted base64 of photo
-  faceEmbedding?: number[]; // 128-dim array from MediaPipe
+  faceEmbedding?: Float32Array; // 128-dim array from face-api.js
 }
 
 interface Class {
@@ -107,6 +118,7 @@ const AttendanceTracker: React.FC = () => {
       ];
     }
   });
+
   const [attendanceRecords, setAttendanceRecords] = React.useState<AttendanceRecord[]>(() => {
     const saved = localStorage.getItem("catalyst-attendance");
     try {
@@ -116,6 +128,7 @@ const AttendanceTracker: React.FC = () => {
       return [];
     }
   });
+
   const [selectedClass, setSelectedClass] = React.useState<string>("");
   const [students, setStudents] = React.useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -174,17 +187,14 @@ const AttendanceTracker: React.FC = () => {
           setStudents([]);
           return;
         }
-
         // Start with local base data
         let studentsWithStatus = currentClass.students.map((student) => ({
           ...student,
           status: getTodayAttendanceStatus(student.id, currentDate),
         }));
-
         // Fetch cloud data — authoritative source
         const cloudData = await fetchAttendanceForDate(selectedClass, currentDate);
         if (!isMountedRef.current) return;
-
         // Merge: Cloud data overrides local if present; else keep local
         if (cloudData.size > 0) {
           studentsWithStatus = studentsWithStatus.map((s) => ({
@@ -195,7 +205,6 @@ const AttendanceTracker: React.FC = () => {
         } else {
           setSyncStatus("idle"); // No cloud data, use local
         }
-
         setStudents(studentsWithStatus);
       } catch (error) {
         console.error("Error fetching attendance from server:", error);
@@ -248,7 +257,6 @@ const AttendanceTracker: React.FC = () => {
         ),
       );
       if (!status) return;
-
       const { week, day } = getCurrentWeekAndDay(currentDate);
       const existingRecordIndex = attendanceRecords.findIndex(
         (r) => r.studentId === studentId && r.date === currentDate,
@@ -265,7 +273,6 @@ const AttendanceTracker: React.FC = () => {
         day,
         term: currentTerm,
       };
-
       // Optimistic update of local records
       setAttendanceRecords((prev) => {
         if (existingRecordIndex >= 0) {
@@ -274,7 +281,6 @@ const AttendanceTracker: React.FC = () => {
           return [...prev, record];
         }
       });
-
       // Sync to server
       if (selectedClass) {
         try {
@@ -462,63 +468,59 @@ const AttendanceTracker: React.FC = () => {
   };
 
   // ========================
-  // VIDEO ROLL CALL — REAL MEDIAPIPE FACE RECOGNITION
+  // VIDEO ROLL CALL — REAL FACE RECOGNITION
   // ========================
   const [isRecording, setIsRecording] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [videoUrl, setVideoUrl] = React.useState<string | null>(null);
   const [detectedStudents, setDetectedStudents] = React.useState<Set<string>>(new Set());
   const [videoError, setVideoError] = React.useState<string | null>(null);
-  const [mediaPipeReady, setMediaPipeReady] = React.useState(false);
+  const [faceApiReady, setFaceApiReady] = React.useState(false);
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const streamRef = React.useRef<MediaStream | null>(null);
 
-  // Load MediaPipe models once on mount
+  // Load face-api.js models once on mount
   React.useEffect(() => {
-    const loadMediaPipe = async () => {
+    const loadFaceApi = async () => {
       try {
-        await import('@mediapipe/face_detection');
-        await import('@mediapipe/face_recognition');
-        setMediaPipeReady(true);
+        const success = await initializeFaceApi();
+        if (success) {
+          setFaceApiReady(true);
+        } else {
+          throw new Error("Failed to initialize face-api.js");
+        }
       } catch (err) {
-        console.error('Failed to load MediaPipe:', err);
+        console.error('Failed to load face-api.js:', err);
         toast({
-          title: 'MediaPipe Loading Failed',
+          title: 'Face Recognition Failed',
           description: 'Face recognition will not work until libraries are loaded.',
           variant: 'destructive',
         });
       }
     };
-    loadMediaPipe();
+    loadFaceApi();
+
+    return () => {
+      resetFaceApi();
+      clearEmbeddingCache();
+    };
   }, []);
 
-  // Real face detection using MediaPipe
+  // Real face detection using face-api.js
   const detectAndMatchFaces = React.useCallback(async (): Promise<string[]> => {
-    if (!mediaPipeReady || !videoRef.current || students.length === 0) return [];
-
+    if (!faceApiReady || !videoRef.current || students.length === 0) return [];
+    
     const enrolledStudents = students.filter(
       s => s.faceEmbedding && s.faceEmbedding.length === 128
     );
-
+    
     if (enrolledStudents.length === 0) {
       setVideoError("No student has an enrolled photo. Go to 'Manage Students' and add photos.");
       return [];
     }
 
     const detectedIds = new Set<string>();
-    const detector = new (await import('@mediapipe/face_detection')).FaceDetection({
-      locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/${file}`,
-    });
-    const recognizer = new (await import('@mediapipe/face_recognition')).FaceRecognition({
-      locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/face_recognition/${file}`,
-    });
-
-    await Promise.all([detector.load(), recognizer.load()]);
-
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
@@ -528,31 +530,21 @@ const AttendanceTracker: React.FC = () => {
     // Extract 10 frames at even intervals
     const frameCount = 10;
     const promises: Promise<void>[] = [];
-
+    
     for (let i = 0; i < frameCount; i++) {
       const time = (i / (frameCount - 1)) * video.duration;
       promises.push(new Promise((resolve) => {
         video.currentTime = time;
         video.onseeked = async () => {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
           try {
-            const detections = await detector.detect(video);
-            if (!detections?.length) return;
-
-            for (const detection of detections) {
-              const embedding = await recognizer.generateEmbedding(video, detection.boundingBox);
-              const float32Values = Array.from(embedding.float32Values);
-
-              // Compare against each enrolled student
-              for (const student of enrolledStudents) {
-                const similarity = cosineSimilarity(float32Values, student.faceEmbedding!);
-                if (similarity > 0.65) {
-                  detectedIds.add(student.id);
-                  break;
-                }
-              }
-            }
+            // Match against enrolled students using face-api.js
+            const matches = await matchLiveFrame(video, enrolledStudents.map(s => ({
+              id: s.id,
+              faceEmbedding: s.faceEmbedding!
+            })));
+            
+            matches.forEach(id => detectedIds.add(id));
           } catch (err) {
             console.warn("Face recognition failed on frame:", err);
           }
@@ -560,27 +552,10 @@ const AttendanceTracker: React.FC = () => {
         };
       }));
     }
-
+    
     await Promise.all(promises);
     return Array.from(detectedIds);
-  }, [students, mediaPipeReady]);
-
-  // Helper: Cosine similarity between two 128-dim arrays
-  const cosineSimilarity = (a: number[], b: number[]): number => {
-    if (a.length !== 128 || b.length !== 128) return 0;
-    let dotProduct = 0;
-    let magA = 0;
-    let magB = 0;
-
-    for (let i = 0; i < 128; i++) {
-      dotProduct += a[i] * b[i];
-      magA += a[i] * a[i];
-      magB += b[i] * b[i];
-    }
-
-    const magnitude = Math.sqrt(magA) * Math.sqrt(magB);
-    return magnitude > 0 ? dotProduct / magnitude : 0;
-  };
+  }, [students, faceApiReady]);
 
   // Start recording video
   const startRecording = async () => {
@@ -648,17 +623,16 @@ const AttendanceTracker: React.FC = () => {
       await new Promise((resolve) => {
         video.onloadedmetadata = resolve;
       });
-
       videoRef.current = video;
       const detectedIds = await detectAndMatchFaces();
-
+      
       // Mark ALL detected students as present
       const newDetected = Array.from(detectedIds);
       newDetected.forEach((studentId) => {
         onMarkStatus(studentId, "present");
       });
       setDetectedStudents(new Set(detectedIds));
-
+      
       // Show success
       if (newDetected.length > 0) {
         toast({
@@ -673,7 +647,7 @@ const AttendanceTracker: React.FC = () => {
           variant: "warning",
         });
       }
-
+      
       // Clean up
       URL.revokeObjectURL(videoUrl);
       setTimeout(() => {
@@ -770,7 +744,6 @@ const AttendanceTracker: React.FC = () => {
             </Button>
           </div>
         </div>
-
         {/* Class Selection and Management */}
         <Card>
           <CardHeader>
@@ -873,7 +846,6 @@ const AttendanceTracker: React.FC = () => {
                 </div>
               </div>
             </div>
-
             {/* Student Management Component — Now includes full enrollment flow */}
             <StudentManagement
               classes={classes}
@@ -881,7 +853,6 @@ const AttendanceTracker: React.FC = () => {
               onClassUpdate={handleClassUpdate}
               onStudentAdd={handleStudentAdd}
             />
-
             {/* Warning Banner for Missing Photos */}
             {hasUnenrolledStudents && (
               <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
@@ -898,7 +869,6 @@ const AttendanceTracker: React.FC = () => {
             )}
           </CardContent>
         </Card>
-
         {/* Main Tabs */}
         <Tabs defaultValue="roll-call" className="space-y-6">
           <TabsList className="grid grid-cols-6 gap-1 overflow-x-auto scrollbar-hide md:overflow-visible">
@@ -923,7 +893,6 @@ const AttendanceTracker: React.FC = () => {
               Reports
             </TabsTrigger>
           </TabsList>
-
           {/* Roll Call Tab */}
           <TabsContent value="roll-call" className="space-y-6">
             {/* Live Stats Grid */}
@@ -959,7 +928,6 @@ const AttendanceTracker: React.FC = () => {
                 className="text-center h-24"
               />
             </div>
-
             {/* Search */}
             <div className="max-w-md mx-auto">
               <div className="relative">
@@ -972,7 +940,6 @@ const AttendanceTracker: React.FC = () => {
                 />
               </div>
             </div>
-
             {/* Student List */}
             <Card>
               <CardHeader className="pb-2">
@@ -1116,8 +1083,7 @@ const AttendanceTracker: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* Video Roll Call Tab — REAL MEDIAPIPE INTEGRATION */}
+          {/* Video Roll Call Tab — REAL FACE RECOGNITION */}
           <TabsContent value="photo" className="space-y-6">
             <Card>
               <CardHeader>
@@ -1130,15 +1096,15 @@ const AttendanceTracker: React.FC = () => {
                 {!isRecording && !isProcessing && !videoUrl && (
                   <Button
                     onClick={startRecording}
-                    disabled={students.length === 0 || !mediaPipeReady || hasUnenrolledStudents}
-                    className={`w-full ${students.length === 0 || !mediaPipeReady || hasUnenrolledStudents ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                    disabled={students.length === 0 || !faceApiReady || hasUnenrolledStudents}
+                    className={`w-full ${students.length === 0 || !faceApiReady || hasUnenrolledStudents ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
                   >
                     {students.length === 0 ? (
                       <>
                         <AlertTriangle className="w-5 h-5 mr-2" />
                         Add Students First
                       </>
-                    ) : !mediaPipeReady ? (
+                    ) : !faceApiReady ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Loading AI...
@@ -1156,7 +1122,6 @@ const AttendanceTracker: React.FC = () => {
                     )}
                   </Button>
                 )}
-
                 {isRecording && (
                   <div className="flex flex-col items-center gap-2 p-4 bg-red-50 border-2 border-red-200 rounded-lg animate-pulse">
                     <div className="w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
@@ -1172,7 +1137,6 @@ const AttendanceTracker: React.FC = () => {
                     </Button>
                   </div>
                 )}
-
                 {isProcessing && (
                   <div className="flex flex-col items-center gap-2 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
                     <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
@@ -1180,7 +1144,6 @@ const AttendanceTracker: React.FC = () => {
                     <p className="text-sm text-gray-600">Matching faces with enrolled photos...</p>
                   </div>
                 )}
-
                 {videoUrl && !isProcessing && (
                   <div className="relative w-full max-w-md">
                     <video
@@ -1209,7 +1172,6 @@ const AttendanceTracker: React.FC = () => {
                     </Button>
                   </div>
                 )}
-
                 {detectedStudents.size > 0 && (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-medium text-sm mb-2 flex items-center">
@@ -1232,13 +1194,11 @@ const AttendanceTracker: React.FC = () => {
                     </div>
                   </div>
                 )}
-
                 {videoError && (
                   <div className="p-3 bg-destructive/10 text-destructive border border-destructive/20 rounded-md text-sm">
                     {videoError}
                   </div>
                 )}
-
                 <div className="mt-6 text-xs text-muted-foreground space-y-1 p-3 bg-muted/50 rounded-md">
                   <p><strong>How to use:</strong></p>
                   <ol className="list-decimal list-inside space-y-1">
@@ -1250,13 +1210,9 @@ const AttendanceTracker: React.FC = () => {
                   </ol>
                   <p className="mt-2 italic">No audio recorded. No upload. No storage. Privacy guaranteed.</p>
                 </div>
-
-                {/* Hidden canvas for MediaPipe processing */}
-                <canvas ref={canvasRef} className="hidden" />
               </CardContent>
             </Card>
           </TabsContent>
-
           {/* Voice Tab — Unchanged, now works with enrolled students */}
           <TabsContent value="voice" className="space-y-6">
             <Card>
@@ -1271,7 +1227,6 @@ const AttendanceTracker: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {/* Summary Tab */}
           <TabsContent value="summary" className="space-y-6">
             <Card>
@@ -1382,7 +1337,6 @@ const AttendanceTracker: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {/* Term Stats Tab */}
           <TabsContent value="term-stats" className="space-y-6">
             <Card>
@@ -1449,7 +1403,6 @@ const AttendanceTracker: React.FC = () => {
               </CardContent>
             </Card>
           </TabsContent>
-
           {/* Reports Tab */}
           <TabsContent value="reports" className="space-y-6">
             <Card>
