@@ -399,8 +399,9 @@
     box-shadow: var(--shadow-floating);
   }
 
+  /* ✅ FIXED: Changed from-cream-lavender to from-muted to use existing color */
   .stat-card {
-    @apply card border-none bg-gradient-to-br from-cream-lavender to-transparent;
+    @apply card border-none bg-gradient-to-br from-muted to-transparent;
     backdrop-filter: blur(8px);
     border: 1px solid hsla(270, 15%, 96%, 0.3);
   }
