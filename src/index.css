@@ -399,9 +399,10 @@
     box-shadow: var(--shadow-floating);
   }
 
-  /* ✅ FIXED: Changed from-cream-lavender to from-[#f5f0ff] to use custom color value */
+  /* ✅ FIXED: Completely replaced the problematic @apply with direct CSS */
   .stat-card {
-    @apply card border-none bg-gradient-to-br from-[#f5f0ff] to-transparent;
+    @apply card border-none;
+    background: linear-gradient(to bottom right, #f5f0ff, transparent);
     backdrop-filter: blur(8px);
     border: 1px solid hsla(270, 15%, 96%, 0.3);
   }
